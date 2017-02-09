@@ -23,16 +23,36 @@
 # Load a debian Mirrors.masterlist
 
 import email
+import sys
 
 class MasterlistEntry:
+    MULTI_VALUE_FIELDS = ('Alias', 'Sponsor')
+
     def __init__(self, lines):
         self.data = email.message_from_string('\n'.join(lines))
+        self._clean()
     def __str__(self):
         return self.data.__str__()
     def __getitem__(self, key):
-        return self.data[key]
+        if key in self.MULTI_VALUE_FIELDS:
+            return self.data.get_all(key)
+        else:
+            return self.data[key]
     def __contains__(self, key):
         return key in self.data
+    def _clean(self):
+        if not 'Site' in self.data:
+            print("Missing sitename for mirror.", file=sys.stderr)
+        for key in self.data:
+            v = self.data.get_all(key)
+            if len(v) > 1 and not key in self.MULTI_VALUE_FIELDS:
+                print("Warning:", self.data['Site'], "multiple values for", key, file=sys.stderr)
+        for key in self.MULTI_VALUE_FIELDS:
+            if key in self.data:
+                s = set(self[key])
+                if len(s) != len(self[key]):
+                    print("Warning:", self.data['Site'], "duplicate values in", key, file=sys.stderr)
+
 
     @staticmethod
     def from_fh(fh):
@@ -52,12 +72,16 @@ class Masterlist:
         self.entries = self._load_entries(fn)
 
     def _load_entries(self, fn):
-        entries = []
+        entries = {}
         with open(fn, encoding='utf-8') as masterlist:
             while True:
                 e = MasterlistEntry.from_fh(masterlist)
                 if e is None: break
-                entries.append(e)
+                if not 'Site' in e:
+                    print("Mirror is lacking sitename: skipping", file=sys.stderr)
+                if e['Site'] in entries:
+                    print("Duplicate site", e['Site'], "- dropping.", file=sys.stderr)
+                entries[e['Site']] = e
         return entries
 
 if __name__ == "__main__":
@@ -67,6 +91,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     masterlist = Masterlist(args.masterlist)
-    for e in masterlist.entries:
-        print('Site:', e['Site'])
+    for site in masterlist.entries:
+        print('Site:', site)
         #e.fetch_traces()
