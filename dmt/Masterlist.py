@@ -22,6 +22,7 @@
 
 # Load a debian Mirrors.masterlist
 
+from collections import OrderedDict
 import email
 import sys
 
@@ -72,7 +73,7 @@ class Masterlist:
         self.entries = self._load_entries(fn)
 
     def _load_entries(self, fn):
-        entries = {}
+        entries = OrderedDict()
         with open(fn, encoding='utf-8') as masterlist:
             while True:
                 e = MasterlistEntry.from_fh(masterlist)
