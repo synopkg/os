@@ -32,3 +32,13 @@ class MirrorDB():
 
     def session(self):
         return self.sessionMaker()
+
+    @staticmethod
+    def update_or_create(session, model, updates, **kwargs):
+        r = session.query(model).filter_by(**kwargs)
+        cnt = r.update(updates)
+        if cnt == 0:
+            attributes = dict((k, v) for k, v in kwargs.items())
+            attributes.update(updates)
+            instance = model(**attributes)
+            session.add(instance)
