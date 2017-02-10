@@ -21,7 +21,7 @@ from dmt.Masterlist import Masterlist
 
 class MirrorFailureException(Exception):
     def __init__(self, e, msg):
-        self.message = msg
+        self.message = str(msg)
         self.origin = e
 
 class Mirror:
