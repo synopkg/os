@@ -1,15 +1,18 @@
 #!/usr/bin/python3
 
 from collections import OrderedDict
+from multiprocessing.pool import ThreadPool as Pool
+import queue
 import sys
+import threading
 import urllib
 import urllib.request
 
 from Masterlist import Masterlist
 
 class MirrorFailureException(Exception):
-    def __init__(self, e):
-        self.message = e.reason
+    def __init__(self, e, msg):
+        self.message = msg
         self.origin = e
 
 class Mirror:
@@ -58,7 +61,9 @@ class Mirror:
                     data = response.read()
                     return data
             except urllib.error.URLError as e:
-                raise MirrorFailureException(e)
+                raise MirrorFailureException(e, e.reason)
+            except OSError as e:
+                raise MirrorFailureException(e, e.strerror)
 
         elif proto == 'rsync':
             raise Exception("Not implemented yet")
@@ -66,6 +71,9 @@ class Mirror:
             assert(False)
 
 class Mirrors:
+    MAX_FETCHERS = 32
+    MAX_QUEUE_SIZE = MAX_FETCHERS*4
+
     def __init__(self, masterlist):
         # self.mirrors = {site: Mirror(masterlist[site]) for site in masterlist}
         self.mirrors = OrderedDict()
@@ -114,6 +122,40 @@ class Mirrors:
             print("Warning: Loops in include-hierarchy involving", ', '.join(remaining.keys()), file=sys.stderr)
 
 
+    @staticmethod
+    def _check_all_one_mirror(mirror, archive, proto):
+        result = {}
+        try:
+            result['message'] = mirror.fetch_master(archive, proto)
+            result['success'] = True
+        except MirrorFailureException as e:
+            result['success'] = False
+            result['message'] = e.message
+        return result
+
+    @staticmethod
+    def _check_all_launcher(result_queue, archive, proto, mirrors):
+        pool = Pool(processes=Mirrors.MAX_FETCHERS)
+        for _, m in mirrors.items():
+            if m.supports('Archive', 'http'):
+                async_result = pool.apply_async(Mirrors._check_all_one_mirror, [m, archive, proto])
+                result_queue.put(async_result)
+        result_queue.put(None)
+
+    def check_all(self, archive, proto):
+        result_queue = queue.Queue(self.MAX_QUEUE_SIZE)
+        t = threading.Thread(target=self._check_all_launcher, args=[result_queue, archive, proto, self.mirrors], daemon=True)
+        t.start()
+
+        while True:
+            r = result_queue.get()
+            result_queue.task_done()
+
+            if r is None: break
+            res = r.get()
+            print(res['message'])
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
@@ -123,11 +165,12 @@ if __name__ == "__main__":
     masterlist = Masterlist(args.masterlist).entries
     mirrors = Mirrors(masterlist)
 
-    for _, m in mirrors.mirrors.items():
-        print('**Site:', m.site, m.archives)
-        if m.supports('Archive', 'http'):
-            try:
-                print(m.fetch_master('Archive', 'http'))
-            except MirrorFailureException as e:
-                print("Failed:", e.message)
-        #e.fetch_traces()
+    #for _, m in mirrors.mirrors.items():
+    #    print('**Site:', m.site, m.archives)
+    #    if m.supports('Archive', 'http'):
+    #        try:
+    #            print(m.fetch_master('Archive', 'http'))
+    #        except MirrorFailureException as e:
+    #            print("Failed:", e.message)
+    #    #e.fetch_traces()
+    mirrors.check_all('Archive', 'http')
