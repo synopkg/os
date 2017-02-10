@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from collections import OrderedDict
+import dateutil.parser
 from multiprocessing.pool import ThreadPool as Pool
 import queue
 import sys
@@ -70,6 +71,17 @@ class Mirror:
         else:
             assert(False)
 
+    @staticmethod
+    def parse_tracefile(contents):
+        try:
+            lines = contents.decode('utf-8').split('\n')
+            first = lines.pop(0)
+            ts = dateutil.parser.parse(first)
+            return ts
+        except:
+            return None
+
+
 class Mirrors:
     MAX_FETCHERS = 32
     MAX_QUEUE_SIZE = MAX_FETCHERS*4
@@ -124,10 +136,16 @@ class Mirrors:
 
     @staticmethod
     def _check_all_one_mirror(mirror, archive, proto):
-        result = {}
+        result = {'mirror': mirror}
         try:
-            result['message'] = mirror.fetch_master(archive, proto)
-            result['success'] = True
+            tf = mirror.fetch_master(archive, proto)
+            result['trace-master-timestamp'] = Mirror.parse_tracefile(tf)
+            if result['trace-master-timestamp']:
+                result['success'] = True
+                result['message'] = "Master tracefile is from " + result['trace-master-timestamp'].isoformat()
+            else:
+                result['success'] = False
+                result['message'] = "Invalid tracefile"
         except MirrorFailureException as e:
             result['success'] = False
             result['message'] = e.message
@@ -147,13 +165,14 @@ class Mirrors:
         t = threading.Thread(target=self._check_all_launcher, args=[result_queue, archive, proto, self.mirrors], daemon=True)
         t.start()
 
+        result = {}
         while True:
-            r = result_queue.get()
+            element = result_queue.get()
             result_queue.task_done()
 
-            if r is None: break
-            res = r.get()
-            print(res['message'])
+            if element is None: break
+            res = element.get()
+            yield res
 
 
 if __name__ == "__main__":
@@ -173,4 +192,6 @@ if __name__ == "__main__":
     #        except MirrorFailureException as e:
     #            print("Failed:", e.message)
     #    #e.fetch_traces()
-    mirrors.check_all('Archive', 'http')
+    check_results = mirrors.check_all('Archive', 'http')
+    for r in check_results:
+        print('**Site', r['mirror'].site, ' - ', r['success'], r['message'])
