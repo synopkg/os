@@ -4,6 +4,7 @@ from collections import OrderedDict
 import dateutil.parser
 from multiprocessing.pool import ThreadPool as Pool
 import queue
+import socket
 import sys
 import threading
 import urllib
@@ -37,8 +38,8 @@ class Mirror:
 
         self._learn_archives()
 
-    def supports(self, archive, proto):
-        return (archive+"-"+proto) in self.entry
+    def supports(self, archive, service):
+        return (archive+"-"+service) in self.entry
 
     def _learn_archives(self):
         self.archives = set()
@@ -50,10 +51,10 @@ class Mirror:
         if len(self.archives) == 0:
             print("Warning:", self.site, "no archives", file=sys.stderr)
 
-    def fetch_master(self, archive, proto):
-        if not self.supports(archive, proto):
-            raise Exception("Mirror does not support archive/proto")
-        if proto == 'http':
+    def fetch_master(self, archive, service):
+        if not self.supports(archive, service):
+            raise Exception("Mirror does not support archive/service")
+        if service == 'http':
             baseurl = urllib.parse.urljoin("http://" + self.site, self.entry['Archive-http'] + '/')
             traceurl = urllib.parse.urljoin(baseurl, 'project/trace/master')
 
@@ -66,7 +67,7 @@ class Mirror:
             except OSError as e:
                 raise MirrorFailureException(e, e.strerror)
 
-        elif proto == 'rsync':
+        elif service == 'rsync':
             raise Exception("Not implemented yet")
         else:
             assert(False)
@@ -81,6 +82,23 @@ class Mirror:
         except:
             return None
 
+    @staticmethod
+    def check_round_robin(hostname, service):
+        warnings = []
+
+        resultset = socket.getaddrinfo(hostname, service, proto=socket.IPPROTO_TCP)
+        per_family = {}
+        for family, _, _, _, sockaddr in resultset:
+            addr = sockaddr[0]
+            if family in per_family:
+                per_family[family] = 1
+            else:
+                per_family[family] = 0
+
+        if sum(per_family.values()) > 0:
+            return ["site has multiple address record for one family"]
+        else:
+            return []
 
 class Mirrors:
     MAX_FETCHERS = 32
@@ -133,16 +151,16 @@ class Mirrors:
         if remaining_cnt > 0:
             print("Warning: Loops in include-hierarchy involving", ', '.join(remaining.keys()), file=sys.stderr)
 
-
     @staticmethod
-    def _check_all_one_mirror(mirror, archive, proto):
-        result = {'mirror': mirror}
+    def _check_all_one_mirror(mirror, archive, service):
+        result = {'mirror': mirror, 'warnings': []}
         try:
-            tf = mirror.fetch_master(archive, proto)
+            tf = mirror.fetch_master(archive, service)
             result['trace-master-timestamp'] = Mirror.parse_tracefile(tf)
             if result['trace-master-timestamp']:
                 result['success'] = True
                 result['message'] = "Master tracefile is from " + result['trace-master-timestamp'].isoformat()
+                result['warnings'] += Mirror.check_round_robin(mirror.site, service)
             else:
                 result['success'] = False
                 result['message'] = "Invalid tracefile"
@@ -152,17 +170,17 @@ class Mirrors:
         return result
 
     @staticmethod
-    def _check_all_launcher(result_queue, archive, proto, mirrors):
+    def _check_all_launcher(result_queue, archive, service, mirrors):
         pool = Pool(processes=Mirrors.MAX_FETCHERS)
         for _, m in mirrors.items():
             if m.supports('Archive', 'http'):
-                async_result = pool.apply_async(Mirrors._check_all_one_mirror, [m, archive, proto])
+                async_result = pool.apply_async(Mirrors._check_all_one_mirror, [m, archive, service])
                 result_queue.put(async_result)
         result_queue.put(None)
 
-    def check_all(self, archive, proto):
+    def check_all(self, archive, service):
         result_queue = queue.Queue(self.MAX_QUEUE_SIZE)
-        t = threading.Thread(target=self._check_all_launcher, args=[result_queue, archive, proto, self.mirrors], daemon=True)
+        t = threading.Thread(target=self._check_all_launcher, args=[result_queue, archive, service, self.mirrors], daemon=True)
         t.start()
 
         result = {}
@@ -194,4 +212,7 @@ if __name__ == "__main__":
     #    #e.fetch_traces()
     check_results = mirrors.check_all('Archive', 'http')
     for r in check_results:
-        print('**Site', r['mirror'].site, ' - ', r['success'], r['message'])
+        m = r['message']
+        if len(r['warnings']) > 0:
+            m += ' ' + ', '.join(r['warnings'])
+        print('**Site', r['mirror'].site, ' - ', r['success'], m)
