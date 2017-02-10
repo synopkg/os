@@ -2,10 +2,21 @@
 
 from collections import OrderedDict
 import sys
+import urllib
+import urllib.request
 
 from Masterlist import Masterlist
 
+class MirrorFailureException(Exception):
+    def __init__(self, e):
+        self.message = e.reason
+        self.origin = e
+
 class Mirror:
+    TIMEOUT = 5
+    ARCHIVES = ["Archive", "CDImage", "Debug", "Old", "Ports", "Security"]
+    PROTOS = ["http", "rsync"]
+
     def __init__(self, entry):
         self.entry = entry
         self.site = entry['Site']
@@ -19,6 +30,40 @@ class Mirror:
             self.alias = set(entry['Alias'])
         else:
             self.alias = set()
+
+        self._learn_archives()
+
+    def supports(self, archive, proto):
+        return (archive+"-"+proto) in self.entry
+
+    def _learn_archives(self):
+        self.archives = set()
+        for a in self.ARCHIVES:
+            for p in self.PROTOS:
+                if self.supports(a, p):
+                    self.archives.add(a)
+                    continue
+        if len(self.archives) == 0:
+            print("Warning:", self.site, "no archives", file=sys.stderr)
+
+    def fetch_master(self, archive, proto):
+        if not self.supports(archive, proto):
+            raise Exception("Mirror does not support archive/proto")
+        if proto == 'http':
+            baseurl = urllib.parse.urljoin("http://" + self.site, self.entry['Archive-http'] + '/')
+            traceurl = urllib.parse.urljoin(baseurl, 'project/trace/master')
+
+            try:
+                with urllib.request.urlopen(traceurl, timeout=self.TIMEOUT) as response:
+                    data = response.read()
+                    return data
+            except urllib.error.URLError as e:
+                raise MirrorFailureException(e)
+
+        elif proto == 'rsync':
+            raise Exception("Not implemented yet")
+        else:
+            assert(False)
 
 class Mirrors:
     def __init__(self, masterlist):
@@ -79,5 +124,10 @@ if __name__ == "__main__":
     mirrors = Mirrors(masterlist)
 
     for _, m in mirrors.mirrors.items():
-        print('Site:', m.site)
+        print('**Site:', m.site, m.archives)
+        if m.supports('Archive', 'http'):
+            try:
+                print(m.fetch_master('Archive', 'http'))
+            except MirrorFailureException as e:
+                print("Failed:", e.message)
         #e.fetch_traces()
