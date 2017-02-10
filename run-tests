@@ -1,0 +1,37 @@
+#!/usr/bin/python3
+
+import datetime
+
+from dmt.DB import MirrorDB, MirrorCheckResult
+from dmt.Masterlist import Masterlist
+from dmt.Mirrors import Mirrors
+
+DBNAME='db.db'
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('masterlist', help='Mirrors.masterlist')
+    parser.add_argument('--dbname', help='database', default=DBNAME)
+    args = parser.parse_args()
+
+    masterlist = Masterlist(args.masterlist).entries
+    mirrors = Mirrors(masterlist)
+
+    db = MirrorDB(args.dbname)
+    session = db.session()
+
+    now = datetime.datetime.now()
+
+    check_results = mirrors.check_all('Archive', 'http')
+    for r in check_results:
+
+        e = {}
+        e['last_test'] = now
+        if r['success']: e['last_noerror'] = now
+        e['trace_master_timestamp'] = r.get('trace-master-timestamp')
+        e['error'] = r['message'] if not r['success'] else None
+        e['warning'] = '\n'.join(r['warnings']) if len(r['warnings']) > 0 else None
+
+        MirrorDB.update_or_create(session, MirrorCheckResult, e, site = r['mirror'].site)
+    session.commit()
