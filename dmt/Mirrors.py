@@ -10,7 +10,14 @@ import threading
 import urllib
 import urllib.request
 
-from Masterlist import Masterlist
+if __name__ == '__main__' and __package__ is None:
+    from pathlib import Path
+    top = Path(__file__).resolve().parents[1]
+    sys.path.append(str(top))
+    import dmt.Mirrors
+    __package__ = 'dmt.Mirrors'
+
+from dmt.Masterlist import Masterlist
 
 class MirrorFailureException(Exception):
     def __init__(self, e, msg):
