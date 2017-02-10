@@ -23,3 +23,12 @@ class MirrorCheckResult(Base):
     trace_master_timestamp = Column(DateTime)
     error                  = Column(String)
     warning                = Column(String)
+
+class MirrorDB():
+    def __init__(self, dbname):
+        self.engine = sqlalchemy.create_engine('sqlite:///%s'%(dbname))
+        Base.metadata.bind = self.engine
+        self.sessionMaker = sqlalchemy.orm.sessionmaker(bind=self.engine)
+
+    def session(self):
+        return self.sessionMaker()
