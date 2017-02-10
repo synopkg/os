@@ -1,0 +1,68 @@
+ <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>Debian mirror status</title>
+  <link rel="stylesheet" type="text/css" href="mirror-status.css">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+
+<h1>Debian mirror status</h1>
+
+<div id="results-table">
+<table>
+<tr>
+  <td>Site</td>
+  <td>master tracefile age</td>
+  <td>last noerror</td>
+  <td>warnings</td>
+  <td>tested</td>
+</tr>
+
+{% for mirror in mirrors %}
+  {% if mirror.error %}
+  <tr class="error">
+  {% else %}
+  <tr>
+  {% endif %}
+    <td>{{ mirror.site }}</td>
+    {% if mirror.error %}
+      <td>{{ mirror.error }}
+    {% else %}
+      <td class="age{{mirror.agegroup}}"><abbr title="{{ mirror.trace_master_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">{{mirror.age}}</abbr></td>
+    {% endif %}
+
+    {% if mirror.error %}
+      {% if mirror.last_noerror %}
+        <td>{{ mirror.last_noerror.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      {% else %}
+        <td>never</td>
+      {% endif %}
+    {% else %}
+      <td class="tiny">N/A</td>
+    {% endif %}
+
+    {% if mirror.warning %}
+      <td class="warning">{{ mirror.warning }}
+    {% else %}
+      <td class="tiny">-</td>
+    {% endif %}
+
+    <td class="tiny">{{ mirror.last_test.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+  </tr>
+{% endfor %}
+</table>
+</div>
+
+<p>
+<hr NOSHADE>
+<div id="footer"
+>Debian mirrors team - mirrors@d.o
+&mdash;
+generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
+&mdash;
+(check <a href="https://validator.w3.org/check?uri=referer">HTML</a>, <a href="https://jigsaw.w3.org/css-validator/check/referer">CSS</a>)
+</div>
+</body>
+</html>
+
