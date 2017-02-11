@@ -23,7 +23,14 @@
   {% else %}
   <tr>
   {% endif %}
-    <td>{{ mirror.site }}</td>
+    <td>
+    {% if mirror.trace_url is defined and mirror.trace_url %}
+      <a href="{{mirror.trace_url}}">{{ mirror.site }}</a>
+    {% else %}
+      {{ mirror.site }}
+    {% endif %}
+    <td>
+    </td>
     {% if mirror.error %}
       <td>{{ mirror.error }}
     {% else %}

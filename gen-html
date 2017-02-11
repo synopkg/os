@@ -24,6 +24,8 @@ class StatusGenerator:
         self.args = args
         self.setup_db()
         self.setup_template_env()
+        self.masterlist = Masterlist(args.masterlist).entries
+        self.mirrors = Mirrors(self.masterlist)
 
     def _get_template_env(self):
         pass
@@ -71,7 +73,10 @@ class StatusGenerator:
                 t1 = x['trace_master_timestamp']
                 t2 = x['last_test']
                 x['agegroup'] = self._get_agegroup(t2 - t1)
-                #x['age'] = datetimeagefilter(t1, t2)
+            if x['site'] in self.mirrors.mirrors:
+                x['mirror'] = self.mirrors.mirrors[x['site']]
+                x['trace_url'] = x['mirror'].get_tracedir('Archive', 'http')
+
         context = {
             'mirrors': results,
             'globalinfo':globalinfo,
@@ -81,12 +86,14 @@ class StatusGenerator:
         template.stream(context).dump(self.args.outfile, errors='strict')
 
 
+MASTERLIST='Mirrors.masterlist'
 DBNAME='db.db'
 OUTFILE='mirror-status.html'
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument('--masterlist', help='Mirrors.masterlist file', default=MASTERLIST)
     parser.add_argument('--dbname', help='database', default=DBNAME)
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     parser.add_argument('--templatedir', help='template directory', default='templates')

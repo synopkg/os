@@ -60,12 +60,23 @@ class Mirror:
         if len(self.archives) == 0:
             print("Warning:", self.site, "no archives", file=sys.stderr)
 
+    def get_tracedir(self, archive, service):
+        if not self.supports(archive, service):
+            return None
+        if service == 'http':
+            baseurl = urllib.parse.urljoin("http://" + self.site, self.entry['Archive-http'] + '/')
+            tracedir = urllib.parse.urljoin(baseurl, 'project/trace')
+            return tracedir
+        elif service == 'rsync':
+            raise Exception("Not implemented yet")
+        else:
+            assert(False)
+
     def fetch_master(self, archive, service):
         if not self.supports(archive, service):
             raise Exception("Mirror does not support archive/service")
         if service == 'http':
-            baseurl = urllib.parse.urljoin("http://" + self.site, self.entry['Archive-http'] + '/')
-            traceurl = urllib.parse.urljoin(baseurl, 'project/trace/master')
+            traceurl = urllib.parse.urljoin(self.get_tracedir(archive, service), 'master')
 
             try:
                 with urllib.request.urlopen(traceurl, timeout=self.timeout) as response:
