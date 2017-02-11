@@ -30,7 +30,9 @@
       <td class="age{{mirror.agegroup}}">{{mirror.trace_master_timestamp|datetimeage(globalinfo.last_test)|safe}}</td>
     {% endif %}
 
-    {% if mirror.warning or mirror.last_test != globalinfo.last_test %}
+    {% if mirror.error %}
+      <td>
+    {% elif mirror.warning or mirror.last_test != globalinfo.last_test %}
       <td class="warning">
     {% else %}
       <td>
