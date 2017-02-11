@@ -3,7 +3,9 @@
 from collections import OrderedDict
 import dateutil.parser
 from multiprocessing.pool import ThreadPool as Pool
+from bs4 import BeautifulSoup
 import queue
+import re
 import socket
 import sys
 import threading
@@ -73,27 +75,50 @@ class Mirror:
         else:
             assert(False)
 
+    def _fetch(self, service, url):
+        if service == 'http':
+            try:
+                with urllib.request.urlopen(url, timeout=self.timeout) as response:
+                    data = response.read()
+                    return data
+            except socket.timeout as e:
+                raise MirrorFailureException(e, 'timed out fetching '+url)
+            except urllib.error.URLError as e:
+                raise MirrorFailureException(e, e.reason)
+            except OSError as e:
+                raise MirrorFailureException(e, e.strerror)
+            except Exception as e:
+                raise MirrorFailureException(e, 'other exception: '+str(e))
+        elif service == 'rsync':
+            raise Exception("Not implemented yet")
+        else:
+            assert(False)
+
     def fetch_master(self, archive, service):
         if not self.supports(archive, service):
             raise Exception("Mirror does not support archive/service")
         if service == 'http':
             traceurl = urllib.parse.urljoin(self.get_tracedir(archive, service), 'master')
+            return self._fetch(service, traceurl)
 
+    def list_tracefiles(self, archive, service):
+        if not self.supports(archive, service):
+            raise Exception("Mirror does not support archive/service")
+        if service == 'http':
+            tracedir = self.get_tracedir(archive, service)
+            data = self._fetch(service, tracedir)
+
+            soup = BeautifulSoup(data)
+            links = soup.find_all('a')
             try:
-                with urllib.request.urlopen(traceurl, timeout=self.timeout) as response:
-                    data = response.read()
-                    return data
-            except socket.timeout as e:
-                raise MirrorFailureException(e, 'timed out fetching master trace')
-            except urllib.error.URLError as e:
-                raise MirrorFailureException(e, e.reason)
-            except OSError as e:
-                raise MirrorFailureException(e, e.strerror)
-
-        elif service == 'rsync':
-            raise Exception("Not implemented yet")
-        else:
-            assert(False)
+                for l in links:
+                    if re.fullmatch('[a-zA-Z0-9._-]*', l.get('href')):
+                        print(l.get('href'))
+            except TypeError:
+                print("links"+str(links.__class__))
+            #links = filter(lambda x: re.fullmatch('[a-zA-Z0-9._-]*', x.get('href')), links)
+            #for link in links:
+            #    print(link.get('href'))
 
     @staticmethod
     def parse_tracefile(contents):
@@ -190,13 +215,17 @@ class Mirrors:
         try:
             tf = mirror.fetch_master(archive, service)
             result['trace-master-timestamp'] = Mirror.parse_tracefile(tf)
+
             if result['trace-master-timestamp']:
                 result['success'] = True
                 result['message'] = "Master tracefile is from " + result['trace-master-timestamp'].isoformat()
-                result['warnings'] += Mirror.check_round_robin(mirror.site, service)
+
+                traces = mirror.list_tracefiles(archive, service)
             else:
                 result['success'] = False
                 result['message'] = "Invalid tracefile"
+
+            result['warnings'] += Mirror.check_round_robin(mirror.site, service)
         except MirrorFailureException as e:
             result['success'] = False
             result['message'] = e.message
@@ -224,7 +253,6 @@ class Mirrors:
             if element is None: break
             res = element.get()
             yield res
-
 
 if __name__ == "__main__":
     import argparse

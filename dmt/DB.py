@@ -29,6 +29,15 @@ class GlobalInfo(Base):
     id                     = Column(Integer, primary_key=True)
     last_test              = Column(DateTime, nullable=False)
 
+class TraceFileList(Base):
+    """A list of tracefiles found in project/traces for each mirror"""
+    __tablename__          = 'tracefilelist'
+    id                     = Column(Integer, primary_key=True)
+    mirrorcheckresult_id   = Column(Integer, sqlalchemy.ForeignKey('mirrorcheckresult.id'), nullable=False)
+
+    traces                 = Column(String, nullable=False)
+    traces_last_change     = Column(DateTime, nullable=False)
+
 class MirrorDB():
     def __init__(self, dbname):
         self.engine = sqlalchemy.create_engine('sqlite:///%s'%(dbname))
