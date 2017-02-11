@@ -64,7 +64,8 @@ class Mirror:
         if not self.supports(archive, service):
             return None
         if service == 'http':
-            baseurl = urllib.parse.urljoin("http://" + self.site, self.entry['Archive-http'] + '/')
+            baseurl = urllib.parse.urljoin("http://" + self.site, self.entry['Archive-http'])
+            if not baseurl.endswith('/'): baseurl += '/'
             tracedir = urllib.parse.urljoin(baseurl, 'project/trace/')
             return tracedir
         elif service == 'rsync':
