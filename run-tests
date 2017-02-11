@@ -7,12 +7,14 @@ from dmt.Masterlist import Masterlist
 from dmt.Mirrors import Mirrors
 
 DBNAME='db.db'
+PRUNE_HOURS = 24.
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('masterlist', help='Mirrors.masterlist')
     parser.add_argument('--dbname', help='database', default=DBNAME)
+    parser.add_argument('--prune-hours', help='delete mirrors that have not been checked in <x> hours', type=float, default=PRUNE_HOURS)
     args = parser.parse_args()
 
     masterlist = Masterlist(args.masterlist).entries
@@ -36,4 +38,8 @@ if __name__ == "__main__":
         MirrorDB.update_or_create(session, MirrorCheckResult, e, site = r['mirror'].site)
 
     MirrorDB.update_or_create(session, GlobalInfo, {'last_test': now})
+
+    MirrorDB.update_or_create(session, GlobalInfo, {'last_test': now})
+    session.query(MirrorCheckResult).filter(MirrorCheckResult.last_test < now - datetime.timedelta(hours=args.prune_hours)).delete()
+
     session.commit()
