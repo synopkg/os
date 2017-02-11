@@ -129,13 +129,17 @@ class Mirrors:
             if len(mirror.includes) == 0: continue
             has_includes[site] = True
 
+            broken_includes = []
             for i in mirror.includes:
                 if not i in self.mirrors:
                     print("Warning:", site, "includes unknown mirror", i, file=sys.stderr)
-                    mirror.includes.remove(i)
+                    broken_includes.append(i)
+                    continue
 
                 if not i in seen_in_includes: seen_in_includes[i] = 0
                 seen_in_includes[i] += 1
+            for i in broken_includes:
+                mirror.includes.remove(i)
 
         # Trickle includes down the tree
         made_progress = True
