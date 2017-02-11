@@ -24,6 +24,11 @@ class MirrorCheckResult(Base):
     error                  = Column(String)
     warning                = Column(String)
 
+class GlobalInfo(Base):
+    __tablename__          = 'globalinfo'
+    id                     = Column(Integer, primary_key=True)
+    last_test              = Column(DateTime, nullable=False)
+
 class MirrorDB():
     def __init__(self, dbname):
         self.engine = sqlalchemy.create_engine('sqlite:///%s'%(dbname))
