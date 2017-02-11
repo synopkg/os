@@ -65,7 +65,7 @@ class Mirror:
             return None
         if service == 'http':
             baseurl = urllib.parse.urljoin("http://" + self.site, self.entry['Archive-http'] + '/')
-            tracedir = urllib.parse.urljoin(baseurl, 'project/trace')
+            tracedir = urllib.parse.urljoin(baseurl, 'project/trace/')
             return tracedir
         elif service == 'rsync':
             raise Exception("Not implemented yet")
