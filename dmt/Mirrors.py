@@ -21,6 +21,7 @@ from dmt.Masterlist import Masterlist
 
 class MirrorFailureException(Exception):
     def __init__(self, e, msg):
+        assert(not msg is None)
         self.message = str(msg)
         self.origin = e
 
@@ -69,6 +70,8 @@ class Mirror:
                 with urllib.request.urlopen(traceurl, timeout=self.TIMEOUT) as response:
                     data = response.read()
                     return data
+            except socket.timeout as e:
+                raise MirrorFailureException(e, 'timed out fetching master trace')
             except urllib.error.URLError as e:
                 raise MirrorFailureException(e, e.reason)
             except OSError as e:
