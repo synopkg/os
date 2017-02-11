@@ -14,8 +14,7 @@
 <tr>
   <td>Site</td>
   <td>master tracefile age</td>
-  <td>last noerror</td>
-  <td>warnings</td>
+  <td>extra</td>
 </tr>
 
 {% for mirror in mirrors %}
@@ -33,30 +32,27 @@
 
     {% if mirror.error %}
       {% if mirror.last_noerror %}
-        <td>{{ mirror.last_noerror|datetimeage(globalinfo.last_test)|safe}} ago.</td>
+        <td>last worked: {{ mirror.last_noerror|datetimeage(globalinfo.last_test)|safe}} ago.</td>
       {% else %}
-        <td>never</td>
+        <td>last worked: never</td>
       {% endif %}
     {% else %}
-      <td class="tiny">N/A</td>
+      {% if mirror.warning or mirror.last_test != globalinfo.last_test %}
+        <td class="warning">
+          {% if mirror.warning %}
+            {{ mirror.warning }}
+          {% endif %}
+          {% if mirror.warning and mirror.last_test != globalinfo.last_test %}
+            &emdash;
+          {% endif %}
+          {% if mirror.last_test != globalinfo.last_test %}
+            last test older by {{mirror.last_test|datetimeage(globalinfo.last_test)|safe}}.
+          {% endif %}
+        </td>
+      {% else %}
+        <td class="tiny">-</td>
+      {% endif %}
     {% endif %}
-
-    {% if mirror.warning or mirror.last_test != globalinfo.last_test %}
-      <td class="warning">
-        {% if mirror.warning %}
-          {{ mirror.warning }}
-        {% endif %}
-        {% if mirror.warning and mirror.last_test != globalinfo.last_test %}
-          &emdash;
-        {% endif %}
-        {% if mirror.last_test != globalinfo.last_test %}
-          last test older by {{mirror.last_test|datetimeage(globalinfo.last_test)|safe}}.
-        {% endif %}
-      </td>
-    {% else %}
-      <td class="tiny">-</td>
-    {% endif %}
-
   </tr>
 {% endfor %}
 </table>
