@@ -26,11 +26,12 @@ class MirrorFailureException(Exception):
         self.origin = e
 
 class Mirror:
-    TIMEOUT = 5
+    TIMEOUT = 30
     ARCHIVES = ["Archive", "CDImage", "Debug", "Old", "Ports", "Security"]
     PROTOS = ["http", "rsync"]
 
-    def __init__(self, entry):
+    def __init__(self, entry, timeout=None):
+        self.timeout = timeout if timeout is not None else self.TIMEOUT
         self.entry = entry
         self.site = entry['Site']
 
@@ -67,7 +68,7 @@ class Mirror:
             traceurl = urllib.parse.urljoin(baseurl, 'project/trace/master')
 
             try:
-                with urllib.request.urlopen(traceurl, timeout=self.TIMEOUT) as response:
+                with urllib.request.urlopen(traceurl, timeout=self.timeout) as response:
                     data = response.read()
                     return data
             except socket.timeout as e:
