@@ -16,7 +16,6 @@
   <td>master tracefile age</td>
   <td>last noerror</td>
   <td>warnings</td>
-  <td>tested</td>
 </tr>
 
 {% for mirror in mirrors %}
@@ -29,7 +28,7 @@
     {% if mirror.error %}
       <td>{{ mirror.error }}
     {% else %}
-      <td class="age{{mirror.agegroup}}"><abbr title="{{ mirror.trace_master_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">{{mirror.age}}</abbr></td>
+      <td class="age{{mirror.agegroup}}">{{mirror.trace_master_timestamp|datetimeage(globalinfo.last_test)|safe}}</td>
     {% endif %}
 
     {% if mirror.error %}
@@ -42,13 +41,22 @@
       <td class="tiny">N/A</td>
     {% endif %}
 
-    {% if mirror.warning %}
-      <td class="warning">{{ mirror.warning }}
+    {% if mirror.warning or mirror.last_test != globalinfo.last_test %}
+      <td class="warning">
+        {% if mirror.warning %}
+          {{ mirror.warning }}
+        {% endif %}
+        {% if mirror.warning and mirror.last_test != globalinfo.last_test %}
+          &emdash;
+        {% endif %}
+        {% if mirror.last_test != globalinfo.last_test %}
+          last test older by {{mirror.last_test|datetimeage(globalinfo.last_test)|safe}}.
+        {% endif %}
+      </td>
     {% else %}
       <td class="tiny">-</td>
     {% endif %}
 
-    <td class="tiny">{{ mirror.last_test.strftime('%Y-%m-%d %H:%M:%S') }}</td>
   </tr>
 {% endfor %}
 </table>
@@ -58,6 +66,8 @@
 <hr NOSHADE>
 <div id="footer"
 >Debian mirrors team - mirrors@d.o
+&mdash;
+last test run: {{globalinfo.last_test.strftime('%Y-%m-%d %H:%M:%S') }}
 &mdash;
 generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
 &mdash;

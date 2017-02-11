@@ -4,10 +4,20 @@ import dateutil.relativedelta
 import datetime
 import jinja2
 
-from dmt.DB import MirrorDB, MirrorCheckResult
+from dmt.DB import MirrorDB, MirrorCheckResult, GlobalInfo
 from dmt.Masterlist import Masterlist
 from dmt.Mirrors import Mirrors
 
+def datetimeagefilter(ts, base):
+    rd = dateutil.relativedelta.relativedelta(base, ts)
+    attrs = ['years', 'months', 'days', 'hours', 'minutes' ] # , 'seconds']
+    elems = ['%d %s' % (getattr(rd, attr), getattr(rd, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(rd, attr)]
+
+    hr = ', '.join(elems)
+    formattedts = ts.strftime('%Y-%m-%d %H:%M:%S')
+
+    res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
+    return res
 
 class StatusGenerator:
     def __init__(self, args):
@@ -24,22 +34,11 @@ class StatusGenerator:
             autoescape = True,
             undefined = jinja2.StrictUndefined
         )
+        self.tmplenv.filters['datetimeage'] = datetimeagefilter
 
     def setup_db(self):
         self.db = MirrorDB(args.dbname)
         self.session = self.db.session()
-
-    @staticmethod
-    def _human_readable(rd):
-        attrs = ['years', 'months', 'days', 'hours', 'minutes' ] # , 'seconds']
-        elems = ['%d %s' % (getattr(rd, attr), getattr(rd, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(rd, attr)]
-        return (', '.join(elems))
-
-    @staticmethod
-    def _delta(t1, t2):
-        rd = dateutil.relativedelta.relativedelta(t2, t1)
-        td = t2 - t1
-        return (td, StatusGenerator._human_readable(rd))
 
     @staticmethod
     def _get_agegroup(delta):
@@ -64,15 +63,18 @@ class StatusGenerator:
     def run(self):
         now = datetime.datetime.now()
 
+        globalinfo = self.session.query(GlobalInfo).first()
         results = self.session.query(MirrorCheckResult).order_by(MirrorCheckResult.site).all()
         results = [ x.__dict__ for x in results]
         for x in results:
             if x['trace_master_timestamp'] is not None:
-                (d, hr) = self._delta(x['trace_master_timestamp'], x['last_test'])
-                x['agegroup'] = self._get_agegroup(d)
-                x['age'] = hr
+                t1 = x['trace_master_timestamp']
+                t2 = x['last_test']
+                x['agegroup'] = self._get_agegroup(t2 - t1)
+                #x['age'] = datetimeagefilter(t1, t2)
         context = {
             'mirrors': results,
+            'globalinfo':globalinfo,
             'now': now
         }
         template = self.tmplenv.get_template('mirror-status.html')

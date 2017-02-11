@@ -2,7 +2,7 @@
 
 import datetime
 
-from dmt.DB import MirrorDB, MirrorCheckResult
+from dmt.DB import MirrorDB, MirrorCheckResult, GlobalInfo
 from dmt.Masterlist import Masterlist
 from dmt.Mirrors import Mirrors
 
@@ -34,4 +34,6 @@ if __name__ == "__main__":
         e['warning'] = '\n'.join(r['warnings']) if len(r['warnings']) > 0 else None
 
         MirrorDB.update_or_create(session, MirrorCheckResult, e, site = r['mirror'].site)
+
+    MirrorDB.update_or_create(session, GlobalInfo, {'last_test': now})
     session.commit()
