@@ -10,10 +10,10 @@ from dmt.Mirrors import Mirrors
 
 def datetimeagefilter(ts, base):
     rd = dateutil.relativedelta.relativedelta(base, ts)
-    attrs = ['years', 'months', 'days', 'hours', 'minutes' ] # , 'seconds']
+    attrs = ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
     elems = ['%d %s' % (getattr(rd, attr), getattr(rd, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(rd, attr)]
 
-    hr = ', '.join(elems)
+    hr = ', '.join(elems[0:2])
     formattedts = ts.strftime('%Y-%m-%d %H:%M:%S')
 
     res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
