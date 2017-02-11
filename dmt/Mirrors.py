@@ -96,7 +96,11 @@ class Mirror:
     def check_round_robin(hostname, service):
         warnings = []
 
-        resultset = socket.getaddrinfo(hostname, service, proto=socket.IPPROTO_TCP)
+        try:
+            resultset = socket.getaddrinfo(hostname, service, proto=socket.IPPROTO_TCP)
+        except socket.gaierror:
+            return ["Could not resolve hostname."]
+
         per_family = {}
         for family, _, _, _, sockaddr in resultset:
             addr = sockaddr[0]
