@@ -139,48 +139,50 @@ class Mirrors:
         self._cleanup()
 
     def _cleanup(self):
-        seen_in_includes = {}
-        has_includes = OrderedDict()
-        for site in self.mirrors:
-            mirror = self.mirrors[site]
-            if len(mirror.includes) == 0: continue
-            has_includes[site] = True
-
-            broken_includes = []
-            for i in mirror.includes:
-                if not i in self.mirrors:
-                    print("Warning:", site, "includes unknown mirror", i, file=sys.stderr)
-                    broken_includes.append(i)
-                    continue
-
-                if not i in seen_in_includes: seen_in_includes[i] = 0
-                seen_in_includes[i] += 1
-            for i in broken_includes:
-                mirror.includes.remove(i)
-
-        # Trickle includes down the tree
-        made_progress = True
-        while made_progress:
-            made_progress = False
-            remaining = OrderedDict()
-            for site in has_includes:
-                if seen_in_includes.get(site, 0) > 0:
-                    remaining[site] = True
-                    continue
-                made_progress = True
-
-                mirror = self.mirrors[site]
-                for i in mirror.includes:
-                    seen_in_includes[i] -= 1
-                    assert(seen_in_includes[i] >= 0)
-                    self.mirrors[i].alias.add(site)
-                del self.mirrors[site]
-            has_includes = remaining
-
-        remaining_cnt = sum(seen_in_includes.values())
-        assert( (remaining_cnt == 0) == (len(has_includes) == 0) )
-        if remaining_cnt > 0:
-            print("Warning: Loops in include-hierarchy involving", ', '.join(remaining.keys()), file=sys.stderr)
+        pass
+    # This code drops hosts that have Includes:, adding them as Alias to the include-target
+    #    seen_in_includes = {}
+    #    has_includes = OrderedDict()
+    #    for site in self.mirrors:
+    #        mirror = self.mirrors[site]
+    #        if len(mirror.includes) == 0: continue
+    #        has_includes[site] = True
+    #
+    #        broken_includes = []
+    #        for i in mirror.includes:
+    #            if not i in self.mirrors:
+    #                print("Warning:", site, "includes unknown mirror", i, file=sys.stderr)
+    #                broken_includes.append(i)
+    #                continue
+    #
+    #            if not i in seen_in_includes: seen_in_includes[i] = 0
+    #            seen_in_includes[i] += 1
+    #        for i in broken_includes:
+    #            mirror.includes.remove(i)
+    #
+    #    # Trickle includes down the tree
+    #    made_progress = True
+    #    while made_progress:
+    #        made_progress = False
+    #        remaining = OrderedDict()
+    #        for site in has_includes:
+    #            if seen_in_includes.get(site, 0) > 0:
+    #                remaining[site] = True
+    #                continue
+    #            made_progress = True
+    #
+    #            mirror = self.mirrors[site]
+    #            for i in mirror.includes:
+    #                seen_in_includes[i] -= 1
+    #                assert(seen_in_includes[i] >= 0)
+    #                self.mirrors[i].alias.add(site)
+    #            del self.mirrors[site]
+    #        has_includes = remaining
+    #
+    #    remaining_cnt = sum(seen_in_includes.values())
+    #    assert( (remaining_cnt == 0) == (len(has_includes) == 0) )
+    #    if remaining_cnt > 0:
+    #        print("Warning: Loops in include-hierarchy involving", ', '.join(remaining.keys()), file=sys.stderr)
 
     @staticmethod
     def _check_all_one_mirror(mirror, archive, service):
