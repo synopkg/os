@@ -33,7 +33,7 @@
 
     {% if mirror.error %}
       {% if mirror.last_noerror %}
-        <td>{{ mirror.last_noerror.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>{{ mirror.last_noerror|datetimeage(globalinfo.last_test)|safe}} ago.</td>
       {% else %}
         <td>never</td>
       {% endif %}
