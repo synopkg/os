@@ -27,7 +27,7 @@
         colspan="{{cell.width}}" rowspan="{{cell.height}}"
       >
         {% if cell.main %}
-        <div id="main">
+        <div class="main">
         {% else %}
         <div>
         {% endif %}
@@ -45,7 +45,7 @@
           </abbr>
        </div>
        {% if cell.mirror.traces_last_change_warn %}
-         <div id="tracesetwarning">
+         <div class="tracesetwarning">
            Traceset changed recently
            {% if cell.mirror.traces_last_change == globalinfo.last_test %}
              (this run).
@@ -56,12 +56,13 @@
        {% endif %}
       </td>
   </tr>
-  <tr>
+  {% if not (cell.last is defined and cell.last) %}
+    <tr>
+  {% endif %}
   {% else %}
     {{ raise("unknown cell.type") }}
   {% endif %}
 {% endfor %}
-</tr>
 </table>
 </div>
 

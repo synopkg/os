@@ -194,9 +194,10 @@ class HierarchyGenerator(BasePageGenerator):
             #for x in hierarchy.get_cells():
             #    print(x)
         else:
-            cells = iter(hierarchy.get_cells())
-            # drop first
-            next(cells)
+            cells = list(hierarchy.get_cells())
+            del cells[0]
+            cells[-1]['last'] = True
+
             context = {
                 #'mirrors': results,
                 'globalinfo':globalinfo,
