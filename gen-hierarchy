@@ -173,7 +173,7 @@ class HierarchyGenerator(BasePageGenerator):
                 t2 = x.last_test
                 m['agegroup'] = self._get_agegroup(t2 - t1)
                 m['trace_master_timestamp'] = x.trace_master_timestamp
-                m['trace_url'] = self.mirrors.mirrors[site].get_tracedir('Archive', 'http')
+            m['trace_url'] = self.mirrors.mirrors[site].get_tracedir('Archive', 'http')
             mirrors[site] = m
         hierarchy =  MirrorHierarchy(mirrors)
 
