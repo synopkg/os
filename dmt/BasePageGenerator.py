@@ -15,7 +15,7 @@ from dmt.DB import MirrorDB, MirrorCheckResult, GlobalInfo
 from dmt.Masterlist import Masterlist
 from dmt.Mirrors import Mirrors
 
-def datetimeagefilter(ts, base):
+def get_human_readable_age(ts, base):
     rd = dateutil.relativedelta.relativedelta(base, ts)
     attrs = ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
     elems = ['%d %s' % (getattr(rd, attr), getattr(rd, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(rd, attr)]
@@ -23,8 +23,19 @@ def datetimeagefilter(ts, base):
     hr = ', '.join(elems[0:2])
     formattedts = ts.strftime('%Y-%m-%d %H:%M:%S')
 
+    return (formattedts, hr)
+
+def datetimeagefilter(ts, base):
+    formattedts, hr = get_human_readable_age(ts, base)
     res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
     return res
+def datetimeagenoabbrfilter(ts, base):
+    formattedts, hr = get_human_readable_age(ts, base)
+    res = '%s - %s'%(hr, formattedts)
+    return res
+
+def raise_helper(msg):
+    raise Exception(msg)
 
 class BasePageGenerator:
     MASTERLIST='Mirrors.masterlist'
@@ -54,6 +65,8 @@ class BasePageGenerator:
             undefined = jinja2.StrictUndefined
         )
         self.tmplenv.filters['datetimeage'] = datetimeagefilter
+        self.tmplenv.filters['datetimeagenoabbr'] = datetimeagenoabbrfilter
+        self.tmplenv.globals['raise'] = raise_helper
 
     def setup_db(self):
         self.db = MirrorDB(self.args.dbname)

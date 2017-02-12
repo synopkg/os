@@ -20,3 +20,27 @@
 #results-table td.age6 { background-color: #f44542; } /* red */
 #results-table td.age7 { background-color: #ff0000; } /* red */
 #footer { font-size: 75%; }
+
+#hiera-table table {
+  border-collapse: collapse;
+}
+#hiera-table table td {
+  padding: 4pt;
+  border: 1px black solid;
+  vertical-align: top;
+}
+#hiera-table td.trace { font-style: italic; }
+#hiera-table #main { font-weight: bold; }
+#hiera-table td.error { background-color: #ffaaaa; }
+#hiera-table td.age0 { background-color: #50f442; } /* green */
+#hiera-table td.age1 { background-color: #89f442; }
+#hiera-table td.age2 { background-color: #bcf442; }
+#hiera-table td.age3 { background-color: #f4f142; } /* yellow */
+#hiera-table td.age4 { background-color: #f4c842; } /* orange */
+#hiera-table td.age5 { background-color: #f48c42; }
+#hiera-table td.age6 { background-color: #f44542; } /* red */
+#hiera-table td.age7 { background-color: #ff0000; } /* red */
+
+
+#Xiera-table td.warning { background-color: #ffffaa; }
+#Xiera-table td.tiny { font-size: 50%; }

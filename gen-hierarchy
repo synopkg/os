@@ -34,6 +34,7 @@ class HierarchyNode:
         if parent is not None:
             parent.children.append(self)
             self.labelsdiff = set(labels) - set(parent.labels)
+            #print("Parent is ", parent.labels, "and has children", (', '.join(str(x.labelsdiff) for x in parent.children)))
         else:
             self.labelsdiff = set(labels)
 
@@ -46,7 +47,7 @@ class HierarchyTree:
         root.parent = root
         self.nodes_by_labels[root.labels] = root
 
-        self._add_node('master', ('master',))
+        self._add_node('ftp-master.debian.org', tuple(sorted(('master','ftp-master.debian.org'))))
 
     def _find_position(self, labels):
         for s in powersetish(labels):
@@ -55,6 +56,7 @@ class HierarchyTree:
         raise Exception("We should have found at least the root by now.  (Was looking for "+str(labels)+")")
 
     def _add_node(self, name, labels):
+        #print("Adding node", name)
         if labels in self.nodes_by_labels:
             node = self.nodes_by_labels[labels]
         else:
@@ -69,7 +71,9 @@ class HierarchyTree:
         return node
 
     def add_nodes(self, tuples):
+        #for name, labels in sorted(tuples, key=lambda t: [len(t[1])] + list(reversed(t[0].split('.')))):
         for name, labels in sorted(tuples, key=lambda t: len(t[1])):
+            #print("Calling add_node for", name, "with lables", labels)
             n = self._add_node(name, labels)
 
     @staticmethod
@@ -85,16 +89,61 @@ class HierarchyTree:
     def __str__(self):
         return "\n".join(self._str_subtree("", True, self.root))
 
+    @staticmethod
+    def nodelabeldomainsorter(x):
+        if len(x.labelsdiff) == 0: return None
+        d = sorted(x.labelsdiff)[0]
+        return list(reversed(d.split('.')))
+
+    @staticmethod
+    def _table_subtree(node):
+        #print(node.labels, "has children", (', '.join(str(x.labelsdiff) for x in node.children)))
+        child_cells = list(itertools.chain.from_iterable(HierarchyTree._table_subtree(c) for c in sorted(node.children, key=HierarchyTree.nodelabeldomainsorter)))
+        number_terminals = sum(c['type'] == 'terminal' for c in child_cells)
+
+        cell = { 'type': 'labels',
+                 'labels': node.labelsdiff,
+                 'height': len(node.names) + number_terminals,
+                 'width' : len(node.labelsdiff)
+               }
+        yield cell
+
+        names = sorted(node.names)
+        if len(node.labelsdiff) == 1:
+            nodename = next(iter(node.labelsdiff)) # get the only element from the set
+            if nodename in names:
+                names.remove(nodename)
+                names.insert(0, nodename)
+        else:
+            nodename = ''
+        for name in names:
+            cell = { 'type': 'terminal',
+                     'name': name,
+                     'main': name == nodename,
+                   }
+            yield cell
+        yield from child_cells
+
+    def table(self):
+        yield from self._table_subtree(self.root)
+
+
 class MirrorHierarchy:
     def __init__(self, mirrors):
+        self.mirrors = mirrors
+
         sitelabels = [(site, tuple(mirrors[site]['traces'])) for site in mirrors]
 
-        t = HierarchyTree()
-        t.add_nodes(sitelabels)
-        print(t)
-
-        #for site in mirrorlist:
-        #    print(mirrors[site]['traces'])
+        self.tree = HierarchyTree()
+        self.tree.add_nodes(sitelabels)
+        #print(t)
+        #for x in t.table():
+        #    print(x)
+    def get_cells(self):
+        for c in self.tree.table():
+            if c['type'] == 'terminal':
+                c['mirror'] = self.mirrors[c['name']]
+            yield c
 
 class HierarchyGenerator(BasePageGenerator):
     def __init__(self, args):
@@ -117,14 +166,39 @@ class HierarchyGenerator(BasePageGenerator):
                 m['traces'] = traces
             else:
                 m['traces'] = []
+            m['error'] = x.error
+            if not x.error:
+                assert(x.trace_master_timestamp is not None)
+                t1 = x.trace_master_timestamp
+                t2 = x.last_test
+                m['agegroup'] = self._get_agegroup(t2 - t1)
+                m['trace_master_timestamp'] = x.trace_master_timestamp
+                m['trace_url'] = self.mirrors.mirrors[site].get_tracedir('Archive', 'http')
             mirrors[site] = m
+        hierarchy =  MirrorHierarchy(mirrors)
 
-        h =  MirrorHierarchy(mirrors)
+        if args.textonly:
+            print(hierarchy.tree)
+            #for x in hierarchy.get_cells():
+            #    print(x)
+        else:
+            cells = iter(hierarchy.get_cells())
+            # drop first
+            next(cells)
+            context = {
+                #'mirrors': results,
+                'globalinfo':globalinfo,
+                'now': now,
+                'hierarchy_table': cells,
+            }
+            template = self.tmplenv.get_template('mirror-hierarchy.html')
+            template.stream(context).dump(self.args.outfile, errors='strict')
 
 
 OUTFILE='mirror-hierarchy.html'
 
 if __name__ == "__main__":
     parser = HierarchyGenerator.make_argument_parser(outfile = OUTFILE)
+    parser.add_argument('--textonly', help='only write text to stdout', default=False, action='store_true')
     args = parser.parse_args()
     HierarchyGenerator(args).run()
