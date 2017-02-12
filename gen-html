@@ -1,66 +1,13 @@
 #!/usr/bin/python3
 
-import dateutil.relativedelta
 import datetime
-import jinja2
 
-from dmt.DB import MirrorDB, MirrorCheckResult, GlobalInfo
-from dmt.Masterlist import Masterlist
-from dmt.Mirrors import Mirrors
+from dmt.DB import MirrorCheckResult, GlobalInfo
+from dmt.BasePageGenerator import BasePageGenerator
 
-def datetimeagefilter(ts, base):
-    rd = dateutil.relativedelta.relativedelta(base, ts)
-    attrs = ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
-    elems = ['%d %s' % (getattr(rd, attr), getattr(rd, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(rd, attr)]
-
-    hr = ', '.join(elems[0:2])
-    formattedts = ts.strftime('%Y-%m-%d %H:%M:%S')
-
-    res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
-    return res
-
-class StatusGenerator:
+class StatusGenerator(BasePageGenerator):
     def __init__(self, args):
-        self.args = args
-        self.setup_db()
-        self.setup_template_env()
-        self.masterlist = Masterlist(args.masterlist).entries
-        self.mirrors = Mirrors(self.masterlist)
-
-    def _get_template_env(self):
-        pass
-
-    def setup_template_env(self):
-        self.tmplenv = jinja2.Environment(
-            loader = jinja2.FileSystemLoader(self.args.templatedir),
-            autoescape = True,
-            undefined = jinja2.StrictUndefined
-        )
-        self.tmplenv.filters['datetimeage'] = datetimeagefilter
-
-    def setup_db(self):
-        self.db = MirrorDB(args.dbname)
-        self.session = self.db.session()
-
-    @staticmethod
-    def _get_agegroup(delta):
-        # our template defines 8 agegroups from OK(0) to okish(2) to warn(3) and Warn(4-5) to Error(6-7)
-        if delta < datetime.timedelta(hours=6):
-            return "0"
-        elif delta < datetime.timedelta(hours=11):
-            return "1"
-        elif delta < datetime.timedelta(hours=16):
-            return "2"
-        elif delta < datetime.timedelta(hours=24):
-            return "3"
-        elif delta < datetime.timedelta(hours=36):
-            return "4"
-        elif delta < datetime.timedelta(hours=48):
-            return "5"
-        elif delta < datetime.timedelta(days=4):
-            return "6"
-        else:
-            return "7"
+        super().__init__(args)
 
     def run(self):
         now = datetime.datetime.now()
@@ -86,18 +33,9 @@ class StatusGenerator:
         template.stream(context).dump(self.args.outfile, errors='strict')
 
 
-MASTERLIST='Mirrors.masterlist'
-DBNAME='db.db'
 OUTFILE='mirror-status.html'
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--masterlist', help='Mirrors.masterlist file', default=MASTERLIST)
-    parser.add_argument('--dbname', help='database', default=DBNAME)
-    parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
-    parser.add_argument('--templatedir', help='template directory', default='templates')
+    parser = StatusGenerator.make_argument_parser(outfile = OUTFILE)
     args = parser.parse_args()
-
-    g = StatusGenerator(args)
-    g.run()
+    StatusGenerator(args).run()
