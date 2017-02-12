@@ -55,7 +55,15 @@ class Mirror:
                                 not x.endswith('-stage1'), tracefilenames)
 
     def supports(self, archive, service):
-        return (archive+"-"+service) in self.entry
+        if (archive+"-"+service) in self.entry: return True
+        if (archive+"-unlisted-"+service) in self.entry: return True
+        return False
+
+    def _get_archive_service_entry(self, archive, service):
+        for k in (archive+"-"+service,
+                  archive+"-unlisted-"+service):
+            if k in self.entry: return self.entry[k]
+        raise KeyError("no entry for (%s,%s)."%(archive,service))
 
     def _learn_archives(self):
         self.archives = set()
@@ -71,7 +79,7 @@ class Mirror:
         if not self.supports(archive, service):
             return None
         if service == 'http':
-            baseurl = urllib.parse.urljoin("http://" + self.site, self.entry['Archive-http'])
+            baseurl = urllib.parse.urljoin("http://" + self.site, self._get_archive_service_entry(archive, service))
             if not baseurl.endswith('/'): baseurl += '/'
             tracedir = urllib.parse.urljoin(baseurl, 'project/trace/')
             return tracedir
