@@ -89,11 +89,15 @@ class HierarchyTree:
     def __str__(self):
         return "\n".join(self._str_subtree("", True, self.root))
 
+
+    @staticmethod
+    def sortdomaincomponents(hostname):
+        return list(reversed(hostname.split('.')))
     @staticmethod
     def nodelabeldomainsorter(x):
         if len(x.labelsdiff) == 0: return None
-        d = sorted(x.labelsdiff)[0]
-        return list(reversed(d.split('.')))
+        hostname = sorted(x.labelsdiff)[0]
+        return HierarchyTree.sortdomaincomponents(hostname)
 
     @staticmethod
     def _table_subtree(node):
@@ -102,7 +106,7 @@ class HierarchyTree:
         number_terminals = sum(c['type'] == 'terminal' for c in child_cells)
 
         cell = { 'type': 'labels',
-                 'labels': node.labelsdiff,
+                 'labels': sorted(node.labelsdiff, key=HierarchyTree.sortdomaincomponents),
                  'height': len(node.names) + number_terminals,
                  'width' : len(node.labelsdiff)
                }
@@ -154,6 +158,7 @@ class HierarchyGenerator(BasePageGenerator):
 
     def run(self):
         now = datetime.datetime.now()
+        traces_last_change_cutff = now - datetime.timedelta(hours=self.args.recent_hours)
 
         mirrors = {}
         globalinfo = self.session.query(GlobalInfo).first()
@@ -167,8 +172,11 @@ class HierarchyGenerator(BasePageGenerator):
                 if not isinstance(traces, list):
                     raise Exception("traces information for "+site+" is not a list")
                 m['traces'] = traces
+                m['traces_last_change_warn'] = x.tracefilelist.traces_last_change > traces_last_change_cutff
+                m['traces_last_change'] = x.tracefilelist.traces_last_change
             else:
                 m['traces'] = []
+                m['traces_last_change_warn'] = False
             m['error'] = x.error
             if not x.error:
                 assert(x.trace_master_timestamp is not None)
@@ -200,9 +208,11 @@ class HierarchyGenerator(BasePageGenerator):
 
 
 OUTFILE='mirror-hierarchy.html'
+RECENTCHANGE_HOURS=4
 
 if __name__ == "__main__":
     parser = HierarchyGenerator.make_argument_parser(outfile = OUTFILE)
     parser.add_argument('--textonly', help='only write text to stdout', default=False, action='store_true')
+    parser.add_argument('--recent-hours', help='flag mirrors that changed hierarchy within the last <x> hours', type=float, default=RECENTCHANGE_HOURS)
     args = parser.parse_args()
     HierarchyGenerator(args).run()

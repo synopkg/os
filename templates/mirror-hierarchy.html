@@ -43,8 +43,17 @@
               {{cell.name}}
             {% endif %}
           </abbr>
-
        </div>
+       {% if cell.mirror.traces_last_change_warn %}
+         <div id="tracesetwarning">
+           Traceset last changed recently
+           {% if cell.mirror.traces_last_change == globalinfo.last_test %}
+             (this run).
+           {% else %}
+             ({{ cell.mirror.traces_last_change|datetimeage(globalinfo.last_test)|safe }} ago).
+           {% endif %}
+         </div>
+       {% endif %}
       </td>
   </tr>
   <tr>
