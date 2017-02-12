@@ -30,7 +30,7 @@
   vertical-align: top;
 }
 #hiera-table td.trace { font-style: italic; }
-#hiera-table #main { font-weight: bold; }
+#hiera-table #main { font-style: italic; }
 #hiera-table #tracesetwarning { font-weight: bold; color: red; }
 #hiera-table td.error { background-color: #ffaaaa; }
 #hiera-table td.age0 { background-color: #50f442; } /* green */
