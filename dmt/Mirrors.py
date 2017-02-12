@@ -49,6 +49,11 @@ class Mirror:
 
         self._learn_archives()
 
+    @staticmethod
+    def _filter_tracefilenames(tracefilenames):
+        return filter(lambda x: not x.startswith('_') and
+                                not x.endswith('-stage1'), tracefilenames)
+
     def supports(self, archive, service):
         return (archive+"-"+service) in self.entry
 
@@ -101,6 +106,25 @@ class Mirror:
             traceurl = urllib.parse.urljoin(self.get_tracedir(archive, service), 'master')
             return self._fetch(service, traceurl)
 
+    @staticmethod
+    def _clean_link(link, tracedir):
+        # some mirrors provide absolute links instead of relative ones,
+        # so turn them all into full links, then try to get back relative ones no matter what.
+        fulllink = urllib.parse.urljoin(tracedir, link)
+
+        l1 = urllib.parse.urlparse(tracedir)
+        l2 = urllib.parse.urlparse(fulllink)
+        if l1.netloc != l2.netloc:
+            return None
+
+        if fulllink.startswith(tracedir):
+            link = fulllink[len(tracedir):]
+
+        if re.fullmatch('[a-zA-Z0-9._-]*', link) and link != "":
+            return link
+        else:
+            return None
+
     def list_tracefiles(self, archive, service):
         if not self.supports(archive, service):
             raise Exception("Mirror does not support archive/service")
@@ -110,15 +134,11 @@ class Mirror:
 
             soup = BeautifulSoup(data)
             links = soup.find_all('a')
-            try:
-                for l in links:
-                    if re.fullmatch('[a-zA-Z0-9._-]*', l.get('href')):
-                        print(l.get('href'))
-            except TypeError:
-                print("links"+str(links.__class__))
-            #links = filter(lambda x: re.fullmatch('[a-zA-Z0-9._-]*', x.get('href')), links)
-            #for link in links:
-            #    print(link.get('href'))
+            links = filter(lambda x: 'href' in x.attrs, links)
+            links = map(lambda x: Mirror._clean_link(x.get('href'), tracedir), links)
+            tracefiles = filter(lambda x: x is not None, links)
+            tracefiles = self._filter_tracefilenames(tracefiles)
+            return sorted(tracefiles)
 
     @staticmethod
     def parse_tracefile(contents):
@@ -214,13 +234,13 @@ class Mirrors:
         result = {'mirror': mirror, 'warnings': []}
         try:
             tf = mirror.fetch_master(archive, service)
+            traces = mirror.list_tracefiles(archive, service)
             result['trace-master-timestamp'] = Mirror.parse_tracefile(tf)
 
             if result['trace-master-timestamp']:
                 result['success'] = True
                 result['message'] = "Master tracefile is from " + result['trace-master-timestamp'].isoformat()
-
-                traces = mirror.list_tracefiles(archive, service)
+                result['traces'] = traces
             else:
                 result['success'] = False
                 result['message'] = "Invalid tracefile"

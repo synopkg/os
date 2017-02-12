@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import datetime
+import json
 
-from dmt.DB import MirrorDB, MirrorCheckResult, GlobalInfo
+from dmt.DB import MirrorDB, MirrorCheckResult, GlobalInfo, TraceFileList
 from dmt.Masterlist import Masterlist
 from dmt.Mirrors import Mirrors
 
@@ -28,6 +29,7 @@ if __name__ == "__main__":
 
     check_results = mirrors.check_all('Archive', 'http')
     for r in check_results:
+        site = r['mirror'].site
 
         e = {}
         e['last_test'] = now
@@ -36,7 +38,28 @@ if __name__ == "__main__":
         e['error'] = r['message'] if not r['success'] else None
         e['warning'] = '\n'.join(r['warnings']) if len(r['warnings']) > 0 else None
 
-        MirrorDB.update_or_create(session, MirrorCheckResult, e, site = r['mirror'].site)
+        MirrorDB.update_or_create(session, MirrorCheckResult, e, site = site)
+
+        if 'traces' in r:
+            mirrorcheckresultentry = session.query(MirrorCheckResult).filter_by(site = site).first()
+            assert(mirrorcheckresultentry is not None)
+
+
+            traces = json.dumps(r['traces'], separators=(',', ':'))
+            tracefilelistentry = session.query(TraceFileList).filter_by(mirrorcheckresult_id = mirrorcheckresultentry.id).first()
+            if tracefilelistentry is None:
+                e = { 'last_test':            now,
+                      'mirrorcheckresult_id': mirrorcheckresultentry.id,
+                      'traces':               traces,
+                      'traces_last_change':   now,
+                    }
+                instance = TraceFileList(**e)
+                session.add(instance)
+            else:
+                tracefilelistentry.last_test = now
+                if traces != tracefilelistentry.traces:
+                    tracefilelistentry.traces = traces
+                    tracefilelistentry.traces_last_change = now
 
     MirrorDB.update_or_create(session, GlobalInfo, {'last_test': now})
     session.query(MirrorCheckResult).filter(MirrorCheckResult.last_test < now - datetime.timedelta(hours=args.prune_hours)).delete()
