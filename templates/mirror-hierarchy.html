@@ -18,11 +18,14 @@
       {{cell.labels|join(", ") }}
     </td>
   {% elif cell.type == "terminal" %}
+      <td
       {% if cell.mirror.error %}
-        <td class="error">
+        class="error"
       {% else %}
-        <td class="age{{cell.mirror.agegroup}}">
+        class="age{{cell.mirror.agegroup}}"
       {% endif %}
+        colspan="{{cell.width}}" rowspan="{{cell.height}}"
+      >
         {% if cell.main %}
         <div id="main">
         {% else %}

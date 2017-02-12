@@ -106,20 +106,23 @@ class HierarchyTree:
                  'height': len(node.names) + number_terminals,
                  'width' : len(node.labelsdiff)
                }
-        yield cell
 
         names = sorted(node.names)
         if len(node.labelsdiff) == 1:
             nodename = next(iter(node.labelsdiff)) # get the only element from the set
             if nodename in names:
                 names.remove(nodename)
-                names.insert(0, nodename)
-        else:
-            nodename = ''
+                cell['type'] = 'terminal'
+                cell['name'] = nodename
+                cell['main'] = True
+        yield cell
+
         for name in names:
             cell = { 'type': 'terminal',
                      'name': name,
-                     'main': name == nodename,
+                     'main': False,
+                     'height': 1,
+                     'width' : 1,
                    }
             yield cell
         yield from child_cells
