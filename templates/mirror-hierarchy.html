@@ -27,9 +27,9 @@
         colspan="{{cell.width}}" rowspan="{{cell.height}}"
       >
         {% if cell.main %}
-        <div class="main">
+        <span class="main">
         {% else %}
-        <div>
+        <span>
         {% endif %}
           {% if cell.mirror.error %}
             <abbr title="{{cell.mirror.error}}">
@@ -43,16 +43,17 @@
               {{cell.name}}
             {% endif %}
           </abbr>
-       </div>
+       </span>
        {% if cell.mirror.traces_last_change_warn %}
-         <div class="tracesetwarning">
+         <span class="tracesetwarning">
+           <br>
            Traceset changed recently
            {% if cell.mirror.traces_last_change == globalinfo.last_test %}
              (this run).
            {% else %}
              ({{ cell.mirror.traces_last_change|datetimeage(globalinfo.last_test)|safe }} ago).
            {% endif %}
-         </div>
+         </span>
        {% endif %}
       </td>
   </tr>
