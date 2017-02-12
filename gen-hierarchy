@@ -1,0 +1,131 @@
+#!/usr/bin/python3
+
+import datetime
+import itertools
+import json
+
+from dmt.DB import MirrorCheckResult, GlobalInfo, TraceFileList
+from dmt.BasePageGenerator import BasePageGenerator
+
+def powersetish(iterable):
+    """return the powerset of iterable, from longest subset to smallest
+    """
+    s = list(iterable)
+    return itertools.chain.from_iterable(itertools.combinations(s, r) for r in range(len(s), -1, -1))
+
+def iter_endcheck(iterable):
+    """iterate over an iterable, and yield tuples of elements and if this is the last element
+    """
+    it = iter(iterable)
+    prev = next(it)
+    for val in it:
+        yield prev, False
+        prev = val
+    yield prev, True
+
+
+class HierarchyNode:
+    def __init__(self, labels, parent):
+        assert(isinstance(labels, tuple))
+        self.names = []
+        self.labels = labels
+        self.parent = parent
+        self.children = []
+        if parent is not None:
+            parent.children.append(self)
+            self.labelsdiff = set(labels) - set(parent.labels)
+        else:
+            self.labelsdiff = set(labels)
+
+class HierarchyTree:
+    def __init__(self):
+        self.nodes_by_labels = {}
+
+        root = HierarchyNode((), None)
+        self.root = root
+        root.parent = root
+        self.nodes_by_labels[root.labels] = root
+
+        self._add_node('master', ('master',))
+
+    def _find_position(self, labels):
+        for s in powersetish(labels):
+            if s in self.nodes_by_labels:
+                return self.nodes_by_labels[s]
+        raise Exception("We should have found at least the root by now.  (Was looking for "+str(labels)+")")
+
+    def _add_node(self, name, labels):
+        if labels in self.nodes_by_labels:
+            node = self.nodes_by_labels[labels]
+        else:
+            parent = self._find_position(labels)
+            assert(parent is not None)
+            assert(parent.labels != labels)
+
+            node = HierarchyNode(labels, parent)
+            self.nodes_by_labels[labels] = node
+
+        node.names.append(name)
+        return node
+
+    def add_nodes(self, tuples):
+        for name, labels in sorted(tuples, key=lambda t: len(t[1])):
+            n = self._add_node(name, labels)
+            print("Added", name, "to parent", n.parent.names, "with labels", labels)
+
+    @staticmethod
+    def _str_subtree(prefix, last, node):
+        yield prefix+('+','\\')[last]+'-- '+str(node.labelsdiff)
+        prefix = prefix+('|',' ')[last]+'  '
+
+        for name in node.names:
+            yield prefix+(' ','|')[len(node.children)>0] +'    + '+name
+        for c, last in iter_endcheck(node.children):
+            yield from HierarchyTree._str_subtree(prefix, last, c)
+
+    def __str__(self):
+        return "\n".join(self._str_subtree("", True, self.root))
+
+class MirrorHierarchy:
+    def __init__(self, mirrors):
+        sitelabels = [(site, tuple(mirrors[site]['traces'])) for site in mirrors]
+
+        t = HierarchyTree()
+        t.add_nodes(sitelabels)
+        print(t)
+
+        #for site in mirrorlist:
+        #    print(mirrors[site]['traces'])
+
+class HierarchyGenerator(BasePageGenerator):
+    def __init__(self, args):
+        super().__init__(args)
+
+    def run(self):
+        now = datetime.datetime.now()
+
+        mirrors = {}
+        globalinfo = self.session.query(GlobalInfo).first()
+        results = self.session.query(MirrorCheckResult).outerjoin(MirrorCheckResult.tracefilelist).order_by(MirrorCheckResult.site).all()
+        for x in results:
+            site = x.site
+            m = {}
+            m['site'] = site
+            if x.tracefilelist is not None:
+                traces = json.loads(x.tracefilelist.traces)
+                if not isinstance(traces, list):
+                    raise Exception("traces information for "+site+" is not a list")
+                m['traces'] = traces
+            else:
+                m['traces'] = []
+            mirrors[site] = m
+
+        h =  MirrorHierarchy(mirrors)
+
+
+OUTFILE='mirror-hierarchy.html'
+
+if __name__ == "__main__":
+    parser = HierarchyGenerator.make_argument_parser(outfile = OUTFILE)
+    args = parser.parse_args()
+    HierarchyGenerator(args).run()
