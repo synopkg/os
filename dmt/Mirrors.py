@@ -120,7 +120,9 @@ class Mirror:
         if fulllink.startswith(tracedir):
             link = fulllink[len(tracedir):]
 
-        if re.fullmatch('[a-zA-Z0-9._-]*', link) and link != "":
+        if re.fullmatch('\.*', link):
+            return None
+        elif re.fullmatch('[a-zA-Z0-9._-]*', link):
             return link
         else:
             return None
@@ -138,7 +140,7 @@ class Mirror:
             links = map(lambda x: Mirror._clean_link(x.get('href'), tracedir), links)
             tracefiles = filter(lambda x: x is not None, links)
             tracefiles = self._filter_tracefilenames(tracefiles)
-            return sorted(tracefiles)
+            return sorted(set(tracefiles))
 
     @staticmethod
     def parse_tracefile(contents):
