@@ -25,6 +25,8 @@ class MirrorCheckResult(Base):
     error                  = Column(String)
     warning                = Column(String)
 
+    tracefilelist = relationship("TraceFileList", uselist=False, back_populates="mirrorcheckresult", cascade="all, delete-orphan", passive_deletes=True)
+
 class GlobalInfo(Base):
     __tablename__          = 'globalinfo'
     id                     = Column(Integer, primary_key=True)
@@ -34,8 +36,8 @@ class TraceFileList(Base):
     """A list of tracefiles found in project/traces for each mirror"""
     __tablename__          = 'tracefilelist'
     id                     = Column(Integer, primary_key=True)
-    mirrorcheckresult_id   = Column(Integer, ForeignKey('mirrorcheckresult.id'), nullable=False, unique=True)
-    mirrorcheckresult      = relationship("MirrorCheckResult", backref=backref("tracefilelist", uselist=False))
+    mirrorcheckresult_id   = Column(Integer, ForeignKey('mirrorcheckresult.id', ondelete='CASCADE'), nullable=False, unique=True)
+    mirrorcheckresult      = relationship("MirrorCheckResult", back_populates="tracefilelist")
 
     last_test              = Column(DateTime, nullable=False)
     traces                 = Column(String, nullable=False)
