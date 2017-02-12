@@ -3,7 +3,9 @@
 from collections import OrderedDict
 import dateutil.parser
 from multiprocessing.pool import ThreadPool as Pool
+from bs4 import BeautifulSoup
 import queue
+import re
 import socket
 import sys
 import threading
@@ -47,6 +49,11 @@ class Mirror:
 
         self._learn_archives()
 
+    @staticmethod
+    def _filter_tracefilenames(tracefilenames):
+        return filter(lambda x: not x.startswith('_') and
+                                not x.endswith('-stage1'), tracefilenames)
+
     def supports(self, archive, service):
         return (archive+"-"+service) in self.entry
 
@@ -73,27 +80,67 @@ class Mirror:
         else:
             assert(False)
 
+    def _fetch(self, service, url):
+        if service == 'http':
+            try:
+                with urllib.request.urlopen(url, timeout=self.timeout) as response:
+                    data = response.read()
+                    return data
+            except socket.timeout as e:
+                raise MirrorFailureException(e, 'timed out fetching '+url)
+            except urllib.error.URLError as e:
+                raise MirrorFailureException(e, e.reason)
+            except OSError as e:
+                raise MirrorFailureException(e, e.strerror)
+            except Exception as e:
+                raise MirrorFailureException(e, 'other exception: '+str(e))
+        elif service == 'rsync':
+            raise Exception("Not implemented yet")
+        else:
+            assert(False)
+
     def fetch_master(self, archive, service):
         if not self.supports(archive, service):
             raise Exception("Mirror does not support archive/service")
         if service == 'http':
             traceurl = urllib.parse.urljoin(self.get_tracedir(archive, service), 'master')
+            return self._fetch(service, traceurl)
 
-            try:
-                with urllib.request.urlopen(traceurl, timeout=self.timeout) as response:
-                    data = response.read()
-                    return data
-            except socket.timeout as e:
-                raise MirrorFailureException(e, 'timed out fetching master trace')
-            except urllib.error.URLError as e:
-                raise MirrorFailureException(e, e.reason)
-            except OSError as e:
-                raise MirrorFailureException(e, e.strerror)
+    @staticmethod
+    def _clean_link(link, tracedir):
+        # some mirrors provide absolute links instead of relative ones,
+        # so turn them all into full links, then try to get back relative ones no matter what.
+        fulllink = urllib.parse.urljoin(tracedir, link)
 
-        elif service == 'rsync':
-            raise Exception("Not implemented yet")
+        l1 = urllib.parse.urlparse(tracedir)
+        l2 = urllib.parse.urlparse(fulllink)
+        if l1.netloc != l2.netloc:
+            return None
+
+        if fulllink.startswith(tracedir):
+            link = fulllink[len(tracedir):]
+
+        if re.fullmatch('\.*', link):
+            return None
+        elif re.fullmatch('[a-zA-Z0-9._-]*', link):
+            return link
         else:
-            assert(False)
+            return None
+
+    def list_tracefiles(self, archive, service):
+        if not self.supports(archive, service):
+            raise Exception("Mirror does not support archive/service")
+        if service == 'http':
+            tracedir = self.get_tracedir(archive, service)
+            data = self._fetch(service, tracedir)
+
+            soup = BeautifulSoup(data)
+            links = soup.find_all('a')
+            links = filter(lambda x: 'href' in x.attrs, links)
+            links = map(lambda x: Mirror._clean_link(x.get('href'), tracedir), links)
+            tracefiles = filter(lambda x: x is not None, links)
+            tracefiles = self._filter_tracefilenames(tracefiles)
+            return sorted(set(tracefiles))
 
     @staticmethod
     def parse_tracefile(contents):
@@ -189,14 +236,18 @@ class Mirrors:
         result = {'mirror': mirror, 'warnings': []}
         try:
             tf = mirror.fetch_master(archive, service)
+            traces = mirror.list_tracefiles(archive, service)
             result['trace-master-timestamp'] = Mirror.parse_tracefile(tf)
+
             if result['trace-master-timestamp']:
                 result['success'] = True
                 result['message'] = "Master tracefile is from " + result['trace-master-timestamp'].isoformat()
-                result['warnings'] += Mirror.check_round_robin(mirror.site, service)
+                result['traces'] = traces
             else:
                 result['success'] = False
                 result['message'] = "Invalid tracefile"
+
+            result['warnings'] += Mirror.check_round_robin(mirror.site, service)
         except MirrorFailureException as e:
             result['success'] = False
             result['message'] = e.message
@@ -224,7 +275,6 @@ class Mirrors:
             if element is None: break
             res = element.get()
             yield res
-
 
 if __name__ == "__main__":
     import argparse

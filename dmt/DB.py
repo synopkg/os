@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
-from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 import sqlalchemy
+from sqlalchemy.orm import relationship, backref
 import sqlalchemy.ext.declarative
 
 @sqlalchemy.event.listens_for(sqlalchemy.engine.Engine, "connect")
@@ -28,6 +29,17 @@ class GlobalInfo(Base):
     __tablename__          = 'globalinfo'
     id                     = Column(Integer, primary_key=True)
     last_test              = Column(DateTime, nullable=False)
+
+class TraceFileList(Base):
+    """A list of tracefiles found in project/traces for each mirror"""
+    __tablename__          = 'tracefilelist'
+    id                     = Column(Integer, primary_key=True)
+    mirrorcheckresult_id   = Column(Integer, ForeignKey('mirrorcheckresult.id'), nullable=False, unique=True)
+    mirrorcheckresult      = relationship("MirrorCheckResult", backref=backref("tracefilelist", uselist=False))
+
+    last_test              = Column(DateTime, nullable=False)
+    traces                 = Column(String, nullable=False)
+    traces_last_change     = Column(DateTime, nullable=False)
 
 class MirrorDB():
     def __init__(self, dbname):
