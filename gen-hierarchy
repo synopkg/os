@@ -71,7 +71,6 @@ class HierarchyTree:
     def add_nodes(self, tuples):
         for name, labels in sorted(tuples, key=lambda t: len(t[1])):
             n = self._add_node(name, labels)
-            print("Added", name, "to parent", n.parent.names, "with labels", labels)
 
     @staticmethod
     def _str_subtree(prefix, last, node):
