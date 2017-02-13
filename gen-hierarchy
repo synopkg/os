@@ -49,8 +49,6 @@ class HierarchyTree:
         root.parent = root
         self.nodes_by_labels[root.labels] = root
 
-        self._add_node('ftp-master.debian.org', tuple(sorted(('master','ftp-master.debian.org'))))
-
     def _find_position(self, labels):
         for s in powersetish(labels):
             if s in self.nodes_by_labels:
