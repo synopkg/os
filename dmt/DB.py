@@ -5,12 +5,6 @@ import sqlalchemy
 from sqlalchemy.orm import relationship, backref
 import sqlalchemy.ext.declarative
 
-@sqlalchemy.event.listens_for(sqlalchemy.engine.Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
-
 Base = sqlalchemy.ext.declarative.declarative_base()
 
 class MirrorCheckResult(Base):
@@ -44,8 +38,8 @@ class TraceFileList(Base):
     traces_last_change     = Column(DateTime, nullable=False)
 
 class MirrorDB():
-    def __init__(self, dbname):
-        self.engine = sqlalchemy.create_engine('sqlite:///%s'%(dbname))
+    def __init__(self, dburl):
+        self.engine = sqlalchemy.create_engine(dburl)
         Base.metadata.bind = self.engine
         self.sessionMaker = sqlalchemy.orm.sessionmaker(bind=self.engine)
 

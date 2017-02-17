@@ -8,21 +8,21 @@ from dmt.Masterlist import Masterlist
 from dmt.Mirrors import Mirrors
 
 MASTERLIST='Mirrors.masterlist'
-DBNAME='db.db'
+DBURL='postgresql:///mirror-status'
 PRUNE_HOURS = 24.
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--masterlist', help='Mirrors.masterlist file', default=MASTERLIST)
-    parser.add_argument('--dbname', help='database', default=DBNAME)
+    parser.add_argument('--dburl', help='database', default=DBURL)
     parser.add_argument('--prune-hours', help='delete mirrors that have not been checked in <x> hours', type=float, default=PRUNE_HOURS)
     args = parser.parse_args()
 
     masterlist = Masterlist(args.masterlist).entries
     mirrors = Mirrors(masterlist)
 
-    db = MirrorDB(args.dbname)
+    db = MirrorDB(args.dburl)
     session = db.session()
 
     now = datetime.datetime.now()

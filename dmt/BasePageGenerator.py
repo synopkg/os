@@ -39,7 +39,7 @@ def raise_helper(msg):
 
 class BasePageGenerator:
     MASTERLIST='Mirrors.masterlist'
-    DBNAME='db.db'
+    DBURL='postgresql:///mirror-status'
 
     def __init__(self, args):
         self.args = args
@@ -53,7 +53,7 @@ class BasePageGenerator:
         import argparse
         parser = argparse.ArgumentParser()
         parser.add_argument('--masterlist', help='Mirrors.masterlist file', default=BasePageGenerator.MASTERLIST)
-        parser.add_argument('--dbname', help='database', default=BasePageGenerator.DBNAME)
+        parser.add_argument('--dburl', help='database', default=BasePageGenerator.DBURL)
         parser.add_argument('--outfile', help='output-file', default=outfile, type=argparse.FileType('w'))
         parser.add_argument('--templatedir', help='template directory', default='templates')
         return parser
@@ -69,7 +69,7 @@ class BasePageGenerator:
         self.tmplenv.globals['raise'] = raise_helper
 
     def setup_db(self):
-        self.db = MirrorDB(self.args.dbname)
+        self.db = MirrorDB(self.args.dburl)
         self.session = self.db.session()
 
     @staticmethod
