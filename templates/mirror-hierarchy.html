@@ -39,8 +39,8 @@
             <abbr title="{{cell.mirror.mastertrace.trace_timestamp|datetimeagenoabbr(ftpmasterttrace)|safe}}">
           {% endif %}
 
-            {% if cell.mirror.trace_url is defined and cell.mirror.trace_url %}
-              <a href="{{cell.mirror.trace_url}}">{{cell.name}}</a>
+            {% if cell.mirror.site.trace_url is defined and cell.mirror.site.trace_url %}
+              <a href="{{cell.mirror.site.trace_url}}">{{cell.name}}</a>
             {% else %}
               {{cell.name}}
             {% endif %}
