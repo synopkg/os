@@ -14,7 +14,6 @@
 <tr>
   <td>Site</td>
   <td>master tracefile age</td>
-  <td>extra</td>
 </tr>
 
 {% for mirror in mirrors %}
@@ -24,46 +23,21 @@
   <tr>
   {% endif %}
     <td>
-    {% if mirror.trace_url is defined and mirror.trace_url %}
-      <a href="{{mirror.trace_url}}">{{ mirror.site }}</a>
+    {% if mirror.site.trace_url is defined and mirror.site.trace_url %}
+      <a href="{{mirror.site.trace_url}}">{{ mirror.site.name }}</a>
     {% else %}
-      {{ mirror.site }}
+      {{ mirror.site.name }}
     {% endif %}
     </td>
 
     {% if mirror.error %}
       <td>{{ mirror.error }}
+    {% elif mirror.mastertrace.trace_timestamp == ftpmasterttrace %}
+      <td class="age{{mirror.mastertrace.agegroup}}">current</td>
     {% else %}
-      <td class="age{{mirror.agegroup}}">{{mirror.trace_master_timestamp|datetimeage(globalinfo.last_test)|safe}}</td>
+      <td class="age{{mirror.mastertrace.agegroup}}">{{mirror.mastertrace.trace_timestamp|datetimeage(ftpmasterttrace)|safe}}</td>
     {% endif %}
 
-    {% if mirror.error %}
-      <td>
-    {% elif mirror.warning or mirror.last_test != globalinfo.last_test %}
-      <td class="warning">
-    {% else %}
-      <td>
-    {% endif %}
-      {% if mirror.error %}
-        last worked:
-        {% if mirror.last_noerror %}
-          {{ mirror.last_noerror|datetimeage(globalinfo.last_test)|safe}} ago.
-        {% else %}
-          never.
-        {% endif %}
-      {% endif %}
-
-      {% if mirror.warning or mirror.last_test != globalinfo.last_test %}
-        {% if mirror.warning %}
-          {{ mirror.warning }}
-        {% endif %}
-        {% if mirror.warning and mirror.last_test != globalinfo.last_test %}
-          &emdash;
-        {% endif %}
-        {% if mirror.last_test != globalinfo.last_test %}
-          last test older by {{mirror.last_test|datetimeage(globalinfo.last_test)|safe}}.
-        {% endif %}
-      {% endif %}
     </td>
   </tr>
 {% endfor %}
@@ -75,7 +49,7 @@
 <div id="footer"
 >Debian mirrors team - mirrors@d.o
 &mdash;
-last test run: {{globalinfo.last_test.strftime('%Y-%m-%d %H:%M:%S') }}
+last test run: {{last_run.strftime('%Y-%m-%d %H:%M:%S') }}
 &mdash;
 generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
 &mdash;

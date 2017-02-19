@@ -11,9 +11,7 @@ if __name__ == '__main__' and __package__ is None:
     import dmt.BasePageGenerator
     __package__ = 'dmt.BasePageGenerator'
 
-from dmt.DB import MirrorDB, MirrorCheckResult, GlobalInfo
-from dmt.Masterlist import Masterlist
-from dmt.Mirrors import Mirrors
+import dmt.db as db
 
 def get_human_readable_age(ts, base):
     rd = dateutil.relativedelta.relativedelta(base, ts)
@@ -29,6 +27,7 @@ def datetimeagefilter(ts, base):
     formattedts, hr = get_human_readable_age(ts, base)
     res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
     return res
+
 def datetimeagenoabbrfilter(ts, base):
     formattedts, hr = get_human_readable_age(ts, base)
     res = '%s - %s'%(hr, formattedts)
@@ -38,22 +37,16 @@ def raise_helper(msg):
     raise Exception(msg)
 
 class BasePageGenerator:
-    MASTERLIST='Mirrors.masterlist'
-    DBURL='postgresql:///mirror-status'
-
     def __init__(self, args):
         self.args = args
         self.setup_db()
         self.setup_template_env()
-        self.masterlist = Masterlist(args.masterlist).entries
-        self.mirrors = Mirrors(self.masterlist)
 
     @staticmethod
     def make_argument_parser(outfile='out.html'):
         import argparse
         parser = argparse.ArgumentParser()
-        parser.add_argument('--masterlist', help='Mirrors.masterlist file', default=BasePageGenerator.MASTERLIST)
-        parser.add_argument('--dburl', help='database', default=BasePageGenerator.DBURL)
+        parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
         parser.add_argument('--outfile', help='output-file', default=outfile, type=argparse.FileType('w'))
         parser.add_argument('--templatedir', help='template directory', default='templates')
         return parser
@@ -69,8 +62,8 @@ class BasePageGenerator:
         self.tmplenv.globals['raise'] = raise_helper
 
     def setup_db(self):
-        self.db = MirrorDB(self.args.dburl)
-        self.session = self.db.session()
+        self.dbh = db.MirrorDB(self.args.dburl)
+        self.session = self.dbh.session()
 
     @staticmethod
     def _get_agegroup(delta):

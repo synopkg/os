@@ -19,6 +19,7 @@ if __name__ == '__main__' and __package__ is None:
     __package__ = 'dmt.checks'
 
 import dmt.db as db
+import dmt.helpers as helpers
 
 class MirrorFailureException(Exception):
     def __init__(self, e, msg):
@@ -30,10 +31,7 @@ class BaseCheck:
     TIMEOUT = 15
 
     def get_tracedir(self):
-        baseurl = urllib.parse.urljoin("http://" + self.name, self.http_path)
-        if not baseurl.endswith('/'): baseurl += '/'
-        tracedir = urllib.parse.urljoin(baseurl, 'project/trace/')
-        return tracedir
+        return helpers.get_tracedir(self.site)
 
     @staticmethod
     def _fetch(url):
@@ -51,8 +49,7 @@ class BaseCheck:
             raise MirrorFailureException(e, 'other exception: '+str(e))
 
     def __init__(self, site, checkrun_id):
-        self.name      = site.name
-        self.http_path = site.http_path
+        self.site      = site.__dict__
         self.result = {
             'site_id':     site.id,
             'checkrun_id': checkrun_id

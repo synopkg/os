@@ -1,9 +1,13 @@
 #!/usr/bin/python3
 
 import datetime
+from sqlalchemy import desc
 
-from dmt.DB import MirrorCheckResult, GlobalInfo
+import dmt.db as db
+import dmt.helpers as helpers
 from dmt.BasePageGenerator import BasePageGenerator
+
+FTPMASTER = "ftp-master.debian.org"
 
 class StatusGenerator(BasePageGenerator):
     def __init__(self, args):
@@ -12,26 +16,39 @@ class StatusGenerator(BasePageGenerator):
     def run(self):
         now = datetime.datetime.now()
 
-        globalinfo = self.session.query(GlobalInfo).first()
-        results = self.session.query(MirrorCheckResult).order_by(MirrorCheckResult.site).all()
-        results = [ x.__dict__ for x in results]
-        for x in results:
-            if x['trace_master_timestamp'] is not None:
-                t1 = x['trace_master_timestamp']
-                t2 = x['last_test']
-                x['agegroup'] = self._get_agegroup(t2 - t1)
-            if x['site'] in self.mirrors.mirrors:
-                x['mirror'] = self.mirrors.mirrors[x['site']]
-                x['trace_url'] = x['mirror'].get_tracedir('Archive', 'http')
+        checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
+
+        ftpmastertraceq = self.session.query(db.Site, db.Mastertrace).filter_by(name = FTPMASTER)
+        ftpmastertraceq = ftpmastertraceq.join(db.Mastertrace).filter(db.Mastertrace.trace_timestamp.isnot(None))
+        ftpmastertraceq = ftpmastertraceq.join(db.Checkrun)
+        ftpmastertraceq = ftpmastertraceq.order_by(desc(db.Checkrun.timestamp)).first()
+        if ftpmastertraceq is not None:
+            ftpmastertrace = ftpmastertraceq[1].trace_timestamp
+        else:
+            ftpmastertrace = now
+
+        mastertraces = self.session.query(db.Site, db.Mastertrace).join(db.Mastertrace).filter_by(checkrun_id = checkrun.id)
+        mirrors = []
+        for site, mastertrace in mastertraces:
+            x = {}
+            x['site'] = site.__dict__
+            x['mastertrace'] = mastertrace.__dict__
+
+            x['site']['trace_url'] = helpers.get_tracedir(x['site'])
+            if x['mastertrace']['trace_timestamp'] is not None:
+                x['mastertrace']['agegroup'] = self._get_agegroup(ftpmastertrace - x['mastertrace']['trace_timestamp'])
+
+            x['error'] = x['mastertrace']['error']
+            mirrors.append(x)
 
         context = {
-            'mirrors': results,
-            'globalinfo':globalinfo,
-            'now': now
+            'mirrors': mirrors,
+            'last_run': checkrun.timestamp,
+            'ftpmasterttrace': ftpmastertrace,
+            'now': now,
         }
         template = self.tmplenv.get_template('mirror-status.html')
         template.stream(context).dump(self.args.outfile, errors='strict')
-
 
 OUTFILE='mirror-status.html'
 
