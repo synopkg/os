@@ -186,6 +186,7 @@ class HierarchyGenerator(BasePageGenerator):
                     traces = json.loads(traceset.traceset)
                     if not isinstance(traces, list):
                         raise Exception("traces information for "+site+" is not a list")
+                    if 'master' in traces: traces.remove('master')
                     x['traces'] = traces
                     #x['traces_last_change_warn'] = x.tracefilelist.traces_last_change > traces_last_change_cutff
                     #x['traces_last_change'] = x.tracefilelist.traces_last_change
