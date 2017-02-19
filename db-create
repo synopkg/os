@@ -3,11 +3,4 @@
 set -e
 set -u
 
-db="db.db"
-
-if [ -e "$db" ]; then
-  echo >&2 "$db already exists"
-  exit 1
-fi
-
 python3-alembic upgrade head
