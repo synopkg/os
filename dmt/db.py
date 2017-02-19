@@ -15,7 +15,6 @@ class Origin(Base):
     id                      = Column(Integer, primary_key=True)
 
     label                   = Column(String, nullable=False, unique=True)
-    sites                   = relationship("Site", backref="origin")
 
 class Site(Base):
     """Site offering the debian archive.
@@ -23,7 +22,8 @@ class Site(Base):
     __tablename__           = 'site'
     id                      = Column(Integer, primary_key=True)
 
-    origin_id               = Column(Integer, ForeignKey('origin.id'))
+    origin_id               = Column(Integer, ForeignKey('origin.id', ondelete='CASCADE'), nullable=False)
+    origin                  = relationship("Origin", backref=backref("sites", passive_deletes=True))
 
     name                    = Column(String, nullable=False, unique=True)
     http_path               = Column(String, nullable=False)
@@ -86,7 +86,8 @@ class Traceset(Base):
     error                   = Column(String)
 
 class MirrorDB():
-    def __init__(self, dburl):
+    DBURL='postgresql:///mirror-status'
+    def __init__(self, dburl=DBURL):
         self.engine = sqlalchemy.create_engine(dburl)
         Base.metadata.bind = self.engine
         self.sessionMaker = sqlalchemy.orm.sessionmaker(bind=self.engine)
@@ -94,12 +95,14 @@ class MirrorDB():
     def session(self):
         return self.sessionMaker()
 
-    @staticmethod
-    def update_or_create(session, model, updates, **kwargs):
-        r = session.query(model).filter_by(**kwargs)
-        cnt = r.update(updates)
-        if cnt == 0:
-            attributes = dict((k, v) for k, v in kwargs.items())
-            attributes.update(updates)
-            instance = model(**attributes)
-            session.add(instance)
+def update_or_create(session, model, updates, **kwargs):
+    r = session.query(model).filter_by(**kwargs)
+    if len(updates) == 0:
+        need_insert = r.first() is None
+    else:
+        need_insert = r.update(updates) == 0
+    if need_insert:
+        attributes = dict((k, v) for k, v in kwargs.items())
+        attributes.update(updates)
+        instance = model(**attributes)
+        session.add(instance)
