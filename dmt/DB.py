@@ -7,35 +7,83 @@ import sqlalchemy.ext.declarative
 
 Base = sqlalchemy.ext.declarative.declarative_base()
 
-class MirrorCheckResult(Base):
-    __tablename__          = 'mirrorcheckresult'
-    id                     = Column(Integer, primary_key=True)
+class Origin(Base):
+    """Origin of site information, i.e. the place from which we learned that
+       a site exists.  E.g. "Mirrors.masterlist"
+       """
+    __tablename__           = 'origin'
+    id                      = Column(Integer, primary_key=True)
 
-    site                   = Column(String, nullable=False, unique=True)
-    last_test              = Column(DateTime, nullable=False)
-    last_noerror           = Column(DateTime)
+    label                   = Column(String, nullable=False, unique=True)
+    sites                   = relationship("Site", backref="origin")
 
-    trace_master_timestamp = Column(DateTime)
-    error                  = Column(String)
-    warning                = Column(String)
+class Site(Base):
+    """Site offering the debian archive.
+    """
+    __tablename__           = 'site'
+    id                      = Column(Integer, primary_key=True)
 
-    tracefilelist = relationship("TraceFileList", uselist=False, back_populates="mirrorcheckresult", cascade="all, delete-orphan", passive_deletes=True)
+    origin_id               = Column(Integer, ForeignKey('origin.id'))
 
-class GlobalInfo(Base):
-    __tablename__          = 'globalinfo'
-    id                     = Column(Integer, primary_key=True)
-    last_test              = Column(DateTime, nullable=False)
+    name                    = Column(String, nullable=False, unique=True)
+    http_path               = Column(String, nullable=False)
 
-class TraceFileList(Base):
-    """A list of tracefiles found in project/traces for each mirror"""
-    __tablename__          = 'tracefilelist'
-    id                     = Column(Integer, primary_key=True)
-    mirrorcheckresult_id   = Column(Integer, ForeignKey('mirrorcheckresult.id', ondelete='CASCADE'), nullable=False, unique=True)
-    mirrorcheckresult      = relationship("MirrorCheckResult", back_populates="tracefilelist")
+class Checkrun(Base):
+    """Instance of a mirror check run
+    """
+    __tablename__           = 'checkrun'
+    id                      = Column(Integer, primary_key=True)
 
-    last_test              = Column(DateTime, nullable=False)
-    traces                 = Column(String, nullable=False)
-    traces_last_change     = Column(DateTime, nullable=False)
+    timestamp               = Column(DateTime(timezone=True))
+
+
+class Mastertrace(Base):
+    """Age of the master tracefile
+    """
+    __tablename__           = 'mastertrace'
+    __plural__              = __tablename__ + 's'
+    id                      = Column(Integer, primary_key=True)
+
+    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False)
+    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False)
+    site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
+    checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
+
+    trace_timestamp         = Column(DateTime(timezone=True))
+    error                   = Column(String)
+
+
+class Sitetrace(Base):
+    """site tracefile
+    """
+    __tablename__           = 'sitetrace'
+    __plural__              = __tablename__ + 's'
+    id                      = Column(Integer, primary_key=True)
+
+    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False)
+    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False)
+    site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
+    checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
+
+    full                    = Column(String)
+    trace_timestamp         = Column(DateTime(timezone=True))
+    error                   = Column(String)
+
+
+class Traceset(Base):
+    """List of tracefiles found in project/traces
+    """
+    __tablename__           = 'traceset'
+    __plural__              = __tablename__ + 's'
+    id                      = Column(Integer, primary_key=True)
+
+    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False)
+    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False)
+    site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
+    checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
+
+    traceset                = Column(String)
+    error                   = Column(String)
 
 class MirrorDB():
     def __init__(self, dburl):
