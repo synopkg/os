@@ -76,11 +76,17 @@ class BasePageGenerator:
             return "2"
         elif delta < datetime.timedelta(hours=24):
             return "3"
-        elif delta < datetime.timedelta(hours=36):
-            return "4"
         elif delta < datetime.timedelta(hours=48):
+            return "4"
+        elif delta < datetime.timedelta(days=3):
             return "5"
         elif delta < datetime.timedelta(days=4):
             return "6"
-        else:
+        elif delta < datetime.timedelta(days=8):
             return "7"
+        elif delta < datetime.timedelta(days=14):
+            return "8"
+        elif delta < datetime.timedelta(days=30):
+            return "9"
+        else:
+            return "10"
