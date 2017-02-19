@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import datetime
-from sqlalchemy import desc
+from sqlalchemy import desc, or_
 
 import dmt.db as db
 import dmt.helpers as helpers
@@ -19,18 +19,26 @@ class StatusGenerator(BasePageGenerator):
 
         checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
 
-        mastertraces = self.session.query(db.Site, db.Mastertrace).join(db.Mastertrace).filter_by(checkrun_id = checkrun.id)
+        mastertraces = self.session.query(db.Site, db.Mastertrace). \
+                       outerjoin(db.Mastertrace).\
+                       filter(or_(db.Mastertrace.checkrun_id == None,
+                                  db.Mastertrace.checkrun_id == checkrun.id)).\
+                       order_by(db.Site.name)
         mirrors = []
         for site, mastertrace in mastertraces:
             x = {}
             x['site'] = site.__dict__
-            x['mastertrace'] = mastertrace.__dict__
-
             x['site']['trace_url'] = helpers.get_tracedir(x['site'])
-            if x['mastertrace']['trace_timestamp'] is not None:
-                x['mastertrace']['agegroup'] = self._get_agegroup(ftpmastertrace - x['mastertrace']['trace_timestamp'])
 
-            x['error'] = x['mastertrace']['error']
+            if not mastertrace is None:
+                x['mastertrace'] = mastertrace.__dict__
+
+                if x['mastertrace']['trace_timestamp'] is not None:
+                    x['mastertrace']['agegroup'] = self._get_agegroup(ftpmastertrace - x['mastertrace']['trace_timestamp'])
+                x['error'] = x['mastertrace']['error']
+            else:
+                x['error'] = "No mastertracefile result"
+
             mirrors.append(x)
 
         context = {
