@@ -13,10 +13,8 @@ class StatusGenerator(BasePageGenerator):
 
     def run(self):
         now = datetime.datetime.now()
-
         ftpmastertrace = helpers.get_ftpmaster_trace(self.session)
         if ftpmastertrace is None: ftpmastertrace = now
-
         checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
 
         mastertraces = self.session.query(db.Site, db.Mastertrace). \

@@ -3,8 +3,10 @@
 import datetime
 import itertools
 import json
+from sqlalchemy import desc, or_
 
-from dmt.DB import MirrorCheckResult, GlobalInfo, TraceFileList
+import dmt.db as db
+import dmt.helpers as helpers
 from dmt.BasePageGenerator import BasePageGenerator
 
 def powersetish(iterable):
@@ -157,36 +159,50 @@ class HierarchyGenerator(BasePageGenerator):
         super().__init__(args)
 
     def run(self):
+        #traces_last_change_cutff = now - datetime.timedelta(hours=self.args.recent_hours)
+
         now = datetime.datetime.now()
-        traces_last_change_cutff = now - datetime.timedelta(hours=self.args.recent_hours)
+        ftpmastertrace = helpers.get_ftpmaster_trace(self.session)
+        if ftpmastertrace is None: ftpmastertrace = now
+        checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
 
         mirrors = {}
-        globalinfo = self.session.query(GlobalInfo).first()
-        results = self.session.query(MirrorCheckResult).outerjoin(MirrorCheckResult.tracefilelist).order_by(MirrorCheckResult.site).all()
-        for x in results:
-            site = x.site
-            m = {}
-            m['site'] = site
-            if x.tracefilelist is not None:
-                traces = json.loads(x.tracefilelist.traces)
-                if not isinstance(traces, list):
-                    raise Exception("traces information for "+site+" is not a list")
-                m['traces'] = traces
-                m['traces_last_change_warn'] = x.tracefilelist.traces_last_change > traces_last_change_cutff
-                m['traces_last_change'] = x.tracefilelist.traces_last_change
+        results = self.session.query(db.Site, db.Traceset, db.Mastertrace). \
+                  outerjoin(db.Traceset).\
+                  filter(or_(db.Traceset.checkrun_id == None,
+                             db.Traceset.checkrun_id == checkrun.id)).\
+                  outerjoin(db.Mastertrace).\
+                  filter(or_(db.Mastertrace.checkrun_id == None,
+                             db.Mastertrace.checkrun_id == checkrun.id))
+        for site, traceset, mastertrace in results:
+            x = {}
+            x['site'] = site.__dict__
+            x['site']['trace_url'] = helpers.get_tracedir(x['site'])
+            x['traces'] = []
+            x['mastertrace'] = { 'agegroup': 'unknown' }
+
+            if not traceset is None:
+                if not traceset.traceset is None:
+                    traces = json.loads(traceset.traceset)
+                    if not isinstance(traces, list):
+                        raise Exception("traces information for "+site+" is not a list")
+                    x['traces'] = traces
+                    #x['traces_last_change_warn'] = x.tracefilelist.traces_last_change > traces_last_change_cutff
+                    #x['traces_last_change'] = x.tracefilelist.traces_last_change
+                x['error'] = traceset.error
             else:
-                m['traces'] = []
-                m['traces_last_change_warn'] = False
-            m['error'] = x.error
-            if not x.error:
-                assert(x.trace_master_timestamp is not None)
-                t1 = x.trace_master_timestamp
-                t2 = x.last_test
-                m['agegroup'] = self._get_agegroup(t2 - t1)
-                m['trace_master_timestamp'] = x.trace_master_timestamp
-            if site in self.mirrors.mirrors:
-                m['trace_url'] = self.mirrors.mirrors[site].get_tracedir('Archive', 'http')
-            mirrors[site] = m
+                x['error'] = "No traceset information"
+
+            if not mastertrace is None:
+                x['mastertrace'].update(mastertrace.__dict__)
+
+                if x['mastertrace']['trace_timestamp'] is not None:
+                    x['mastertrace']['agegroup'] = self._get_agegroup(ftpmastertrace - x['mastertrace']['trace_timestamp'])
+            else:
+                x['error'] = "No mastertracefile result"
+
+
+            mirrors[site.name] = x
         hierarchy =  MirrorHierarchy(mirrors)
 
         if args.textonly:
@@ -199,9 +215,9 @@ class HierarchyGenerator(BasePageGenerator):
             cells[-1]['last'] = True
 
             context = {
-                #'mirrors': results,
-                'globalinfo':globalinfo,
                 'now': now,
+                'last_run': checkrun.timestamp,
+                'ftpmasterttrace': ftpmastertrace,
                 'hierarchy_table': cells,
             }
             template = self.tmplenv.get_template('mirror-hierarchy.html')

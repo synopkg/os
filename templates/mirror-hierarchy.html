@@ -22,7 +22,7 @@
       {% if cell.mirror.error %}
         class="error"
       {% else %}
-        class="age{{cell.mirror.agegroup}}"
+        class="age{{cell.mirror.mastertrace.agegroup}}"
       {% endif %}
         colspan="{{cell.width}}" rowspan="{{cell.height}}"
       >
@@ -33,8 +33,10 @@
         {% endif %}
           {% if cell.mirror.error %}
             <abbr title="{{cell.mirror.error}}">
+          {% elif cell.mirror.mastertrace.trace_timestamp == ftpmasterttrace %}
+            <abbr title="current">
           {% else %}
-            <abbr title="{{cell.mirror.trace_master_timestamp|datetimeagenoabbr(globalinfo.last_test)}}">
+            <abbr title="{{cell.mirror.mastertrace.trace_timestamp|datetimeagenoabbr(ftpmasterttrace)|safe}}">
           {% endif %}
 
             {% if cell.mirror.trace_url is defined and cell.mirror.trace_url %}
@@ -44,6 +46,7 @@
             {% endif %}
           </abbr>
        </span>
+       {#
        {% if cell.mirror.traces_last_change_warn %}
          <span class="tracesetwarning">
            <br>
@@ -55,6 +58,7 @@
            {% endif %}
          </span>
        {% endif %}
+       #}
       </td>
   </tr>
   {% if not (cell.last is defined and cell.last) %}
@@ -75,7 +79,7 @@ Italic text refers to tracefile names, cells with color-status correspond to mir
 <div id="footer"
 >Debian mirrors team - mirrors@d.o
 &mdash;
-last test run: {{globalinfo.last_test.strftime('%Y-%m-%d %H:%M:%S') }}
+last test run: {{last_run.strftime('%Y-%m-%d %H:%M:%S') }}
 &mdash;
 generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
 &mdash;

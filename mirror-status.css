@@ -8,7 +8,7 @@
 #results-table tr:first-child { font-weight: bold; }
 #results-table tr:first-child { background-color: #eeeeff; }
 #results-table tr:nth-child(3n+3) { background-color: #f0f0f0; }
-#results-table tr.error { background-color: #ffaaaa; }
+#results-table tr.error { background-color: #b267fc; }
 #results-table td.warning { background-color: #ffffaa; }
 #results-table td.tiny { font-size: 50%; }
 #results-table td.age0 { background-color: #50f442; } /* green */
@@ -17,8 +17,12 @@
 #results-table td.age3 { background-color: #f4f142; } /* yellow */
 #results-table td.age4 { background-color: #f4c842; } /* orange */
 #results-table td.age5 { background-color: #f48c42; }
-#results-table td.age6 { background-color: #f44542; } /* red */
-#results-table td.age7 { background-color: #ff0000; } /* red */
+#results-table td.age6 { background-color: #f66666; } /* red */
+#results-table td.age7 { background-color: #ff4444; } /* red */
+#results-table td.age8 { background-color: #ff0000; } /* red */
+#results-table td.age9 { background-color: #c00000; }
+#results-table td.age10{ background-color: #900000; }
+#results-table td.ageunknown{ background-color: #34897c; } /* teal */
 #footer { font-size: 75%; }
 
 #hiera-table table {
@@ -32,12 +36,16 @@
 #hiera-table td.trace { font-style: italic; }
 #hiera-table span.main { font-style: italic; }
 #hiera-table span.tracesetwarning { font-weight: bold; color: red; }
-#hiera-table td.error { background-color: #ffaaaa; }
+#hiera-table td.error { background-color: #b267fc; }
 #hiera-table td.age0 { background-color: #50f442; } /* green */
 #hiera-table td.age1 { background-color: #89f442; }
 #hiera-table td.age2 { background-color: #bcf442; }
 #hiera-table td.age3 { background-color: #f4f142; } /* yellow */
 #hiera-table td.age4 { background-color: #f4c842; } /* orange */
 #hiera-table td.age5 { background-color: #f48c42; }
-#hiera-table td.age6 { background-color: #f44542; } /* red */
-#hiera-table td.age7 { background-color: #ff0000; } /* red */
+#hiera-table td.age6 { background-color: #f66666; } /* red */
+#hiera-table td.age7 { background-color: #ff4444; } /* red */
+#hiera-table td.age8 { background-color: #ff0000; } /* red */
+#hiera-table td.age9 { background-color: #c00000; }
+#hiera-table td.age10{ background-color: #900000; }
+#hiera-table td.ageunknown{ background-color: #34897c; } /* teal */
