@@ -7,8 +7,6 @@ import dmt.db as db
 import dmt.helpers as helpers
 from dmt.BasePageGenerator import BasePageGenerator
 
-FTPMASTER = "ftp-master.debian.org"
-
 class StatusGenerator(BasePageGenerator):
     def __init__(self, args):
         super().__init__(args)
@@ -16,16 +14,10 @@ class StatusGenerator(BasePageGenerator):
     def run(self):
         now = datetime.datetime.now()
 
-        checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
+        ftpmastertrace = helpers.get_ftpmaster_trace(self.session)
+        if ftpmastertrace is None: ftpmastertrace = now
 
-        ftpmastertraceq = self.session.query(db.Site, db.Mastertrace).filter_by(name = FTPMASTER)
-        ftpmastertraceq = ftpmastertraceq.join(db.Mastertrace).filter(db.Mastertrace.trace_timestamp.isnot(None))
-        ftpmastertraceq = ftpmastertraceq.join(db.Checkrun)
-        ftpmastertraceq = ftpmastertraceq.order_by(desc(db.Checkrun.timestamp)).first()
-        if ftpmastertraceq is not None:
-            ftpmastertrace = ftpmastertraceq[1].trace_timestamp
-        else:
-            ftpmastertrace = now
+        checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
 
         mastertraces = self.session.query(db.Site, db.Mastertrace).join(db.Mastertrace).filter_by(checkrun_id = checkrun.id)
         mirrors = []
