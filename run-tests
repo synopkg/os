@@ -2,66 +2,67 @@
 
 import datetime
 import json
+import queue
+from multiprocessing.pool import ThreadPool
+import threading
 
-from dmt.DB import MirrorDB, MirrorCheckResult, GlobalInfo, TraceFileList
-from dmt.Masterlist import Masterlist
-from dmt.Mirrors import Mirrors
+import dmt.db as db
+import dmt.checks as checks
 
-MASTERLIST='Mirrors.masterlist'
-DBURL='postgresql:///mirror-status'
-PRUNE_HOURS = 24.
+PRUNE_HOURS = 24*7
+
+MAX_CHECKERS = 64
+MAX_QUEUE_SIZE = 64* MAX_CHECKERS
+
+def _run_one_check(checkitem):
+    assert(isinstance(checkitem, checks.BaseCheck))
+    checkitem.run()
+    return checkitem
+
+def _checking_thread(result_queue, checklist):
+    pool = ThreadPool(processes=MAX_CHECKERS)
+    for c in checklist:
+        async_result = pool.apply_async(_run_one_check, [c])
+        result_queue.put(async_result)
+    result_queue.put(None)
+
+def check_result_generator(checklist):
+    result_queue = queue.Queue(MAX_QUEUE_SIZE)
+    t = threading.Thread(target=_checking_thread, args=[result_queue, checklist], daemon=True)
+    t.start()
+
+    while True:
+        element = result_queue.get()
+        result_queue.task_done()
+
+        if element is None: break
+        res = element.get()
+        yield res
+
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--masterlist', help='Mirrors.masterlist file', default=MASTERLIST)
-    parser.add_argument('--dburl', help='database', default=DBURL)
-    parser.add_argument('--prune-hours', help='delete mirrors that have not been checked in <x> hours', type=float, default=PRUNE_HOURS)
+    parser.add_argument('--prune-hours', help='delete checks oder than <x> hours', type=float, default=PRUNE_HOURS)
+    parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
     args = parser.parse_args()
 
-    masterlist = Masterlist(args.masterlist).entries
-    mirrors = Mirrors(masterlist)
+    dbh = db.MirrorDB(args.dburl)
 
-    db = MirrorDB(args.dburl)
-    session = db.session()
+    session = dbh.session()
 
     now = datetime.datetime.now()
+    session.query(db.Checkrun).filter(db.Checkrun.timestamp < now - datetime.timedelta(hours=args.prune_hours)).delete()
 
-    check_results = mirrors.check_all('Archive', 'http')
-    for r in check_results:
-        site = r['mirror'].site
+    checkrun = db.Checkrun(timestamp = now)
+    session.add(checkrun)
 
-        e = {}
-        e['last_test'] = now
-        if r['success']: e['last_noerror'] = now
-        e['trace_master_timestamp'] = r.get('trace-master-timestamp')
-        e['error'] = r['message'] if not r['success'] else None
-        e['warning'] = '\n'.join(r['warnings']) if len(r['warnings']) > 0 else None
+    checklist = []
+    for site in session.query(db.Site):
+        checklist.append( checks.MastertraceFetcher(site, checkrun.id) )
+        checklist.append( checks.TracesetFetcher(site, checkrun.id) )
 
-        MirrorDB.update_or_create(session, MirrorCheckResult, e, site = site)
-
-        if 'traces' in r:
-            mirrorcheckresultentry = session.query(MirrorCheckResult).filter_by(site = site).first()
-            assert(mirrorcheckresultentry is not None)
-
-
-            traces = json.dumps(r['traces'], separators=(',', ':'))
-            tracefilelistentry = session.query(TraceFileList).filter_by(mirrorcheckresult_id = mirrorcheckresultentry.id).first()
-            if tracefilelistentry is None:
-                e = { 'last_test':            now,
-                      'mirrorcheckresult_id': mirrorcheckresultentry.id,
-                      'traces':               traces,
-                      'traces_last_change':   now,
-                    }
-                instance = TraceFileList(**e)
-                session.add(instance)
-            else:
-                tracefilelistentry.last_test = now
-                if traces != tracefilelistentry.traces:
-                    tracefilelistentry.traces = traces
-                    tracefilelistentry.traces_last_change = now
-
-    MirrorDB.update_or_create(session, GlobalInfo, {'last_test': now})
-    session.query(MirrorCheckResult).filter(MirrorCheckResult.last_test < now - datetime.timedelta(hours=args.prune_hours)).delete()
+    for check_result in check_result_generator(checklist):
+        check_result.store(session, checkrun.id)
 
     session.commit()
