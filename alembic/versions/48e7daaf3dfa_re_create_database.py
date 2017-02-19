@@ -1,13 +1,13 @@
 """Re-create database
 
-Revision ID: 98dec132b3ec
+Revision ID: 48e7daaf3dfa
 Revises: 
-Create Date: 2017-02-19 16:57:04.597718
+Create Date: 2017-02-19 17:41:04.540373
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '98dec132b3ec'
+revision = '48e7daaf3dfa'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,10 +31,10 @@ def upgrade():
     )
     op.create_table('site',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('origin_id', sa.Integer(), nullable=True),
+    sa.Column('origin_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('http_path', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['origin_id'], ['origin.id'], ),
+    sa.ForeignKeyConstraint(['origin_id'], ['origin.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )

@@ -1,0 +1,44 @@
+#!/usr/bin/python3
+
+import datetime
+
+import dmt.db as db
+from dmt.Masterlist import Masterlist
+
+MASTERLIST='Mirrors.masterlist'
+ARCHIVE = 'Archive'
+SERVICE = 'http'
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--origin', help='Label for the origin', default=MASTERLIST)
+    parser.add_argument('--masterlist', help='Mirrors.masterlist file', default=MASTERLIST)
+    parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
+    args = parser.parse_args()
+
+    masterlist = Masterlist(args.masterlist).entries
+    session = db.MirrorDB(args.dburl).session()
+
+    db.update_or_create(session, db.Origin, {}, label=args.origin)
+    origin = session.query(db.Origin).filter_by(label = args.origin).first()
+    assert(origin is not None)
+
+    for sitename, sitedata in masterlist.items():
+        for k in (ARCHIVE+"-"+SERVICE, ARCHIVE+"-unlisted-"+SERVICE):
+            if k in sitedata:
+                http_path = sitedata[k]
+                break
+        else:
+            continue
+
+        dbdata = { 'origin_id': origin.id,
+                   'http_path': http_path
+                 }
+        db.update_or_create(session, db.Site, dbdata, name=sitename)
+
+    for site in session.query(db.Site).filter_by(origin_id = origin.id):
+        if site.name not in masterlist:
+            session.delete(site)
+
+    session.commit()
