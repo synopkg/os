@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import argparse
 import datetime
 import itertools
 import json
@@ -153,8 +154,11 @@ class MirrorHierarchy:
             yield c
 
 class HierarchyGenerator(BasePageGenerator):
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        assert('outfile' in kwargs)
+        self.outfile = kwargs['outfile']
+        self.textonly = 'textonly' in kwargs and kwargs['textonly']
 
     def run(self):
         #traces_last_change_cutff = now - datetime.timedelta(hours=self.args.recent_hours)
@@ -204,7 +208,7 @@ class HierarchyGenerator(BasePageGenerator):
             mirrors[site.name] = x
         hierarchy =  MirrorHierarchy(mirrors)
 
-        if args.textonly:
+        if self.textonly:
             print(hierarchy.tree)
             #for x in hierarchy.get_cells():
             #    print(x)
@@ -220,15 +224,18 @@ class HierarchyGenerator(BasePageGenerator):
                 'hierarchy_table': cells,
             }
             template = self.tmplenv.get_template('mirror-hierarchy.html')
-            template.stream(context).dump(self.args.outfile, errors='strict')
+            template.stream(context).dump(self.outfile, errors='strict')
 
 
 OUTFILE='mirror-hierarchy.html'
 RECENTCHANGE_HOURS=4
 
 if __name__ == "__main__":
-    parser = HierarchyGenerator.make_argument_parser(outfile = OUTFILE)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
+    parser.add_argument('--templatedir', help='template directory', default='templates')
     parser.add_argument('--textonly', help='only write text to stdout', default=False, action='store_true')
     parser.add_argument('--recent-hours', help='flag mirrors that changed hierarchy within the last <x> hours', type=float, default=RECENTCHANGE_HOURS)
+    parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
-    HierarchyGenerator(args).run()
+    HierarchyGenerator(**args.__dict__).run()

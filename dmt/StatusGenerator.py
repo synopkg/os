@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import argparse
 import datetime
 from sqlalchemy import desc, or_
 
@@ -8,8 +9,10 @@ import dmt.helpers as helpers
 from dmt.BasePageGenerator import BasePageGenerator
 
 class StatusGenerator(BasePageGenerator):
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        assert('outfile' in kwargs)
+        self.outfile = kwargs['outfile']
 
     def run(self):
         now = datetime.datetime.now()
@@ -46,11 +49,14 @@ class StatusGenerator(BasePageGenerator):
             'now': now,
         }
         template = self.tmplenv.get_template('mirror-status.html')
-        template.stream(context).dump(self.args.outfile, errors='strict')
+        template.stream(context).dump(self.outfile, errors='strict')
 
 OUTFILE='mirror-status.html'
 
 if __name__ == "__main__":
-    parser = StatusGenerator.make_argument_parser(outfile = OUTFILE)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
+    parser.add_argument('--templatedir', help='template directory', default='templates')
+    parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
-    StatusGenerator(args).run()
+    StatusGenerator(**args.__dict__).run()
