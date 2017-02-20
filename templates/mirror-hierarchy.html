@@ -13,11 +13,11 @@
 <table>
 <tr>
 {% for cell in hierarchy_table %}
-  {% if cell.type == "labels" %}
+  {% if cell.entrytype == "labels-only" %}
     <td colspan="{{cell.width}}" rowspan="{{cell.height}}" class="trace">
       {{cell.labels|join(", ") }}
     </td>
-  {% elif cell.type == "terminal" %}
+  {% elif cell.entrytype == "site" %}
       <td
       {% if cell.mirror.error %}
         class="error"
@@ -67,12 +67,18 @@
          </span>
        {% endif %}
       </td>
-  </tr>
-  {% if not (cell.last is defined and cell.last) %}
-    <tr>
-  {% endif %}
   {% else %}
-    {{ raise("unknown cell.type") }}
+    {{ raise("unknown cell.entrytype") }}
+  {% endif %}
+
+  {% if cell.celltype == "terminal" %}
+    </tr>
+    {% if not (cell.last is defined and cell.last) %}
+      <tr>
+    {% endif %}
+  {% elif cell.celltype == "middle" %}
+  {% else %}
+    {{ raise("unknown cell.celltype") }}
   {% endif %}
 {% endfor %}
 </table>

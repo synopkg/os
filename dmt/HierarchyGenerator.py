@@ -116,11 +116,11 @@ class HierarchyTree:
     def _table_subtree(node):
         #print(node.labels, "has children", (', '.join(str(x.labelsdiff) for x in node.children)))
         child_cells = list(itertools.chain.from_iterable(HierarchyTree._table_subtree(c) for c in sorted(node.children, key=HierarchyTree.nodelabeldomainsorter)))
-        number_terminals = sum(c['type'] == 'terminal' for c in child_cells)
+        number_terminals = sum(c['celltype'] == 'terminal' for c in child_cells)
 
-        cell = { 'type': 'labels',
+        cell = { 'celltype': 'middle',
+                 'entrytype': 'labels-only',
                  'labels': sorted(node.labelsdiff, key=HierarchyTree.sortdomaincomponents),
-                 'height': len(node.names) + number_terminals,
                  'width' : len(node.labelsdiff)
                }
 
@@ -129,13 +129,16 @@ class HierarchyTree:
             nodename = next(iter(node.labelsdiff)) # get the only element from the set
             if nodename in names:
                 names.remove(nodename)
-                cell['type'] = 'terminal'
+                cell['entrytype'] = 'site'
                 cell['name'] = nodename
                 cell['main'] = True
+                cell['celltype'] = ['middle', 'terminal'][len(names) == 0 and number_terminals == 0]
+        cell['height'] = max(len(names) + number_terminals, 1)
         yield cell
 
         for name in names:
-            cell = { 'type': 'terminal',
+            cell = { 'celltype': 'terminal',
+                     'entrytype': 'site',
                      'name': name,
                      'main': False,
                      'height': 1,
@@ -161,7 +164,7 @@ class MirrorHierarchy:
         #    print(x)
     def get_cells(self):
         for c in self.tree.table():
-            if c['type'] == 'terminal':
+            if c['entrytype'] == 'site':
                 c['mirror'] = self.mirrors[c['name']]
             yield c
 
