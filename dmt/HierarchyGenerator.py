@@ -168,12 +168,16 @@ class MirrorHierarchy:
 def get_traceset_changes(session, site_id, traces_last_change_cutoff):
     results = session.query(db.Traceset). \
               filter_by(site_id = site_id). \
+              filter(db.Traceset.traceset.isnot(None)). \
               join(db.Checkrun). \
               filter(db.Checkrun.timestamp >= traces_last_change_cutoff). \
               order_by(db.Checkrun.timestamp)
     #cnt = len(list(itertools.groupby(x.traceset for x in results))) - 1
     it = iter(results)
-    last_ts = next(it)
+    try:
+        last_ts = next(it)
+    except StopIteration:
+        pass
     cnt = 0
     last_change = None
     for i in it:
