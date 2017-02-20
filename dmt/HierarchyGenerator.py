@@ -5,6 +5,14 @@ import datetime
 import itertools
 import json
 from sqlalchemy import desc, or_
+import sys
+
+if __name__ == '__main__' and __package__ is None:
+    from pathlib import Path
+    top = Path(__file__).resolve().parents[1]
+    sys.path.append(str(top))
+    import dmt.HierarchyGenerator
+    __package__ = 'dmt.HierarchyGenerator'
 
 import dmt.db as db
 import dmt.helpers as helpers
@@ -153,7 +161,7 @@ class MirrorHierarchy:
                 c['mirror'] = self.mirrors[c['name']]
             yield c
 
-class HierarchyGenerator(BasePageGenerator):
+class Generator(BasePageGenerator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         assert('outfile' in kwargs)
@@ -238,4 +246,4 @@ if __name__ == "__main__":
     parser.add_argument('--recent-hours', help='flag mirrors that changed hierarchy within the last <x> hours', type=float, default=RECENTCHANGE_HOURS)
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
-    HierarchyGenerator(**args.__dict__).run()
+    Generator(**args.__dict__).run()

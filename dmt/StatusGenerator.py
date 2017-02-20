@@ -3,12 +3,23 @@
 import argparse
 import datetime
 from sqlalchemy import desc, or_
+import sys
+
+if __name__ == '__main__' and __package__ is None:
+    from pathlib import Path
+    top = Path(__file__).resolve().parents[1]
+    sys.path.append(str(top))
+    import dmt.StatusGenerator
+    __package__ = 'dmt.StatusGenerator'
+
+import dmt.db as db
+import dmt.helpers as helpers
 
 import dmt.db as db
 import dmt.helpers as helpers
 from dmt.BasePageGenerator import BasePageGenerator
 
-class StatusGenerator(BasePageGenerator):
+class Generator(BasePageGenerator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         assert('outfile' in kwargs)
@@ -59,4 +70,4 @@ if __name__ == "__main__":
     parser.add_argument('--templatedir', help='template directory', default='templates')
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
-    StatusGenerator(**args.__dict__).run()
+    Generator(**args.__dict__).run()
