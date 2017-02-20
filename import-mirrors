@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import datetime
+import urllib.parse
 
 import dmt.db as db
 from dmt.Masterlist import Masterlist
@@ -35,6 +36,12 @@ if __name__ == "__main__":
         dbdata = { 'origin_id': origin.id,
                    'http_path': http_path
                  }
+
+        if 'Connect-http' in sitedata:
+            up = urllib.parse.urlparse('//'+sitedata['Connect-http'])
+            dbdata['http_override_host'] = up.hostname
+            dbdata['http_override_port'] = up.port
+
         db.update_or_create(session, db.Site, dbdata, name=sitename)
 
     for site in session.query(db.Site).filter_by(origin_id = origin.id):

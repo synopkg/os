@@ -27,6 +27,8 @@ class Site(Base):
 
     name                    = Column(String, nullable=False, unique=True)
     http_path               = Column(String, nullable=False)
+    http_override_host      = Column(String)
+    http_override_port      = Column(Integer)
 
 class Checkrun(Base):
     """Instance of a mirror check run
