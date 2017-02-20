@@ -177,6 +177,7 @@ def get_traceset_changes(session, site_id, traces_last_change_cutoff):
               order_by(db.Checkrun.timestamp)
     #cnt = len(list(itertools.groupby(x.traceset for x in results))) - 1
     it = iter(results)
+    last_ts = None
     try:
         last_ts = next(it)
     except StopIteration:
@@ -186,10 +187,14 @@ def get_traceset_changes(session, site_id, traces_last_change_cutoff):
     for i in it:
         if last_ts.traceset != i.traceset:
             last_change = i.checkrun.timestamp
-            last_ts = i
             cnt += 1
+        last_ts = i
 
-    return { 'cnt': cnt, 'last_change': last_change }
+    res = { 'cnt': cnt,
+            'last_change': last_change,
+            'most_recent': last_ts.traceset if not last_ts is None else None,
+          }
+    return res
 
 class Generator(BasePageGenerator):
     def __init__(self, outfile = OUTFILE, textonly = False, recent_hours = RECENTCHANGE_HOURS, **kwargs):
@@ -221,18 +226,21 @@ class Generator(BasePageGenerator):
             x['mastertrace'] = { 'agegroup': 'unknown' }
 
             if not traceset is None:
-                if not traceset.traceset is None:
-                    traces = json.loads(traceset.traceset)
+                x['error'] = traceset.error
+            else:
+                x['error'] = "No traceset information"
+
+            x['traceset_changes'] = get_traceset_changes(self.session, site.id, traces_last_change_cutoff)
+
+            # use most recent traceset, ignoring the ones from the most recent run if there was an error
+            x['traceset'] = x['traceset_changes']['most_recent']
+
+            if not x['traceset'] is None:
+                    traces = json.loads(x['traceset'])
                     if not isinstance(traces, list):
                         raise Exception("traces information for "+site+" is not a list")
                     if 'master' in traces: traces.remove('master')
                     x['traces'] = traces
-                    #x['traces_last_change_warn'] = x.tracefilelist.traces_last_change > traces_last_change_cutff
-                    #x['traces_last_change'] = x.tracefilelist.traces_last_change
-                x['error'] = traceset.error
-                x['traceset_changes'] = get_traceset_changes(self.session, site.id, traces_last_change_cutoff)
-            else:
-                x['error'] = "No traceset information"
 
             if not mastertrace is None:
                 x['mastertrace'].update(mastertrace.__dict__)
