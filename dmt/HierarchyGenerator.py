@@ -18,6 +18,10 @@ import dmt.db as db
 import dmt.helpers as helpers
 from dmt.BasePageGenerator import BasePageGenerator
 
+
+OUTFILE='mirror-hierarchy.html'
+RECENTCHANGE_HOURS=24
+
 def powersetish(iterable):
     """return the powerset of iterable, from longest subset to smallest
     """
@@ -161,17 +165,26 @@ class MirrorHierarchy:
                 c['mirror'] = self.mirrors[c['name']]
             yield c
 
+def get_number_of_traceset_changes(session, site_id, traces_last_change_cutoff):
+    results = session.query(db.Traceset). \
+              filter_by(site_id = site_id). \
+              join(db.Checkrun). \
+              filter(db.Checkrun.timestamp >= traces_last_change_cutoff). \
+              order_by(db.Checkrun.timestamp)
+    cnt = len(list(itertools.groupby(x.traceset for x in results)))
+    print(cnt)
+    return cnt
+
 class Generator(BasePageGenerator):
-    def __init__(self, **kwargs):
+    def __init__(self, outfile = OUTFILE, textonly = False, recent_hours = RECENTCHANGE_HOURS, **kwargs):
         super().__init__(**kwargs)
-        assert('outfile' in kwargs)
-        self.outfile = kwargs['outfile']
-        self.textonly = 'textonly' in kwargs and kwargs['textonly']
+        self.outfile = outfile
+        self.recent_hours = recent_hours
+        self.textonly = textonly
 
     def run(self):
-        #traces_last_change_cutff = now - datetime.timedelta(hours=self.args.recent_hours)
-
         now = datetime.datetime.now()
+        traces_last_change_cutoff = now - datetime.timedelta(hours=self.recent_hours)
         ftpmastertrace = helpers.get_ftpmaster_trace(self.session)
         if ftpmastertrace is None: ftpmastertrace = now
         checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
@@ -201,6 +214,7 @@ class Generator(BasePageGenerator):
                     #x['traces_last_change_warn'] = x.tracefilelist.traces_last_change > traces_last_change_cutff
                     #x['traces_last_change'] = x.tracefilelist.traces_last_change
                 x['error'] = traceset.error
+                x['traceset_changes'] = get_number_of_traceset_changes(self.session, site.id, traces_last_change_cutoff)
             else:
                 x['error'] = "No traceset information"
 
@@ -230,13 +244,12 @@ class Generator(BasePageGenerator):
                 'last_run': checkrun.timestamp,
                 'ftpmasterttrace': ftpmastertrace,
                 'hierarchy_table': cells,
+                'recent_hours': self.recent_hours,
             }
             template = self.tmplenv.get_template('mirror-hierarchy.html')
             template.stream(context).dump(self.outfile, errors='strict')
 
 
-OUTFILE='mirror-hierarchy.html'
-RECENTCHANGE_HOURS=4
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
