@@ -46,18 +46,24 @@
             {% endif %}
           </abbr>
        </span>
-       {% if cell.mirror.traceset_changes > 1 %}
+       {% if cell.mirror.traceset_changes.cnt > 0 %}
          <span class="tracesetwarning">
            <br>
-           Traceset changed {{cell.mirror.traceset_changes}} times within the last {{recent_hours}} hours.
-       {#
-           Traceset changed recently
-           {% if cell.mirror.traces_last_change == globalinfo.last_test %}
-             (this run).
+           Traceset changed
+           {% if cell.mirror.traceset_changes.cnt == 1 %}
+             once
+           {% elif cell.mirror.traceset_changes.cnt == 2 %}
+             twice
            {% else %}
-             ({{ cell.mirror.traces_last_change|datetimeage(globalinfo.last_test)|safe }} ago).
+             {{cell.mirror.traceset_changes.cnt}} times
            {% endif %}
-       #}
+           within the last {{recent_hours}} hours,
+           most recently
+           {% if cell.mirror.traceset_changes.last_change == last_run %}
+             this run.
+           {% else %}
+             {{ cell.mirror.traceset_changes.last_change|datetimeage(last_run)|safe }} ago.
+           {% endif %}
          </span>
        {% endif %}
       </td>

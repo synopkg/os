@@ -165,15 +165,24 @@ class MirrorHierarchy:
                 c['mirror'] = self.mirrors[c['name']]
             yield c
 
-def get_number_of_traceset_changes(session, site_id, traces_last_change_cutoff):
+def get_traceset_changes(session, site_id, traces_last_change_cutoff):
     results = session.query(db.Traceset). \
               filter_by(site_id = site_id). \
               join(db.Checkrun). \
               filter(db.Checkrun.timestamp >= traces_last_change_cutoff). \
               order_by(db.Checkrun.timestamp)
-    cnt = len(list(itertools.groupby(x.traceset for x in results)))
-    print(cnt)
-    return cnt
+    #cnt = len(list(itertools.groupby(x.traceset for x in results))) - 1
+    it = iter(results)
+    last_ts = next(it)
+    cnt = 0
+    last_change = None
+    for i in it:
+        if last_ts.traceset != i.traceset:
+            last_change = i.checkrun.timestamp
+            last_ts = i
+            cnt += 1
+
+    return { 'cnt': cnt, 'last_change': last_change }
 
 class Generator(BasePageGenerator):
     def __init__(self, outfile = OUTFILE, textonly = False, recent_hours = RECENTCHANGE_HOURS, **kwargs):
@@ -214,7 +223,7 @@ class Generator(BasePageGenerator):
                     #x['traces_last_change_warn'] = x.tracefilelist.traces_last_change > traces_last_change_cutff
                     #x['traces_last_change'] = x.tracefilelist.traces_last_change
                 x['error'] = traceset.error
-                x['traceset_changes'] = get_number_of_traceset_changes(self.session, site.id, traces_last_change_cutoff)
+                x['traceset_changes'] = get_traceset_changes(self.session, site.id, traces_last_change_cutoff)
             else:
                 x['error'] = "No traceset information"
 
