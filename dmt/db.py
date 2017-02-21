@@ -88,9 +88,7 @@ class Traceset(Base):
     error                   = Column(String)
 
 class MirrorDB():
-    DBURL='sqlite:///db.db'
-    #DBURL='postgresql:///mirror-status'
-
+    DBURL='postgresql:///mirror-status'
     def __init__(self, dburl=DBURL):
         self.engine = sqlalchemy.create_engine(dburl)
         Base.metadata.bind = self.engine
