@@ -22,7 +22,7 @@ class Site(Base):
     __tablename__           = 'site'
     id                      = Column(Integer, primary_key=True)
 
-    origin_id               = Column(Integer, ForeignKey('origin.id', ondelete='CASCADE'), nullable=False)
+    origin_id               = Column(Integer, ForeignKey('origin.id', ondelete='CASCADE'), nullable=False, index=True)
     origin                  = relationship("Origin", backref=backref("sites", passive_deletes=True))
 
     name                    = Column(String, nullable=False, unique=True)
@@ -46,8 +46,8 @@ class Mastertrace(Base):
     __plural__              = __tablename__ + 's'
     id                      = Column(Integer, primary_key=True)
 
-    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False)
-    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False)
+    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False, index=True)
+    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False, index=True)
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
@@ -62,8 +62,8 @@ class Sitetrace(Base):
     __plural__              = __tablename__ + 's'
     id                      = Column(Integer, primary_key=True)
 
-    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False)
-    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False)
+    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False, index=True)
+    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False, index=True)
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
@@ -79,8 +79,8 @@ class Traceset(Base):
     __plural__              = __tablename__ + 's'
     id                      = Column(Integer, primary_key=True)
 
-    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False)
-    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False)
+    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False, index=True)
+    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False, index=True)
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
