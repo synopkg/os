@@ -12,7 +12,7 @@
 <div id="results-table">
 <table>
 <tr>
-  <td>Site</td>
+  <td class="hostname">Site</td>
   <td>master tracefile age</td>
   <td>site tracefile age</td>
 </tr>
@@ -23,13 +23,13 @@
   {% else %}
   <tr id="{{mirror.site.name}}">
   {% endif %}
-    <td>
-      [<a href="mirror-hierarchy.html#{{mirror.site.name}}">H</a>,<a href="mirror-info/{{mirror.site.name}}.html">R</a>]
+    <td class="hostname">
     {% if mirror.site.trace_url is defined and mirror.site.trace_url %}
       <a href="{{mirror.site.trace_url}}">{{ mirror.site.name }}</a>
     {% else %}
       {{ mirror.site.name }}
     {% endif %}
+      [<a href="mirror-hierarchy.html#{{mirror.site.name}}">H</a>,<a href="mirror-info/{{mirror.site.name}}.html">R</a>]
     </td>
 
     {% if mirror.error %}
