@@ -104,23 +104,20 @@ class HierarchyTree:
 
 
     @staticmethod
-    def sortdomaincomponents(hostname):
-        return list(reversed(hostname.split('.')))
-    @staticmethod
-    def nodelabeldomainsorter(x):
+    def nodelabeldomain_comparator(x):
         if len(x.labelsdiff) == 0: return None
         hostname = sorted(x.labelsdiff)[0]
-        return HierarchyTree.sortdomaincomponents(hostname)
+        return helpers.hostname_comparator(hostname)
 
     @staticmethod
     def _table_subtree(node):
         #print(node.labels, "has children", (', '.join(str(x.labelsdiff) for x in node.children)))
-        child_cells = list(itertools.chain.from_iterable(HierarchyTree._table_subtree(c) for c in sorted(node.children, key=HierarchyTree.nodelabeldomainsorter)))
+        child_cells = list(itertools.chain.from_iterable(HierarchyTree._table_subtree(c) for c in sorted(node.children, key=HierarchyTree.nodelabeldomain_comparator)))
         number_terminals = sum(c['celltype'] == 'terminal' for c in child_cells)
 
         cell = { 'celltype': 'middle',
                  'entrytype': 'labels-only',
-                 'labels': sorted(node.labelsdiff, key=HierarchyTree.sortdomaincomponents),
+                 'labels': sorted(node.labelsdiff, key=helpers.hostname_comparator),
                  'width' : len(node.labelsdiff)
                }
 

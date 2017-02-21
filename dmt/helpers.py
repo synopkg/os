@@ -41,3 +41,6 @@ def get_ftpmaster_trace(session):
         return ftpmastertraceq[1].trace_timestamp
     else:
         return None
+
+def hostname_comparator(hostname):
+    return list(reversed(hostname.split('.')))

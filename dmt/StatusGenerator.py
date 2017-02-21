@@ -83,6 +83,7 @@ class Generator(BasePageGenerator):
             if x['sitetrace']['trace_timestamp'] is not None:
                 x['sitetrace']['agegroup'] = self._get_agegroup(now - x['sitetrace']['trace_timestamp'])
 
+        mirrors.sort(key=lambda m: helpers.hostname_comparator(m['site']['name']))
         context = {
             'mirrors': mirrors,
             'last_run': checkrun.timestamp,
