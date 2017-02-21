@@ -9,6 +9,7 @@
 #results-table tr:first-child { background-color: #eeeeff; }
 #results-table tr:nth-child(3n+3) { background-color: #f0f0f0; }
 #results-table tr.error { background-color: #b267fc; }
+#results-table td.error { background-color: #b267fc; }
 #results-table td.warning { background-color: #ffffaa; }
 #results-table td.tiny { font-size: 50%; }
 #results-table td.age0 { background-color: #50f442; } /* green */

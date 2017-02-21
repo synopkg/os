@@ -14,6 +14,7 @@
 <tr>
   <td>Site</td>
   <td>master tracefile age</td>
+  <td>site tracefile age</td>
 </tr>
 
 {% for mirror in mirrors %}
@@ -36,6 +37,17 @@
       <td class="age{{mirror.mastertrace.agegroup}}">current</td>
     {% else %}
       <td class="age{{mirror.mastertrace.agegroup}}">{{mirror.mastertrace.trace_timestamp|datetimeage(ftpmasterttrace)|safe}}</td>
+    {% endif %}
+
+
+    {% if mirror.sitetrace.error %}
+      <td class="error">{{ mirror.sitetrace.error }}
+        {% if mirror.sitetrace.trace_timestamp %}
+          &mdash;
+          Using previous data: {{mirror.sitetrace.trace_timestamp|datetimeage(now)|safe}}
+        {% endif %}
+    {% else %}
+      <td class="age{{mirror.sitetrace.agegroup}}">{{mirror.sitetrace.trace_timestamp|datetimeage(now)|safe}}</td>
     {% endif %}
 
     </td>

@@ -36,7 +36,7 @@ class Checkrun(Base):
     __tablename__           = 'checkrun'
     id                      = Column(Integer, primary_key=True)
 
-    timestamp               = Column(DateTime(timezone=True))
+    timestamp               = Column(DateTime(timezone=True), index=True)
 
 
 class Mastertrace(Base):
