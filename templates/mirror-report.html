@@ -22,14 +22,14 @@
 
 {% for c in checks %}
   <tr>
-    <td>{{c.checkrun.timestamp}}</td>
+    <td>{{c.checkrun.timestamp.strftime('%Y-%m-%d %H:%M:%S')}}</td>
 
     {% if not c.mastertrace %}
       <td class="error">No mastertrace info.</td>
     {% elif c.mastertrace.error %}
       <td class="error">{{ c.mastertrace.error }}</td>
     {% else %}
-      <td>{{ c.mastertrace.trace_timestamp }}</td>
+      <td>{{ c.mastertrace.trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
     {% endif %}
 
     {% if not c.sitetrace %}
@@ -37,7 +37,7 @@
     {% elif c.sitetrace.error %}
       <td class="error">{{ c.sitetrace.error }}</td>
     {% else %}
-      <td>{{ c.sitetrace.trace_timestamp }}</td>
+      <td>{{ c.sitetrace.trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
     {% endif %}
 
     {% if not c.traceset %}
