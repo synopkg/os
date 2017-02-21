@@ -24,15 +24,18 @@ HISTORY_HOURS=24*7
 
 
 class MirrorReport(BasePageGenerator):
-    def __init__(self, site, outfile = OUTFILE, **kwargs):
+    def __init__(self, site, history_hours=HISTORY_HOURS, outfile = OUTFILE, **kwargs):
         super().__init__(**kwargs)
         self.outfile = outfile
         self.site = site
+        self.history_hours = history_hours
 
     def run(self):
         now = datetime.datetime.now()
+        check_age_cutoff = now - datetime.timedelta(hours=self.history_hours)
 
         results = self.session.query(db.Checkrun, db.Traceset, db.Mastertrace, db.Sitetrace). \
+                  filter(db.Checkrun.timestamp >= check_age_cutoff). \
                   outerjoin(db.Traceset). \
                   filter_by(site_id = self.site.id). \
                   outerjoin(db.Mastertrace). \
