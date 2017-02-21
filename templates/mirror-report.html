@@ -1,0 +1,66 @@
+ <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>Debian mirror report for {{site.name}}</title>
+  <link rel="stylesheet" type="text/css" href="../mirror-status.css">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+
+<h1>Debian mirror report for {{site.name}}</h1>
+
+[<a href="../mirror-status.html#{{site.name}}">S</a>,<a href="../mirror-hierarchy.html#{{site.name}}">H</a>]
+
+<div id="results-table">
+<table>
+<tr>
+  <td><a href="{{site.base_url}}">Site</a></td>
+  <td><a href="{{site.trace_url}}master">mastertrace</a></td>
+  <td><a href="{{site.trace_url}}{{site.name}}">sitetrace</a></td>
+  <td><a href="{{site.trace_url}}">traceset</a></td>
+</tr>
+
+{% for c in checks %}
+  <tr>
+    <td>{{c.checkrun.timestamp}}</td>
+
+    {% if not c.mastertrace %}
+      <td class="error">No mastertrace info.</td>
+    {% elif c.mastertrace.error %}
+      <td class="error">{{ c.mastertrace.error }}</td>
+    {% else %}
+      <td>{{ c.mastertrace.trace_timestamp }}</td>
+    {% endif %}
+
+    {% if not c.sitetrace %}
+      <td class="error">No sitetrace info.</td>
+    {% elif c.sitetrace.error %}
+      <td class="error">{{ c.sitetrace.error }}</td>
+    {% else %}
+      <td>{{ c.sitetrace.trace_timestamp }}</td>
+    {% endif %}
+
+    {% if not c.traceset %}
+      <td class="error">No traceset info.</td>
+    {% elif c.traceset.error %}
+      <td class="error">{{ c.traceset.error }}</td>
+    {% else %}
+      <td>{{ c.traceset.traceset }}</td>
+    {% endif %}
+  </tr>
+{% endfor %}
+</table>
+</div>
+
+<p>
+<hr NOSHADE>
+<div id="footer"
+>Debian mirrors team - mirrors@d.o
+&mdash;
+generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
+&mdash;
+(check <a href="https://validator.w3.org/check?uri=referer">HTML</a>, <a href="https://jigsaw.w3.org/css-validator/check/referer">CSS</a>)
+</div>
+</body>
+</html>
+

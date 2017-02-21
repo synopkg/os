@@ -16,16 +16,19 @@ import dmt.db as db
 
 FTPMASTER = "ftp-master.debian.org"
 
-def get_tracedir(site):
+def get_baseurl(site):
     hn = site['name']
     if not site['http_override_host'] is None:
         hn = site['http_override_host']
     if not site['http_override_port'] is None:
         hn += ':%d'%(site['http_override_port'],)
 
-    #baseurl = urllib.parse.urljoin("http://" + site['name'], site['http_path'])
     baseurl = urllib.parse.urljoin("http://" + hn, site['http_path'])
     if not baseurl.endswith('/'): baseurl += '/'
+    return baseurl
+
+def get_tracedir(site):
+    baseurl = get_baseurl(site)
     tracedir = urllib.parse.urljoin(baseurl, 'project/trace/')
     return tracedir
 

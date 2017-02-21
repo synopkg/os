@@ -2,6 +2,8 @@
 
 import argparse
 import datetime
+import os
+import shutil
 from sqlalchemy import desc, or_
 
 import dmt.db as db
@@ -9,15 +11,23 @@ import dmt.helpers as helpers
 from dmt.BasePageGenerator import BasePageGenerator
 import dmt.StatusGenerator as StatusGenerator
 import dmt.HierarchyGenerator as HierarchyGenerator
+import dmt.MirrorinfoGenerator as MirrorinfoGenerator
 
+OUTDIR='out'
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('--outdir', help='outdir', default=OUTDIR)
     parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
     parser.add_argument('--templatedir', help='template directory', default='templates')
     args = parser.parse_args()
     base = BasePageGenerator(**args.__dict__)
 
-    for cl in (StatusGenerator,HierarchyGenerator,):
-        i = cl.Generator(base = base, outfile=cl.OUTFILE)
+    if not os.path.isdir(args.outdir):
+        os.mkdir(args.outdir)
+
+    for cl in (StatusGenerator, HierarchyGenerator, MirrorinfoGenerator):
+        of = os.path.join(args.outdir, cl.OUTFILE)
+        i = cl.Generator(base = base, outfile=of)
         i.run()
 
+    shutil.copy('mirror-status.css', args.outdir)
