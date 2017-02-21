@@ -18,7 +18,7 @@
       {{cell.labels|join(", ") }}
     </td>
   {% elif cell.entrytype == "site" %}
-      <td
+      <td id="{{cell.name}}"
       {% if cell.mirror.error %}
         class="error"
       {% else %}

@@ -21,7 +21,7 @@
   {% if mirror.error %}
   <tr class="error">
   {% else %}
-  <tr>
+  <tr id="{{mirror.site.name}}">
   {% endif %}
     <td>
     {% if mirror.site.trace_url is defined and mirror.site.trace_url %}
