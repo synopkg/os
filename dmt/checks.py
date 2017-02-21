@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 from collections import OrderedDict
-import dateutil.parser
+#import dateutil.parser
+import datetime
 from bs4 import BeautifulSoup
 import json
 import re
@@ -62,36 +63,48 @@ class BaseCheck:
         raise Exception("store called on abstractish base class")
 
 
-class MastertraceFetcher(BaseCheck):
-    def __init__(self, site, checkrun_id):
+class TracfileFetcher(BaseCheck):
+    def __init__(self, site, checkrun_id, tracefilename):
         super().__init__(site, checkrun_id)
+        self.tracefilename = tracefilename
 
-    @staticmethod
-    def parse_mastertrace(contents):
+    def parse_tracefile(self, rawcontents):
         try:
-            lines = contents.decode('utf-8').split('\n')
+            decoded = rawcontents.decode('utf-8')
+            self.result['full'] = decoded
+
+            lines = decoded.split('\n')
             first = lines.pop(0)
-            ts = dateutil.parser.parse(first)
-            return ts
+            # ts = dateutil.parser.parse(first)
+            ts = datetime.datetime.strptime(first, '%a %b %d %H:%M:%S UTC %Y')
+            self.result['trace_timestamp'] = ts
         except:
-            return None
+            self.result['error'] = "Invalid tracefile"
 
     def run(self):
         try:
-            traceurl = urllib.parse.urljoin(self.get_tracedir(), 'master')
-            mastertrace = self._fetch(traceurl)
-            timestamp = self.parse_mastertrace(mastertrace)
-
-            if timestamp:
-                self.result['trace_timestamp'] = timestamp
-            else:
-                self.result['error'] = "Invalid tracefile"
+            traceurl = urllib.parse.urljoin(self.get_tracedir(), self.tracefilename)
+            rawtracefilecontents = self._fetch(traceurl)
+            self.parse_tracefile(rawtracefilecontents)
         except MirrorFailureException as e:
             self.result['error'] = e.message
+
+class MastertraceFetcher(TracfileFetcher):
+    def __init__(self, site, checkrun_id):
+        super().__init__(site, checkrun_id, 'master')
 
     def store(self, session, checkrun_id):
         i = db.Mastertrace(**self.result)
         session.add(i)
+
+class SitetraceFetcher(TracfileFetcher):
+    def __init__(self, site, checkrun_id):
+        super().__init__(site, checkrun_id, site.name)
+
+    def store(self, session, checkrun_id):
+        i = db.Sitetrace(**self.result)
+        session.add(i)
+
 
 class TracesetFetcher(BaseCheck):
     def __init__(self, site, checkrun_id):

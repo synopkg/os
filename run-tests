@@ -60,6 +60,7 @@ if __name__ == "__main__":
     checklist = []
     for site in session.query(db.Site):
         checklist.append( checks.MastertraceFetcher(site, checkrun.id) )
+        checklist.append( checks.SitetraceFetcher(site, checkrun.id) )
         checklist.append( checks.TracesetFetcher(site, checkrun.id) )
 
     for check_result in check_result_generator(checklist):

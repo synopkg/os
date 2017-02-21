@@ -51,6 +51,7 @@ class Mastertrace(Base):
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
+    full                    = Column(String)
     trace_timestamp         = Column(DateTime(timezone=True))
     error                   = Column(String)
 
