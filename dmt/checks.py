@@ -76,8 +76,17 @@ class TracfileFetcher(BaseCheck):
             lines = decoded.split('\n')
             first = lines.pop(0)
             # ts = dateutil.parser.parse(first)
-            ts = datetime.datetime.strptime(first, '%a %b %d %H:%M:%S UTC %Y')
-            self.result['trace_timestamp'] = ts
+            for f in ('%a %b %d %H:%M:%S UTC %Y',
+                      '%a %b %d %H:%M:%S GMT %Y'):
+                try:
+                    ts = datetime.datetime.strptime(first, '%a %b %d %H:%M:%S UTC %Y')
+                    break
+                except ValueError:
+                    pass
+            if ts is None:
+                self.result['error'] = "Invalid tracefile"
+            else:
+                self.result['trace_timestamp'] = ts
         except:
             self.result['error'] = "Invalid tracefile"
 
