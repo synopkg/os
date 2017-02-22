@@ -79,7 +79,7 @@ class TracfileFetcher(BaseCheck):
             for f in ('%a %b %d %H:%M:%S UTC %Y',
                       '%a %b %d %H:%M:%S GMT %Y'):
                 try:
-                    ts = datetime.datetime.strptime(first, '%a %b %d %H:%M:%S UTC %Y')
+                    ts = datetime.datetime.strptime(first, f)
                     break
                 except ValueError:
                     pass
