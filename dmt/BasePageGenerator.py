@@ -14,6 +14,8 @@ if __name__ == '__main__' and __package__ is None:
 import dmt.db as db
 
 def get_human_readable_age(ts, base):
+    assert(ts is not None)
+    assert(base is not None)
     rd = dateutil.relativedelta.relativedelta(base, ts)
     attrs = ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
     elems = ['%d %s' % (getattr(rd, attr), getattr(rd, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(rd, attr)]
