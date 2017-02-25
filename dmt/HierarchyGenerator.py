@@ -220,12 +220,13 @@ class Generator(BasePageGenerator):
             x['site'] = site.__dict__
             x['site']['trace_url'] = helpers.get_tracedir(x['site'])
             x['traces'] = []
+            error = []
             x['mastertrace'] = { 'agegroup': 'unknown' }
 
             if not traceset is None:
-                x['error'] = traceset.error
+                error.append(traceset.error)
             else:
-                x['error'] = "No traceset information"
+                error.append("No traceset information")
 
             x['traceset_changes'] = get_traceset_changes(self.session, site.id, traces_last_change_cutoff)
 
@@ -244,10 +245,12 @@ class Generator(BasePageGenerator):
 
                 if x['mastertrace']['trace_timestamp'] is not None:
                     x['mastertrace']['agegroup'] = self._get_agegroup(ftpmastertrace - x['mastertrace']['trace_timestamp'])
+                error.append(mastertrace.error)
             else:
-                x['error'] = "No mastertracefile result"
+                error.append("No mastertracefile information")
 
-
+            x['error'] = "; ".join(filter(lambda x: x is not None, error))
+            if x['error'] == "": x['error'] = None
             mirrors[site.name] = x
         hierarchy =  MirrorHierarchy(mirrors)
 
