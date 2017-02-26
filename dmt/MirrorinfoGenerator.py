@@ -24,11 +24,12 @@ HISTORY_HOURS=24*7
 
 
 class MirrorReport(BasePageGenerator):
-    def __init__(self, site, history_hours=HISTORY_HOURS, outfile = OUTFILE, **kwargs):
+    def __init__(self, site, mastertraces_lastseen, history_hours=HISTORY_HOURS, outfile = OUTFILE, **kwargs):
         super().__init__(**kwargs)
         self.outfile = outfile
         self.site = site
         self.history_hours = history_hours
+        self.mastertraces_lastseen = mastertraces_lastseen
 
     def run(self):
         now = datetime.datetime.now()
@@ -51,6 +52,11 @@ class MirrorReport(BasePageGenerator):
                 x['traceset'] = traceset.__dict__
             if not mastertrace is None:
                 x['mastertrace'] = mastertrace.__dict__
+                if x['mastertrace']['trace_timestamp'] is not None and \
+                   x['mastertrace']['trace_timestamp'] in self.mastertraces_lastseen:
+                    x['mastertrace']['lastseen_on_master'] = self.mastertraces_lastseen[ x['mastertrace']['trace_timestamp'] ]
+                else:
+                    x['mastertrace']['lastseen_on_master'] = None
             if not sitetrace is None:
                 x['sitetrace'] = sitetrace.__dict__
             checks.append(x)
@@ -78,9 +84,11 @@ class Generator(BasePageGenerator):
         if not os.path.isdir(outdir):
             os.mkdir(outdir)
 
+        mastertraces_lastseen = helpers.get_ftpmaster_traces_lastseen(self.session)
+
         results = self.session.query(db.Site)
         for site in results:
             of = os.path.join(outdir, site.name + '.html')
-            i = MirrorReport(base = self, outfile=of, site = site)
+            i = MirrorReport(base = self, outfile=of, site = site, mastertraces_lastseen = mastertraces_lastseen)
             i.run()
 

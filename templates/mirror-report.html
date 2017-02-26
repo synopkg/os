@@ -16,6 +16,7 @@
 <tr>
   <td><a href="{{site.base_url}}">Site</a></td>
   <td><a href="{{site.trace_url}}master">mastertrace</a></td>
+  <td><abbr title="master trace last seen on archive master">age<a/></td>
   <td><a href="{{site.trace_url}}{{site.name}}">sitetrace</a></td>
   <td><a href="{{site.trace_url}}">traceset</a></td>
 </tr>
@@ -26,10 +27,20 @@
 
     {% if not c.mastertrace %}
       <td class="error">No mastertrace info.</td>
+      <td>-</td>
     {% elif c.mastertrace.error %}
       <td class="error">{{ c.mastertrace.error }}</td>
+      <td>-</td>
     {% else %}
       <td>{{ c.mastertrace.trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      {% if not c.mastertrace.lastseen_on_master %}
+        <td class="error">unknown<td>
+      {% elif (c.checkrun.timestamp <= c.mastertrace.lastseen_on_master ) %}
+        <td class="age0">current</td>
+      {% else %}
+        <td {{c.mastertrace.lastseen_on_master|agegroupclass(c.checkrun.timestamp)}}>
+        {{c.mastertrace.lastseen_on_master|datetimeage(c.checkrun.timestamp)}}</td>
+      {% endif %}
     {% endif %}
 
     {% if not c.sitetrace %}

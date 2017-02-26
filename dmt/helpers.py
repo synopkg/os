@@ -42,5 +42,18 @@ def get_ftpmaster_trace(session):
     else:
         return None
 
+def get_ftpmaster_traces_lastseen(session):
+    """For each trace on ftp-master, report when it was last seen.
+    """
+    results = session.query(db.Mastertrace, db.Checkrun). \
+              filter(db.Mastertrace.trace_timestamp.isnot(None)). \
+              join(db.Site).filter_by(name = FTPMASTER). \
+              join(db.Checkrun). \
+              order_by(db.Checkrun.timestamp)
+    trace_timestamp_lastseen = {}
+    for mastertrace, checkrun in results:
+        trace_timestamp_lastseen[mastertrace.trace_timestamp] = checkrun.timestamp
+    return trace_timestamp_lastseen
+
 def hostname_comparator(hostname):
     return list(reversed(hostname.split('.')))
