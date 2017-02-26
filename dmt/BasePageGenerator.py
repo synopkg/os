@@ -16,11 +16,18 @@ import dmt.db as db
 def get_human_readable_age(ts, base):
     assert(ts is not None)
     assert(base is not None)
-    rd = dateutil.relativedelta.relativedelta(base, ts)
-    attrs = ['years', 'months', 'days', 'hours', 'minutes', 'seconds']
+
+    if base < ts:
+        rounding_skew = datetime.timedelta(seconds = 30)
+    elif base > ts:
+        rounding_skew = datetime.timedelta(seconds = -30)
+    rd = dateutil.relativedelta.relativedelta(base, ts + rounding_skew)
+    attrs = ['years', 'months', 'days', 'hours', 'minutes']
     elems = ['%d %s' % (getattr(rd, attr), getattr(rd, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(rd, attr)]
 
     hr = ', '.join(elems[0:2])
+    if hr == "": hr = "seconds"
+    #hr += ' (%s)'%(rd,)
     formattedts = ts.strftime('%Y-%m-%d %H:%M:%S')
 
     return (formattedts, hr)
