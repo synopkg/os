@@ -43,28 +43,66 @@ class MirrorReport(BasePageGenerator):
                   filter_by(site_id = self.site.id). \
                   outerjoin(db.Sitetrace). \
                   filter_by(site_id = self.site.id). \
-                  order_by(desc(db.Checkrun.timestamp))
+                  order_by(db.Checkrun.timestamp)
         checks = []
+        # we try to determine the "version" a mirror is running
+        # from its master-tracefile.  As the master-tracefile might
+        # update during a mirrorun, we only believe it when a mirror
+        # run is finished (which we determine from the site-tracefile
+        # being updated.
+        mirror_version_tracker = {
+            'sitetrace.trace_timestamp': None,
+            'mastertrace.trace_timestamp': None
+        }
+        first_sitetrace = True
+
+        first_mastertrace = None
+        last_mastertrace = None
         for checkrun, traceset, mastertrace, sitetrace in results:
             x = {}
+            x['effective_mastertrace'] = {}
             x['checkrun'] = checkrun.__dict__
             if not traceset is None:
                 x['traceset'] = traceset.__dict__
             if not mastertrace is None:
                 x['mastertrace'] = mastertrace.__dict__
-                if x['mastertrace']['trace_timestamp'] is not None and \
-                   x['mastertrace']['trace_timestamp'] in self.mastertraces_lastseen:
-                    x['mastertrace']['lastseen_on_master'] = self.mastertraces_lastseen[ x['mastertrace']['trace_timestamp'] ]
-                else:
-                    x['mastertrace']['lastseen_on_master'] = None
+
+                if mastertrace.trace_timestamp is not None:
+                    if last_mastertrace != mastertrace.trace_timestamp:
+                        last_mastertrace = mastertrace.trace_timestamp
+                        if first_mastertrace:
+                            first_mastertrace = False
+                        else:
+                            x['mastertrace']['changed'] = True
+
             if not sitetrace is None:
                 x['sitetrace'] = sitetrace.__dict__
+                if sitetrace.trace_timestamp is not None:
+                    if sitetrace.trace_timestamp != mirror_version_tracker['sitetrace.trace_timestamp']:
+                        mirror_version_tracker['sitetrace.trace_timestamp'] = sitetrace.trace_timestamp
+                        if first_sitetrace:
+                            # make sure we don't believe the very first master trace entry -
+                            # it might be a mirrorrun in progress
+                            first_sitetrace = False
+                        else:
+                            x['sitetrace']['changed'] = True
+                            x['effective_mastertrace']['changed'] = True
+
+                            mirror_version_tracker['sitetrace.trace_timestamp'] = sitetrace.trace_timestamp
+                            mirror_version_tracker['mastertrace.trace_timestamp'] = mastertrace.trace_timestamp if mastertrace is not None else None
+            # set the mastertrace after the last change of sitetrace (i.e. finished mirrorrun)
+            x['effective_mastertrace']['trace_timestamp'] = mirror_version_tracker['mastertrace.trace_timestamp'] 
+            if x['effective_mastertrace']['trace_timestamp'] is not None and \
+               x['effective_mastertrace']['trace_timestamp'] in self.mastertraces_lastseen:
+                x['effective_mastertrace']['lastseen_on_master'] = self.mastertraces_lastseen[ x['effective_mastertrace']['trace_timestamp'] ]
+            else:
+                x['effective_mastertrace']['lastseen_on_master'] = None
             checks.append(x)
 
         context = {
             'now': now,
             'site': self.site.__dict__,
-            'checks': checks,
+            'checks': reversed(checks),
         }
         context['site']['base_url'] = helpers.get_baseurl(context['site'])
         context['site']['trace_url'] = helpers.get_tracedir(context['site'])
