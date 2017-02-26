@@ -62,9 +62,6 @@ class Generator(BasePageGenerator):
 
             if not mastertrace is None:
                 x['mastertrace'] = mastertrace.__dict__
-
-                if x['mastertrace']['trace_timestamp'] is not None:
-                    x['mastertrace']['agegroup'] = self._get_agegroup(ftpmastertrace - x['mastertrace']['trace_timestamp'])
                 x['error'] = x['mastertrace']['error']
             else:
                 x['error'] = "No mastertracefile result"
@@ -80,8 +77,6 @@ class Generator(BasePageGenerator):
                 last_success = get_last_successfull_sitetrace(self.session, site.id)
                 if not last_success is None:
                     x['sitetrace'].update(last_success)
-            if x['sitetrace']['trace_timestamp'] is not None:
-                x['sitetrace']['agegroup'] = self._get_agegroup(now - x['sitetrace']['trace_timestamp'])
 
         mirrors.sort(key=lambda m: helpers.hostname_comparator(m['site']['name']))
         context = {

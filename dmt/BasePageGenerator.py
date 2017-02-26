@@ -35,6 +35,34 @@ def datetimeagenoabbrfilter(ts, base):
     res = '%s - %s'%(hr, formattedts)
     return res
 
+
+def agegroupclassfilter(ts, base):
+    delta = base - ts
+    # our template defines 8 agegroups from OK(0) to okish(2) to warn(3) and Warn(4-5) to Error(6-7)
+    if delta < datetime.timedelta(hours=6):
+        r = 'class="age0"'
+    elif delta < datetime.timedelta(hours=11):
+        r = 'class="age1"'
+    elif delta < datetime.timedelta(hours=16):
+        r = 'class="age2"'
+    elif delta < datetime.timedelta(hours=24):
+        r = 'class="age3"'
+    elif delta < datetime.timedelta(hours=48):
+        r = 'class="age4"'
+    elif delta < datetime.timedelta(days=3):
+        r = 'class="age5"'
+    elif delta < datetime.timedelta(days=4):
+        r = 'class="age6"'
+    elif delta < datetime.timedelta(days=8):
+        r = 'class="age7"'
+    elif delta < datetime.timedelta(days=14):
+        r = 'class="age8"'
+    elif delta < datetime.timedelta(days=30):
+        r = 'class="age9"'
+    else:
+        r = 'class="age10"'
+    return jinja2.Markup(r)
+
 def raise_helper(msg):
     raise Exception(msg)
 
@@ -60,6 +88,7 @@ class BasePageGenerator:
         )
         tmplenv.filters['datetimeage'] = datetimeagefilter
         tmplenv.filters['datetimeagenoabbr'] = datetimeagenoabbrfilter
+        tmplenv.filters['agegroupclass'] = agegroupclassfilter
         tmplenv.globals['raise'] = raise_helper
         return tmplenv
 
@@ -69,28 +98,3 @@ class BasePageGenerator:
         session = dbh.session()
         return (dbh, session)
 
-    @staticmethod
-    def _get_agegroup(delta):
-        # our template defines 8 agegroups from OK(0) to okish(2) to warn(3) and Warn(4-5) to Error(6-7)
-        if delta < datetime.timedelta(hours=6):
-            return "0"
-        elif delta < datetime.timedelta(hours=11):
-            return "1"
-        elif delta < datetime.timedelta(hours=16):
-            return "2"
-        elif delta < datetime.timedelta(hours=24):
-            return "3"
-        elif delta < datetime.timedelta(hours=48):
-            return "4"
-        elif delta < datetime.timedelta(days=3):
-            return "5"
-        elif delta < datetime.timedelta(days=4):
-            return "6"
-        elif delta < datetime.timedelta(days=8):
-            return "7"
-        elif delta < datetime.timedelta(days=14):
-            return "8"
-        elif delta < datetime.timedelta(days=30):
-            return "9"
-        else:
-            return "10"

@@ -24,7 +24,7 @@
       {% if cell.mirror.error %}
         class="error"
       {% else %}
-        class="age{{cell.mirror.mastertrace.agegroup}}"
+        {{cell.mirror.mastertrace.trace_timestamp|agegroupclass(ftpmastertrace)}}
       {% endif %}
         colspan="{{cell.width}}" rowspan="{{cell.height}}"
       >

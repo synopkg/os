@@ -242,9 +242,6 @@ class Generator(BasePageGenerator):
 
             if not mastertrace is None:
                 x['mastertrace'].update(mastertrace.__dict__)
-
-                if x['mastertrace']['trace_timestamp'] is not None:
-                    x['mastertrace']['agegroup'] = self._get_agegroup(ftpmastertrace - x['mastertrace']['trace_timestamp'])
                 error.append(mastertrace.error)
             else:
                 error.append("No mastertracefile information")
