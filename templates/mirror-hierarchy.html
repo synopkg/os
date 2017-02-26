@@ -39,7 +39,7 @@
           {% elif cell.mirror.mastertrace.trace_timestamp == ftpmastertrace %}
             <abbr title="current">
           {% else %}
-            <abbr title="{{cell.mirror.mastertrace.trace_timestamp|datetimeagenoabbr(ftpmastertrace)|safe}}">
+            <abbr title="{{cell.mirror.mastertrace.trace_timestamp|datetimeagenoabbr(ftpmastertrace)}}">
           {% endif %}
 
             {% if cell.mirror.site.trace_url is defined and cell.mirror.site.trace_url %}
@@ -65,7 +65,7 @@
            {% if cell.mirror.traceset_changes.last_change == last_run %}
              this run.
            {% else %}
-             {{ cell.mirror.traceset_changes.last_change|datetimeage(last_run)|safe }} ago.
+             {{ cell.mirror.traceset_changes.last_change|datetimeage(last_run) }} ago.
            {% endif %}
          </span>
        {% endif %}

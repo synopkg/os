@@ -28,7 +28,7 @@ def get_human_readable_age(ts, base):
 def datetimeagefilter(ts, base):
     formattedts, hr = get_human_readable_age(ts, base)
     res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
-    return res
+    return jinja2.Markup(res)
 
 def datetimeagenoabbrfilter(ts, base):
     formattedts, hr = get_human_readable_age(ts, base)

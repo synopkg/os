@@ -41,7 +41,7 @@
       {% if mirror.mastertrace.trace_timestamp == ftpmastertrace %}
         current
       {% else %}
-        {{mirror.mastertrace.trace_timestamp|datetimeage(ftpmastertrace)|safe}}
+        {{mirror.mastertrace.trace_timestamp|datetimeage(ftpmastertrace)}}
       {% endif %}
       </td>
     {% endif %}
@@ -51,11 +51,11 @@
       <td class="error">{{ mirror.sitetrace.error }}
         {% if mirror.sitetrace.trace_timestamp %}
           &mdash;
-          Using previous data: {{mirror.sitetrace.trace_timestamp|datetimeage(now)|safe}}
+          Using previous data: {{mirror.sitetrace.trace_timestamp|datetimeage(now)}}
         {% endif %}
       </td>
     {% else %}
-      <td {{mirror.sitetrace.trace_timestamp|agegroupclass(now)}}>{{mirror.sitetrace.trace_timestamp|datetimeage(now)|safe}}</td>
+      <td {{mirror.sitetrace.trace_timestamp|agegroupclass(now)}}>{{mirror.sitetrace.trace_timestamp|datetimeage(now)}}</td>
     {% endif %}
   </tr>
 {% endfor %}
