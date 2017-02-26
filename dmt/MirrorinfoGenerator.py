@@ -86,7 +86,8 @@ class MirrorReport(BasePageGenerator):
                             first_sitetrace = False
                         else:
                             x['sitetrace']['changed'] = True
-                            x['effective_mastertrace']['changed'] = True
+                            if mirror_version_tracker['mastertrace.trace_timestamp'] != mastertrace.trace_timestamp:
+                                x['effective_mastertrace']['changed'] = True
 
                             mirror_version_tracker['sitetrace.trace_timestamp'] = sitetrace.trace_timestamp
                             mirror_version_tracker['mastertrace.trace_timestamp'] = mastertrace.trace_timestamp if mastertrace is not None else None
