@@ -87,7 +87,7 @@ class Generator(BasePageGenerator):
         context = {
             'mirrors': mirrors,
             'last_run': checkrun.timestamp,
-            'ftpmasterttrace': ftpmastertrace,
+            'ftpmastertrace': ftpmastertrace,
             'now': now,
         }
         template = self.tmplenv.get_template('mirror-status.html')

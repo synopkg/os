@@ -36,10 +36,10 @@
         {% endif %}
           {% if cell.mirror.error %}
             <abbr title="{{cell.mirror.error}}">
-          {% elif cell.mirror.mastertrace.trace_timestamp == ftpmasterttrace %}
+          {% elif cell.mirror.mastertrace.trace_timestamp == ftpmastertrace %}
             <abbr title="current">
           {% else %}
-            <abbr title="{{cell.mirror.mastertrace.trace_timestamp|datetimeagenoabbr(ftpmasterttrace)|safe}}">
+            <abbr title="{{cell.mirror.mastertrace.trace_timestamp|datetimeagenoabbr(ftpmastertrace)|safe}}">
           {% endif %}
 
             {% if cell.mirror.site.trace_url is defined and cell.mirror.site.trace_url %}

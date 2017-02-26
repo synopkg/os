@@ -266,7 +266,7 @@ class Generator(BasePageGenerator):
             context = {
                 'now': now,
                 'last_run': checkrun.timestamp,
-                'ftpmasterttrace': ftpmastertrace,
+                'ftpmastertrace': ftpmastertrace,
                 'hierarchy_table': cells,
                 'recent_hours': self.recent_hours,
             }
