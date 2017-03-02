@@ -48,10 +48,8 @@
 
     {% if not c.mastertrace %}
       <td class="error">No mastertrace info.</td>
-      <td>-</td>
     {% elif c.mastertrace.error %}
       <td class="error">{{ c.mastertrace.error }}</td>
-      <td>-</td>
     {% else %}
       <td>
         {% if c.mastertrace.changed is defined and c.mastertrace.changed %}<strong>{% endif %}
