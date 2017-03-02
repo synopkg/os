@@ -101,7 +101,7 @@ class MirrorReport():
                         mirror_version_tracker['mastertrace.trace_timestamp'] = row['mastertrace_trace_timestamp']
 
             # set the mastertrace after the last change of sitetrace (i.e. finished mirrorrun)
-            if row['mastertrace_trace_timestamp'] is not None and \
+            if row['mastertrace_trace_timestamp'] is not None and\
                row['sitetrace_trace_timestamp'] is not None: # no errors
                 row['effective_mastertrace_trace_timestamp'] = mirror_version_tracker['mastertrace.trace_timestamp']
             else:
