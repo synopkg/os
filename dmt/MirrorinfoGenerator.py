@@ -91,13 +91,16 @@ class MirrorReport(BasePageGenerator):
 
                             mirror_version_tracker['sitetrace.trace_timestamp'] = sitetrace.trace_timestamp
                             mirror_version_tracker['mastertrace.trace_timestamp'] = mastertrace.trace_timestamp if mastertrace is not None else None
+
             # set the mastertrace after the last change of sitetrace (i.e. finished mirrorrun)
-            x['effective_mastertrace']['trace_timestamp'] = mirror_version_tracker['mastertrace.trace_timestamp'] 
-            if x['effective_mastertrace']['trace_timestamp'] is not None and \
-               x['effective_mastertrace']['trace_timestamp'] in self.mastertraces_lastseen:
-                x['effective_mastertrace']['lastseen_on_master'] = self.mastertraces_lastseen[ x['effective_mastertrace']['trace_timestamp'] ]
-            else:
-                x['effective_mastertrace']['lastseen_on_master'] = None
+            if sitetrace   is not None and sitetrace  .trace_timestamp is not None and \
+               mastertrace is not None and mastertrace.trace_timestamp is not None: # no errors
+                x['effective_mastertrace']['trace_timestamp'] = mirror_version_tracker['mastertrace.trace_timestamp']
+                if x['effective_mastertrace']['trace_timestamp'] is not None and \
+                   x['effective_mastertrace']['trace_timestamp'] in self.mastertraces_lastseen:
+                    x['effective_mastertrace']['lastseen_on_master'] = self.mastertraces_lastseen[ x['effective_mastertrace']['trace_timestamp'] ]
+                else:
+                    x['effective_mastertrace']['lastseen_on_master'] = None
             checks.append(x)
 
         context = {

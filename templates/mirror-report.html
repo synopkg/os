@@ -26,8 +26,8 @@
   <tr>
     <td>{{c.checkrun.timestamp.strftime('%Y-%m-%d %H:%M:%S')}}</td>
 
-    {% if not c.effective_mastertrace.trace_timestamp %}
-      <td class="error">unknown.</td>
+    {% if not (c.effective_mastertrace.trace_timestamp is defined) or not c.effective_mastertrace.trace_timestamp %}
+      <td class="error">unknown</td>
       <td>-</td>
     {% else %}
       <td>
