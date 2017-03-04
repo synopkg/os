@@ -105,3 +105,7 @@ class BasePageGenerator:
         session = dbh.session()
         return (dbh, session)
 
+    def render(self):
+        if not hasattr(self, 'template'):
+            raise Exception("template not loaded yet")
+        self.template.stream(self.context).dump(self.outfile, errors='strict')

@@ -39,8 +39,9 @@ class Generator(BasePageGenerator):
         super().__init__(**kwargs)
         assert('outfile' in kwargs)
         self.outfile = kwargs['outfile']
+        self.template = self.tmplenv.get_template('mirror-status.html')
 
-    def run(self):
+    def prepare(self):
         now = datetime.datetime.now(datetime.timezone.utc)
         ftpmastertrace = helpers.get_ftpmaster_trace(self.session)
         if ftpmastertrace is None: ftpmastertrace = now
@@ -85,8 +86,7 @@ class Generator(BasePageGenerator):
             'ftpmastertrace': ftpmastertrace,
             'now': now,
         }
-        template = self.tmplenv.get_template('mirror-status.html')
-        template.stream(context).dump(self.outfile, errors='strict')
+        self.context = context
 
 OUTFILE='mirror-status.html'
 
@@ -96,4 +96,6 @@ if __name__ == "__main__":
     parser.add_argument('--templatedir', help='template directory', default='templates')
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
-    Generator(**args.__dict__).run()
+    g = Generator(**args.__dict__)
+    g.prepare()
+    g.render()

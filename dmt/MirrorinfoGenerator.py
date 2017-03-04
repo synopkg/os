@@ -30,8 +30,9 @@ class MirrorReport(BasePageGenerator):
         self.site = site
         self.history_hours = history_hours
         self.mastertraces_lastseen = mastertraces_lastseen
+        self.template = self.tmplenv.get_template('mirror-report.html')
 
-    def run(self):
+    def prepare(self):
         now = datetime.datetime.now()
         check_age_cutoff = now - datetime.timedelta(hours=self.history_hours)
 
@@ -110,9 +111,8 @@ class MirrorReport(BasePageGenerator):
         }
         context['site']['base_url'] = helpers.get_baseurl(context['site'])
         context['site']['trace_url'] = helpers.get_tracedir(context['site'])
-        template = self.tmplenv.get_template('mirror-report.html')
-        template.stream(context).dump(self.outfile, errors='strict')
 
+        self.context = context
 
 
 
@@ -121,7 +121,7 @@ class Generator(BasePageGenerator):
         super().__init__(**kwargs)
         self.outfile = outfile
 
-    def run(self):
+    def prepare(self):
         outdir = self.outfile
         if not os.path.isdir(outdir):
             os.mkdir(outdir)
@@ -129,8 +129,24 @@ class Generator(BasePageGenerator):
         mastertraces_lastseen = helpers.get_ftpmaster_traces_lastseen(self.session)
 
         results = self.session.query(db.Site)
+        self.reports = []
         for site in results:
             of = os.path.join(outdir, site.name + '.html')
             i = MirrorReport(base = self, outfile=of, site = site, mastertraces_lastseen = mastertraces_lastseen)
-            i.run()
+            i.prepare()
+            self.reports.append(i)
 
+    def render(self):
+        for i in self.reports:
+            i.render()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
+    parser.add_argument('--templatedir', help='template directory', default='templates')
+    parser.add_argument('--outfile', help='output-dir', default=OUTFILE)
+    args = parser.parse_args()
+    g = Generator(**args.__dict__)
+    g.prepare()
+    g.render()

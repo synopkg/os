@@ -199,8 +199,10 @@ class Generator(BasePageGenerator):
         self.outfile = outfile
         self.recent_hours = recent_hours
         self.textonly = textonly
+        if not self.textonly:
+            self.template = self.tmplenv.get_template('mirror-hierarchy.html')
 
-    def run(self):
+    def prepare(self):
         now = datetime.datetime.now()
         traces_last_change_cutoff = now - datetime.timedelta(hours=self.recent_hours)
         ftpmastertrace = helpers.get_ftpmaster_trace(self.session)
@@ -252,24 +254,27 @@ class Generator(BasePageGenerator):
         hierarchy =  MirrorHierarchy(mirrors)
 
         if self.textonly:
-            print(hierarchy.tree)
-            #for x in hierarchy.get_cells():
-            #    print(x)
+            self.hierarchy = hierarchy
         else:
             cells = list(hierarchy.get_cells())
             del cells[0]
             cells[-1]['last'] = True
 
-            context = {
+            self.context = {
                 'now': now,
                 'last_run': checkrun.timestamp,
                 'ftpmastertrace': ftpmastertrace,
                 'hierarchy_table': cells,
                 'recent_hours': self.recent_hours,
             }
-            template = self.tmplenv.get_template('mirror-hierarchy.html')
-            template.stream(context).dump(self.outfile, errors='strict')
 
+    def render(self):
+        if self.textonly:
+            print(self.hierarchy.tree)
+            #for x in self.hierarchy.get_cells():
+            #    print(x)
+        else:
+            super().render()
 
 
 if __name__ == "__main__":
@@ -280,4 +285,6 @@ if __name__ == "__main__":
     parser.add_argument('--recent-hours', help='flag mirrors that changed hierarchy within the last <x> hours', type=float, default=RECENTCHANGE_HOURS)
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
-    Generator(**args.__dict__).run()
+    g = Generator(**args.__dict__)
+    g.prepare()
+    g.render()
