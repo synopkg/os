@@ -129,16 +129,11 @@ class Generator(BasePageGenerator):
         mastertraces_lastseen = helpers.get_ftpmaster_traces_lastseen(self.session)
 
         results = self.session.query(db.Site)
-        self.reports = []
         for site in results:
             of = os.path.join(outdir, site.name + '.html')
             i = MirrorReport(base = self, outfile=of, site = site, mastertraces_lastseen = mastertraces_lastseen)
             i.prepare()
-            self.reports.append(i)
-
-    def render(self):
-        for i in self.reports:
-            i.render()
+            yield i
 
 
 if __name__ == "__main__":
@@ -148,5 +143,4 @@ if __name__ == "__main__":
     parser.add_argument('--outfile', help='output-dir', default=OUTFILE)
     args = parser.parse_args()
     g = Generator(**args.__dict__)
-    g.prepare()
-    g.render()
+    for x in g.prepare(): x.render()

@@ -87,6 +87,7 @@ class Generator(BasePageGenerator):
             'now': now,
         }
         self.context = context
+        return [self]
 
 OUTFILE='mirror-status.html'
 
@@ -97,5 +98,4 @@ if __name__ == "__main__":
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
     g = Generator(**args.__dict__)
-    g.prepare()
-    g.render()
+    for x in g.prepare(): x.render()

@@ -28,7 +28,6 @@ if __name__ == "__main__":
     for cl in (StatusGenerator, HierarchyGenerator, MirrorinfoGenerator):
         of = os.path.join(args.outdir, cl.OUTFILE)
         i = cl.Generator(base = base, outfile=of)
-        i.prepare()
-        i.render()
+        for x in i.prepare(): x.render()
 
     shutil.copy('mirror-status.css', args.outdir)
