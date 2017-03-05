@@ -32,11 +32,11 @@ class MirrorReport(BasePageGenerator):
         self.mastertraces_lastseen = mastertraces_lastseen
         self.template = self.tmplenv.get_template('mirror-report.html')
 
-    def prepare(self):
+    def prepare(self, dbsession):
         now = datetime.datetime.now()
         check_age_cutoff = now - datetime.timedelta(hours=self.history_hours)
 
-        results = self.session.query(db.Checkrun, db.Traceset, db.Mastertrace, db.Sitetrace). \
+        results = dbsession.query(db.Checkrun, db.Traceset, db.Mastertrace, db.Sitetrace). \
                   filter(db.Checkrun.timestamp >= check_age_cutoff). \
                   outerjoin(db.Traceset). \
                   filter_by(site_id = self.site.id). \
@@ -121,18 +121,18 @@ class Generator(BasePageGenerator):
         super().__init__(**kwargs)
         self.outfile = outfile
 
-    def prepare(self):
+    def prepare(self, dbsession):
         outdir = self.outfile
         if not os.path.isdir(outdir):
             os.mkdir(outdir)
 
-        mastertraces_lastseen = helpers.get_ftpmaster_traces_lastseen(self.session)
+        mastertraces_lastseen = helpers.get_ftpmaster_traces_lastseen(dbsession)
 
-        results = self.session.query(db.Site)
+        results = dbsession.query(db.Site)
         for site in results:
             of = os.path.join(outdir, site.name + '.html')
             i = MirrorReport(base = self, outfile=of, site = site, mastertraces_lastseen = mastertraces_lastseen)
-            i.prepare()
+            i.prepare(dbsession)
             yield i
 
 
@@ -142,5 +142,7 @@ if __name__ == "__main__":
     parser.add_argument('--templatedir', help='template directory', default='templates')
     parser.add_argument('--outfile', help='output-dir', default=OUTFILE)
     args = parser.parse_args()
+
+    dbsession = db.MirrorDB(args.dburl).session()
     g = Generator(**args.__dict__)
-    for x in g.prepare(): x.render()
+    for x in g.prepare(dbsession): x.render()

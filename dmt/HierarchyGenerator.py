@@ -202,15 +202,15 @@ class Generator(BasePageGenerator):
         if not self.textonly:
             self.template = self.tmplenv.get_template('mirror-hierarchy.html')
 
-    def prepare(self):
+    def prepare(self, dbsession):
         now = datetime.datetime.now()
         traces_last_change_cutoff = now - datetime.timedelta(hours=self.recent_hours)
-        ftpmastertrace = helpers.get_ftpmaster_trace(self.session)
+        ftpmastertrace = helpers.get_ftpmaster_trace(dbsession)
         if ftpmastertrace is None: ftpmastertrace = now
-        checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
+        checkrun = dbsession.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
 
         mirrors = {}
-        results = self.session.query(db.Site, db.Traceset, db.Mastertrace). \
+        results = dbsession.query(db.Site, db.Traceset, db.Mastertrace). \
                   outerjoin(db.Traceset).\
                   filter(or_(db.Traceset.checkrun_id == None,
                              db.Traceset.checkrun_id == checkrun.id)).\
@@ -230,7 +230,7 @@ class Generator(BasePageGenerator):
             else:
                 error.append("No traceset information")
 
-            x['traceset_changes'] = get_traceset_changes(self.session, site.id, traces_last_change_cutoff)
+            x['traceset_changes'] = get_traceset_changes(dbsession, site.id, traces_last_change_cutoff)
 
             # use most recent traceset, ignoring the ones from the most recent run if there was an error
             x['traceset'] = x['traceset_changes']['most_recent']
@@ -281,5 +281,7 @@ if __name__ == "__main__":
     parser.add_argument('--recent-hours', help='flag mirrors that changed hierarchy within the last <x> hours', type=float, default=RECENTCHANGE_HOURS)
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
+
+    dbsession = db.MirrorDB(args.dburl).session()
     g = Generator(**args.__dict__)
-    for x in g.prepare(): x.render()
+    for x in g.prepare(dbsession): x.render()

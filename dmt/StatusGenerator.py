@@ -41,13 +41,13 @@ class Generator(BasePageGenerator):
         self.outfile = kwargs['outfile']
         self.template = self.tmplenv.get_template('mirror-status.html')
 
-    def prepare(self):
+    def prepare(self, dbsession):
         now = datetime.datetime.now(datetime.timezone.utc)
-        ftpmastertrace = helpers.get_ftpmaster_trace(self.session)
+        ftpmastertrace = helpers.get_ftpmaster_trace(dbsession)
         if ftpmastertrace is None: ftpmastertrace = now
-        checkrun = self.session.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
+        checkrun = dbsession.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
 
-        mastertraces = self.session.query(db.Site, db.Mastertrace, db.Sitetrace). \
+        mastertraces = dbsession.query(db.Site, db.Mastertrace, db.Sitetrace). \
                        outerjoin(db.Mastertrace).\
                        filter(or_(db.Mastertrace.checkrun_id == None,
                                   db.Mastertrace.checkrun_id == checkrun.id)).\
@@ -75,7 +75,7 @@ class Generator(BasePageGenerator):
                 x['sitetrace']['error'] = "No sitetrace result"
 
             if x['sitetrace']['trace_timestamp'] is None:
-                last_success = get_last_successfull_sitetrace(self.session, site.id)
+                last_success = get_last_successfull_sitetrace(dbsession, site.id)
                 if not last_success is None:
                     x['sitetrace'].update(last_success)
 
@@ -97,5 +97,7 @@ if __name__ == "__main__":
     parser.add_argument('--templatedir', help='template directory', default='templates')
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
+
+    dbsession = db.MirrorDB(args.dburl).session()
     g = Generator(**args.__dict__)
-    for x in g.prepare(): x.render()
+    for x in g.prepare(dbsession): x.render()

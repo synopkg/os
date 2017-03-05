@@ -77,14 +77,9 @@ class BasePageGenerator:
     def __init__(self, **kwargs):
         if 'base' in kwargs:
             self.tmplenv  = kwargs['base'].tmplenv
-            self.dbh      = kwargs['base'].dbh
-            self.session  = kwargs['base'].session
         else:
-            assert('dburl' in kwargs)
             assert('templatedir' in kwargs)
             self.tmplenv = self.setup_template_env(kwargs['templatedir'])
-            (self.dbh, self.session) = self.setup_db(kwargs['dburl'])
-
 
     @staticmethod
     def setup_template_env(templatedir):
@@ -98,12 +93,6 @@ class BasePageGenerator:
         tmplenv.filters['agegroupclass'] = agegroupclassfilter
         tmplenv.globals['raise'] = raise_helper
         return tmplenv
-
-    @staticmethod
-    def setup_db(dburl):
-        dbh = db.MirrorDB(dburl)
-        session = dbh.session()
-        return (dbh, session)
 
     def render(self):
         if not hasattr(self, 'template'):
