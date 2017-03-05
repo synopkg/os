@@ -134,7 +134,7 @@ class Generator():
 
 
 if __name__ == "__main__":
-    from dmt.BasePageGenerator import BasePageGenerator
+    from dmt.BasePageRenderer import BasePageRenderer
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     parser.add_argument('--outfile', help='output-dir', default=OUTFILE)
     args = parser.parse_args()
 
-    base = BasePageGenerator(**args.__dict__)
+    base = BasePageRenderer(**args.__dict__)
     dbsession = db.MirrorDB(args.dburl).session()
     g = Generator(**args.__dict__)
     for x in g.prepare(dbsession): base.render(x)

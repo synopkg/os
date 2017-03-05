@@ -8,8 +8,8 @@ if __name__ == '__main__' and __package__ is None:
     from pathlib import Path
     top = Path(__file__).resolve().parents[1]
     sys.path.append(str(top))
-    import dmt.BasePageGenerator
-    __package__ = 'dmt.BasePageGenerator'
+    import dmt.BasePageRenderer
+    __package__ = 'dmt.BasePageRenderer'
 
 import dmt.db as db
 
@@ -73,7 +73,7 @@ def agegroupclassfilter(ts, base):
 def raise_helper(msg):
     raise Exception(msg)
 
-class BasePageGenerator:
+class BasePageRenderer:
     def __init__(self, **kwargs):
         self.tmplenv = self.setup_template_env(kwargs['templatedir'])
 

@@ -8,7 +8,7 @@ from sqlalchemy import desc, or_
 
 import dmt.db as db
 import dmt.helpers as helpers
-from dmt.BasePageGenerator import BasePageGenerator
+from dmt.BasePageRenderer import BasePageRenderer
 import dmt.StatusGenerator as StatusGenerator
 import dmt.HierarchyGenerator as HierarchyGenerator
 import dmt.MirrorinfoGenerator as MirrorinfoGenerator
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dbsession = db.MirrorDB(args.dburl).session()
-    base = BasePageGenerator(**args.__dict__)
+    base = BasePageRenderer(**args.__dict__)
 
     if not os.path.isdir(args.outdir):
         os.mkdir(args.outdir)
