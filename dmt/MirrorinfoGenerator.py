@@ -17,20 +17,18 @@ if __name__ == '__main__' and __package__ is None:
 
 import dmt.db as db
 import dmt.helpers as helpers
-from dmt.BasePageGenerator import BasePageGenerator
 
 OUTFILE='mirror-info'
 HISTORY_HOURS=24*7
 
 
-class MirrorReport(BasePageGenerator):
+class MirrorReport():
     def __init__(self, site, mastertraces_lastseen, history_hours=HISTORY_HOURS, outfile = OUTFILE, **kwargs):
-        super().__init__(**kwargs)
         self.outfile = outfile
         self.site = site
         self.history_hours = history_hours
         self.mastertraces_lastseen = mastertraces_lastseen
-        self.template = self.tmplenv.get_template('mirror-report.html')
+        self.template_name = 'mirror-report.html'
 
     def prepare(self, dbsession):
         now = datetime.datetime.now()
@@ -116,9 +114,8 @@ class MirrorReport(BasePageGenerator):
 
 
 
-class Generator(BasePageGenerator):
+class Generator():
     def __init__(self, outfile = OUTFILE, **kwargs):
-        super().__init__(**kwargs)
         self.outfile = outfile
 
     def prepare(self, dbsession):
@@ -137,12 +134,15 @@ class Generator(BasePageGenerator):
 
 
 if __name__ == "__main__":
+    from dmt.BasePageGenerator import BasePageGenerator
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
     parser.add_argument('--templatedir', help='template directory', default='templates')
     parser.add_argument('--outfile', help='output-dir', default=OUTFILE)
     args = parser.parse_args()
 
+    base = BasePageGenerator(**args.__dict__)
     dbsession = db.MirrorDB(args.dburl).session()
     g = Generator(**args.__dict__)
-    for x in g.prepare(dbsession): x.render()
+    for x in g.prepare(dbsession): base.render(x)

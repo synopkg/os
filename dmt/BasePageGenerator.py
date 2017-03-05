@@ -75,11 +75,7 @@ def raise_helper(msg):
 
 class BasePageGenerator:
     def __init__(self, **kwargs):
-        if 'base' in kwargs:
-            self.tmplenv  = kwargs['base'].tmplenv
-        else:
-            assert('templatedir' in kwargs)
-            self.tmplenv = self.setup_template_env(kwargs['templatedir'])
+        self.tmplenv = self.setup_template_env(kwargs['templatedir'])
 
     @staticmethod
     def setup_template_env(templatedir):
@@ -94,7 +90,6 @@ class BasePageGenerator:
         tmplenv.globals['raise'] = raise_helper
         return tmplenv
 
-    def render(self):
-        if not hasattr(self, 'template'):
-            raise Exception("template not loaded yet")
-        self.template.stream(self.context).dump(self.outfile, errors='strict')
+    def render(self, page):
+        self.template = self.tmplenv.get_template(page.template_name)
+        self.template.stream(page.context).dump(page.outfile, errors='strict')

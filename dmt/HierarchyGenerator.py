@@ -16,7 +16,6 @@ if __name__ == '__main__' and __package__ is None:
 
 import dmt.db as db
 import dmt.helpers as helpers
-from dmt.BasePageGenerator import BasePageGenerator
 
 
 OUTFILE='mirror-hierarchy.html'
@@ -193,14 +192,12 @@ def get_traceset_changes(session, site_id, traces_last_change_cutoff):
           }
     return res
 
-class Generator(BasePageGenerator):
+class Generator():
     def __init__(self, outfile = OUTFILE, textonly = False, recent_hours = RECENTCHANGE_HOURS, **kwargs):
-        super().__init__(**kwargs)
         self.outfile = outfile
         self.recent_hours = recent_hours
         self.textonly = textonly
-        if not self.textonly:
-            self.template = self.tmplenv.get_template('mirror-hierarchy.html')
+        self.template_name = 'mirror-hierarchy.html'
 
     def prepare(self, dbsession):
         now = datetime.datetime.now()
@@ -274,14 +271,17 @@ class Generator(BasePageGenerator):
 
 
 if __name__ == "__main__":
+    from dmt.BasePageGenerator import BasePageGenerator
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
     parser.add_argument('--templatedir', help='template directory', default='templates')
     parser.add_argument('--textonly', help='only write text to stdout', default=False, action='store_true')
     parser.add_argument('--recent-hours', help='flag mirrors that changed hierarchy within the last <x> hours', type=float, default=RECENTCHANGE_HOURS)
-    parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
+    parser.add_argument('--outfile', help='output-file', default=OUTFILE)
     args = parser.parse_args()
 
+    base = BasePageGenerator(**args.__dict__)
     dbsession = db.MirrorDB(args.dburl).session()
     g = Generator(**args.__dict__)
-    for x in g.prepare(dbsession): x.render()
+    for x in g.prepare(dbsession): base.render(x)

@@ -17,7 +17,6 @@ import dmt.helpers as helpers
 
 import dmt.db as db
 import dmt.helpers as helpers
-from dmt.BasePageGenerator import BasePageGenerator
 
 def get_last_successfull_sitetrace(session, site_id):
     result = session.query(db.Sitetrace). \
@@ -34,12 +33,10 @@ def get_last_successfull_sitetrace(session, site_id):
         return None
 
 
-class Generator(BasePageGenerator):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        assert('outfile' in kwargs)
-        self.outfile = kwargs['outfile']
-        self.template = self.tmplenv.get_template('mirror-status.html')
+class Generator():
+    def __init__(self, outfile, **kwargs):
+        self.outfile = outfile
+        self.template_name = 'mirror-status.html'
 
     def prepare(self, dbsession):
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -92,12 +89,15 @@ class Generator(BasePageGenerator):
 OUTFILE='mirror-status.html'
 
 if __name__ == "__main__":
+    from dmt.BasePageGenerator import BasePageGenerator
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
     parser.add_argument('--templatedir', help='template directory', default='templates')
     parser.add_argument('--outfile', help='output-file', default=OUTFILE, type=argparse.FileType('w'))
     args = parser.parse_args()
 
+    base = BasePageGenerator(**args.__dict__)
     dbsession = db.MirrorDB(args.dburl).session()
     g = Generator(**args.__dict__)
-    for x in g.prepare(dbsession): x.render()
+    for x in g.prepare(dbsession): base.render(x)

@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     for cl in (StatusGenerator, HierarchyGenerator, MirrorinfoGenerator):
         of = os.path.join(args.outdir, cl.OUTFILE)
-        i = cl.Generator(base = base, outfile=of)
-        for x in i.prepare(dbsession): x.render()
+        i = cl.Generator(outfile=of)
+        for x in i.prepare(dbsession): base.render(x)
 
     shutil.copy('mirror-status.css', args.outdir)
