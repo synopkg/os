@@ -18,7 +18,7 @@ import dmt.helpers as helpers
 
 
 OUTFILE='mirror-hierarchy.html'
-RECENTCHANGE_HOURS=24
+RECENTCHANGE_HOURS=24*2
 
 def powersetish(iterable):
     """return the powerset of iterable, from longest subset to smallest
