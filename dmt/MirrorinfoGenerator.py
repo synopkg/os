@@ -4,7 +4,6 @@ import argparse
 import datetime
 import itertools
 import json
-from sqlalchemy import desc, or_
 import sys
 import os
 
@@ -30,19 +29,41 @@ class MirrorReport():
         self.mastertraces_lastseen = mastertraces_lastseen
         self.template_name = 'mirror-report.html'
 
-    def prepare(self, dbsession):
+    def prepare(self, dbh):
+        cur = dbh.cursor()
+
         now = datetime.datetime.now()
         check_age_cutoff = now - datetime.timedelta(hours=self.history_hours)
 
-        results = dbsession.query(db.Checkrun, db.Traceset, db.Mastertrace, db.Sitetrace). \
-                  filter(db.Checkrun.timestamp >= check_age_cutoff). \
-                  outerjoin(db.Traceset). \
-                  filter_by(site_id = self.site.id). \
-                  outerjoin(db.Mastertrace). \
-                  filter_by(site_id = self.site.id). \
-                  outerjoin(db.Sitetrace). \
-                  filter_by(site_id = self.site.id). \
-                  order_by(db.Checkrun.timestamp)
+        cur.execute("""
+            SELECT
+                checkrun.timestamp as checkrun_timestamp,
+
+                mastertrace.id AS mastertrace_id,
+                mastertrace.error AS mastertrace_error,
+                mastertrace.trace_timestamp AS mastertrace_trace_timestamp,
+
+                sitetrace.id AS sitetrace_id,
+                sitetrace.error AS sitetrace_error,
+                sitetrace.trace_timestamp AS sitetrace_trace_timestamp,
+
+                traceset.id AS traceset_id,
+                traceset.error AS traceset_error,
+                traceset.traceset AS traceset_traceset
+
+            FROM checkrun LEFT OUTER JOIN
+                (SELECT * FROM mastertrace WHERE site_id = %(site_id)s) AS mastertrace ON checkrun.id = mastertrace.checkrun_id LEFT OUTER JOIN
+                (SELECT * FROM sitetrace   WHERE site_id = %(site_id)s) AS sitetrace   ON checkrun.id = sitetrace.checkrun_id LEFT OUTER JOIN
+                (SELECT * FROM traceset    WHERE site_id = %(site_id)s) AS traceset    ON checkrun.id = traceset.checkrun_id
+            WHERE
+                checkrun.timestamp >= %(check_age_cutoff)s
+            ORDER BY
+                checkrun.timestamp
+            """, {
+                'check_age_cutoff': check_age_cutoff,
+                'site_id': self.site['id'],
+            })
+
         checks = []
         # we try to determine the "version" a mirror is running
         # from its master-tracefile.  As the master-tracefile might
@@ -57,58 +78,46 @@ class MirrorReport():
 
         first_mastertrace = None
         last_mastertrace = None
-        for checkrun, traceset, mastertrace, sitetrace in results:
-            x = {}
-            x['effective_mastertrace'] = {}
-            x['checkrun'] = checkrun.__dict__
-            if not traceset is None:
-                x['traceset'] = traceset.__dict__
-            if not mastertrace is None:
-                x['mastertrace'] = mastertrace.__dict__
+        for row in cur.fetchall():
+            row['effective_mastertrace'] = {}
+            if row['mastertrace_trace_timestamp'] is not None:
+                if last_mastertrace != row['mastertrace_trace_timestamp']:
+                    last_mastertrace = row['mastertrace_trace_timestamp']
+                    # make sure we don't believe the very first master trace entry - it might be a mirrorrun in progress
+                    if first_mastertrace: first_mastertrace = False
+                    else:                 row['mastertrace_changed'] = True
 
-                if mastertrace.trace_timestamp is not None:
-                    if last_mastertrace != mastertrace.trace_timestamp:
-                        last_mastertrace = mastertrace.trace_timestamp
-                        if first_mastertrace:
-                            first_mastertrace = False
-                        else:
-                            x['mastertrace']['changed'] = True
+            if row['sitetrace_trace_timestamp'] is not None:
+                if row['sitetrace_trace_timestamp'] != mirror_version_tracker['sitetrace.trace_timestamp']:
+                    mirror_version_tracker['sitetrace.trace_timestamp'] = row['sitetrace_trace_timestamp']
+                    # make sure we don't believe the very first master trace entry - it might be a mirrorrun in progress
+                    if first_sitetrace: first_sitetrace = False
+                    else:
+                        row['sitetrace_changed'] = True
+                        if mirror_version_tracker['mastertrace.trace_timestamp'] != row['mastertrace_trace_timestamp']:
+                            row['effective_mastertrace_changed'] = True
 
-            if not sitetrace is None:
-                x['sitetrace'] = sitetrace.__dict__
-                if sitetrace.trace_timestamp is not None:
-                    if sitetrace.trace_timestamp != mirror_version_tracker['sitetrace.trace_timestamp']:
-                        mirror_version_tracker['sitetrace.trace_timestamp'] = sitetrace.trace_timestamp
-                        if first_sitetrace:
-                            # make sure we don't believe the very first master trace entry -
-                            # it might be a mirrorrun in progress
-                            first_sitetrace = False
-                        else:
-                            x['sitetrace']['changed'] = True
-                            if mirror_version_tracker['mastertrace.trace_timestamp'] != mastertrace.trace_timestamp:
-                                x['effective_mastertrace']['changed'] = True
-
-                            mirror_version_tracker['sitetrace.trace_timestamp'] = sitetrace.trace_timestamp
-                            mirror_version_tracker['mastertrace.trace_timestamp'] = mastertrace.trace_timestamp if mastertrace is not None else None
+                        mirror_version_tracker['sitetrace.trace_timestamp']   = row['sitetrace_trace_timestamp']
+                        mirror_version_tracker['mastertrace.trace_timestamp'] = row['mastertrace_trace_timestamp']
 
             # set the mastertrace after the last change of sitetrace (i.e. finished mirrorrun)
-            if sitetrace   is not None and sitetrace  .trace_timestamp is not None and \
-               mastertrace is not None and mastertrace.trace_timestamp is not None: # no errors
-                x['effective_mastertrace']['trace_timestamp'] = mirror_version_tracker['mastertrace.trace_timestamp']
-                if x['effective_mastertrace']['trace_timestamp'] is not None and \
-                   x['effective_mastertrace']['trace_timestamp'] in self.mastertraces_lastseen:
-                    x['effective_mastertrace']['lastseen_on_master'] = self.mastertraces_lastseen[ x['effective_mastertrace']['trace_timestamp'] ]
-                else:
-                    x['effective_mastertrace']['lastseen_on_master'] = None
-            checks.append(x)
+            if row['mastertrace_trace_timestamp'] is not None and \
+               row['sitetrace_trace_timestamp'] is not None: # no errors
+                row['effective_mastertrace_trace_timestamp'] = mirror_version_tracker['mastertrace.trace_timestamp']
+            else:
+                row['effective_mastertrace_trace_timestamp'] = None
+            row['effective_mastertrace_lastseen_on_master'] = self.mastertraces_lastseen.get( row['effective_mastertrace_trace_timestamp'] )
+            checks.append(row)
 
         context = {
             'now': now,
-            'site': self.site.__dict__,
             'checks': reversed(checks),
         }
-        context['site']['base_url'] = helpers.get_baseurl(context['site'])
-        context['site']['trace_url'] = helpers.get_tracedir(context['site'])
+        context['site'] = {
+            'name'     : self.site['name'],
+            'base_url' : helpers.get_baseurl(self.site),
+            'trace_url': helpers.get_tracedir(self.site),
+        }
 
         self.context = context
 
@@ -118,18 +127,26 @@ class Generator():
     def __init__(self, outfile = OUTFILE, **kwargs):
         self.outfile = outfile
 
-    def prepare(self, dbsession):
+    def get_pages(self, dbh):
         outdir = self.outfile
         if not os.path.isdir(outdir):
             os.mkdir(outdir)
 
-        mastertraces_lastseen = helpers.get_ftpmaster_traces_lastseen(dbsession)
+        cur = dbh.cursor()
+        mastertraces_lastseen = helpers.get_ftpmaster_traces_lastseen(cur)
 
-        results = dbsession.query(db.Site)
-        for site in results:
-            of = os.path.join(outdir, site.name + '.html')
+        cur.execute("""
+            SELECT
+                site.id,
+                site.name,
+                site.http_override_host,
+                site.http_override_port,
+                site.http_path
+            FROM site
+            """)
+        for site in cur.fetchall():
+            of = os.path.join(outdir, site['name'] + '.html')
             i = MirrorReport(base = self, outfile=of, site = site, mastertraces_lastseen = mastertraces_lastseen)
-            i.prepare(dbsession)
             yield i
 
 
@@ -143,6 +160,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     base = BasePageRenderer(**args.__dict__)
-    dbsession = db.MirrorDB(args.dburl).session()
+    dbh = db.RawDB(args.dburl)
     g = Generator(**args.__dict__)
-    for x in g.prepare(dbsession): base.render(x)
+    for x in g.get_pages(dbh):
+        x.prepare(dbh)
+        base.render(x)

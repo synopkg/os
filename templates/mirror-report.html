@@ -24,58 +24,58 @@
 
 {% for c in checks %}
   <tr>
-    <td>{{c.checkrun.timestamp.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+    <td>{{c.checkrun_timestamp.strftime('%Y-%m-%d %H:%M:%S')}}</td>
 
-    {% if not (c.effective_mastertrace.trace_timestamp is defined) or not c.effective_mastertrace.trace_timestamp %}
-      <td class="error">unknown</td>
+    {% if not c.effective_mastertrace_trace_timestamp %}
+      <td class="error">unknown.</td>
       <td>-</td>
     {% else %}
       <td>
-        {% if c.effective_mastertrace.changed is defined and c.effective_mastertrace.changed %}<strong>{% endif %}
-        {{ c.effective_mastertrace.trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
-        {% if c.effective_mastertrace.changed is defined and c.effective_mastertrace.changed %}</strong>{% endif %}
+        {% if c.effective_mastertrace_changed is defined and c.effective_mastertrace_changed %}<strong>{% endif %}
+        {{ c.effective_mastertrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+        {% if c.effective_mastertrace_changed is defined and c.effective_mastertrace_changed %}</strong>{% endif %}
       </td>
-      {% if not c.effective_mastertrace.lastseen_on_master %}
+      {% if not c.effective_mastertrace_lastseen_on_master %}
         <td class="error">unknown<td>
-      {% elif (c.checkrun.timestamp <= c.effective_mastertrace.lastseen_on_master ) %}
+      {% elif (c.checkrun_timestamp <= c.effective_mastertrace_lastseen_on_master ) %}
         <td class="age0">current</td>
       {% else %}
-        <td {{c.effective_mastertrace.lastseen_on_master|agegroupclass(c.checkrun.timestamp)}}>
-        {{c.effective_mastertrace.lastseen_on_master|datetimeage(c.checkrun.timestamp)}}
+        <td {{c.effective_mastertrace_lastseen_on_master|agegroupclass(c.checkrun_timestamp)}}>
+        {{c.effective_mastertrace_lastseen_on_master|datetimeage(c.checkrun_timestamp)}}
         </td>
       {% endif %}
     {% endif %}
 
-    {% if not c.mastertrace %}
+    {% if not c.mastertrace_id %}
       <td class="error">No mastertrace info.</td>
-    {% elif c.mastertrace.error %}
-      <td class="error">{{ c.mastertrace.error }}</td>
+    {% elif c.mastertrace_error %}
+      <td class="error">{{ c.mastertrace_error }}</td>
     {% else %}
       <td>
-        {% if c.mastertrace.changed is defined and c.mastertrace.changed %}<strong>{% endif %}
-        {{ c.mastertrace.trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
-        {% if c.mastertrace.changed is defined and c.mastertrace.changed %}</strong>{% endif %}
+        {% if c.mastertrace_changed is defined and c.mastertrace_changed %}<strong>{% endif %}
+        {{ c.mastertrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+        {% if c.mastertrace_changed is defined and c.mastertrace_changed %}</strong>{% endif %}
       </td>
     {% endif %}
 
-    {% if not c.sitetrace %}
+    {% if not c.sitetrace_id %}
       <td class="error">No sitetrace info.</td>
-    {% elif c.sitetrace.error %}
-      <td class="error">{{ c.sitetrace.error }}</td>
+    {% elif c.sitetrace_error %}
+      <td class="error">{{ c.sitetrace_error }}</td>
     {% else %}
       <td>
-        {% if c.sitetrace.changed is defined and c.sitetrace.changed %}<strong>{% endif %}
-        {{ c.sitetrace.trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
-        {% if c.sitetrace.changed is defined and c.sitetrace.changed %}</strong>{% endif %}
+        {% if c.sitetrace_changed is defined and c.sitetrace_changed %}<strong>{% endif %}
+        {{ c.sitetrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+        {% if c.sitetrace_changed is defined and c.sitetrace_changed %}</strong>{% endif %}
       </td>
     {% endif %}
 
-    {% if not c.traceset %}
+    {% if not c.traceset_id %}
       <td class="error">No traceset info.</td>
-    {% elif c.traceset.error %}
-      <td class="error">{{ c.traceset.error }}</td>
+    {% elif c.traceset_error %}
+      <td class="error">{{ c.traceset_error }}</td>
     {% else %}
-      <td>{{ c.traceset.traceset }}</td>
+      <td>{{ c.traceset_traceset }}</td>
     {% endif %}
   </tr>
 {% endfor %}

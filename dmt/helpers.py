@@ -80,17 +80,28 @@ def get_latest_checkrun(cur):
     checkrun = cur.fetchone()
     return checkrun
 
-def get_ftpmaster_traces_lastseen(session):
+def get_ftpmaster_traces_lastseen(cur):
     """For each trace on ftp-master, report when it was last seen.
     """
-    results = session.query(db.Mastertrace, db.Checkrun). \
-              filter(db.Mastertrace.trace_timestamp.isnot(None)). \
-              join(db.Site).filter_by(name = FTPMASTER). \
-              join(db.Checkrun). \
-              order_by(db.Checkrun.timestamp)
+    assert(isinstance(cur, psycopg2.extras.RealDictCursor))
+    cur.execute("""
+        SELECT
+            checkrun.timestamp,
+            mastertrace.trace_timestamp
+        FROM checkrun JOIN
+            mastertrace ON mastertrace.checkrun_id = checkrun.id JOIN
+            site ON mastertrace.site_id = site.id
+        WHERE
+            site.name = %(ftpmastername)s AND
+            mastertrace.trace_timestamp IS NOT NULL
+        ORDER BY
+            timestamp
+        """, {
+            'ftpmastername': FTPMASTER,
+        })
     trace_timestamp_lastseen = {}
-    for mastertrace, checkrun in results:
-        trace_timestamp_lastseen[mastertrace.trace_timestamp] = checkrun.timestamp
+    for row in cur.fetchall():
+        trace_timestamp_lastseen[row['trace_timestamp']] = row['timestamp']
     return trace_timestamp_lastseen
 
 def hostname_comparator(hostname):
