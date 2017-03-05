@@ -254,7 +254,10 @@ class Generator(BasePageGenerator):
         hierarchy =  MirrorHierarchy(mirrors)
 
         if self.textonly:
-            self.hierarchy = hierarchy
+            print(hierarchy.tree)
+            #for x in hierarchy.get_cells():
+            #    print(x)
+            return []
         else:
             cells = list(hierarchy.get_cells())
             del cells[0]
@@ -267,15 +270,7 @@ class Generator(BasePageGenerator):
                 'hierarchy_table': cells,
                 'recent_hours': self.recent_hours,
             }
-        return [self]
-
-    def render(self):
-        if self.textonly:
-            print(self.hierarchy.tree)
-            #for x in self.hierarchy.get_cells():
-            #    print(x)
-        else:
-            super().render()
+            return [self]
 
 
 if __name__ == "__main__":
