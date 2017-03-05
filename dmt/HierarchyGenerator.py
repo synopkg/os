@@ -4,7 +4,6 @@ import argparse
 import datetime
 import itertools
 import json
-from sqlalchemy import desc, or_
 import sys
 
 if __name__ == '__main__' and __package__ is None:
@@ -164,15 +163,25 @@ class MirrorHierarchy:
                 c['mirror'] = self.mirrors[c['name']]
             yield c
 
-def get_traceset_changes(session, site_id, traces_last_change_cutoff):
-    results = session.query(db.Traceset). \
-              filter_by(site_id = site_id). \
-              filter(db.Traceset.traceset.isnot(None)). \
-              join(db.Checkrun). \
-              filter(db.Checkrun.timestamp >= traces_last_change_cutoff). \
-              order_by(db.Checkrun.timestamp)
-    #cnt = len(list(itertools.groupby(x.traceset for x in results))) - 1
-    it = iter(results)
+def get_traceset_changes(cur, site_id, traces_last_change_cutoff):
+    cur.execute("""
+        SELECT
+            traceset.traceset,
+            checkrun.timestamp
+        FROM traceset JOIN
+            checkrun  ON traceset.checkrun_id = checkrun.id
+        WHERE
+            traceset.site_id = %(site_id)s AND
+            traceset.traceset IS NOT NULL AND
+            checkrun.timestamp >= %(traces_last_change_cutoff)s
+        ORDER BY
+            checkrun.timestamp
+        """, {
+            'site_id': site_id,
+            'traces_last_change_cutoff': traces_last_change_cutoff,
+        })
+
+    it = iter(cur.fetchall())
     last_ts = None
     try:
         last_ts = next(it)
@@ -181,14 +190,14 @@ def get_traceset_changes(session, site_id, traces_last_change_cutoff):
     cnt = 0
     last_change = None
     for i in it:
-        if last_ts.traceset != i.traceset:
-            last_change = i.checkrun.timestamp
+        if last_ts['traceset'] != i['traceset']:
+            last_change = i['timestamp']
             cnt += 1
         last_ts = i
 
     res = { 'cnt': cnt,
             'last_change': last_change,
-            'most_recent': last_ts.traceset if not last_ts is None else None,
+            'most_recent': last_ts['traceset'] if last_ts is not None else None,
           }
     return res
 
@@ -199,62 +208,80 @@ class Generator():
         self.textonly = textonly
         self.template_name = 'mirror-hierarchy.html'
 
-    def prepare(self, dbsession):
+    def get_pages(self, dbh):
+        if self.textonly:
+            self.prepare(dbh)
+            return []
+        else:
+            return [self]
+
+    def prepare(self, dbh):
+        cur = dbh.cursor()
+        cur2 = dbh.cursor()
+
         now = datetime.datetime.now()
-        traces_last_change_cutoff = now - datetime.timedelta(hours=self.recent_hours)
-        ftpmastertrace = helpers.get_ftpmaster_trace(dbsession)
+        ftpmastertrace = helpers.get_ftpmaster_trace(cur)
         if ftpmastertrace is None: ftpmastertrace = now
-        checkrun = dbsession.query(db.Checkrun).order_by(desc(db.Checkrun.timestamp)).first()
+        checkrun = helpers.get_latest_checkrun(cur)
+        if checkrun is None: return
+        traces_last_change_cutoff = now - datetime.timedelta(hours=self.recent_hours)
+
+        cur.execute("""
+            SELECT
+                site.id AS site_id,
+                site.name,
+                site.http_override_host,
+                site.http_override_port,
+                site.http_path,
+
+                mastertrace.id AS mastertrace_id,
+                mastertrace.error AS mastertrace_error,
+                mastertrace.trace_timestamp AS mastertrace_trace_timestamp,
+
+                traceset.id AS traceset_id,
+                traceset.error AS traceset_error
+
+            FROM site LEFT OUTER JOIN
+                mastertrace ON site.id = mastertrace.site_id LEFT OUTER JOIN
+                traceset    ON site.id = traceset.site_id
+            WHERE
+                (mastertrace.checkrun_id = %(checkrun_id)s OR mastertrace.checkrun_id IS NULL) AND
+                (traceset   .checkrun_id = %(checkrun_id)s OR traceset   .checkrun_id IS NULL)
+            """, {
+                'checkrun_id': checkrun['id']
+            })
 
         mirrors = {}
-        results = dbsession.query(db.Site, db.Traceset, db.Mastertrace). \
-                  outerjoin(db.Traceset).\
-                  filter(or_(db.Traceset.checkrun_id == None,
-                             db.Traceset.checkrun_id == checkrun.id)).\
-                  outerjoin(db.Mastertrace).\
-                  filter(or_(db.Mastertrace.checkrun_id == None,
-                             db.Mastertrace.checkrun_id == checkrun.id))
-        for site, traceset, mastertrace in results:
-            x = {}
-            x['site'] = site.__dict__
-            x['site']['trace_url'] = helpers.get_tracedir(x['site'])
-            x['traces'] = []
+        for row in cur.fetchall():
+            row['site_trace_url'] = helpers.get_tracedir(row)
             error = []
-            x['mastertrace'] = { 'agegroup': 'unknown' }
 
-            if not traceset is None:
-                error.append(traceset.error)
+            error.append(row['traceset_error'])
+            if row['traceset_id'] is None: error.append("No traceset information")
+            error.append(row['mastertrace_error'])
+            if row['mastertrace_id'] is None: error.append("No mastertracefile information")
+            row['error'] = "; ".join(filter(lambda x: x is not None, error))
+            if row['error'] == "": row['error'] = None
+
+            row['traceset_changes'] = get_traceset_changes(cur2, row['site_id'], traces_last_change_cutoff)
+            row['traceset'] = row['traceset_changes']['most_recent']
+
+            if row['traceset'] is not None:
+                traces = json.loads(row['traceset'])
+                if not isinstance(traces, list):
+                    raise Exception("traces information for "+site+" is not a list")
+                if 'master' in traces: traces.remove('master')
+                row['traces'] = traces
             else:
-                error.append("No traceset information")
+                row['traces'] = []
 
-            x['traceset_changes'] = get_traceset_changes(dbsession, site.id, traces_last_change_cutoff)
-
-            # use most recent traceset, ignoring the ones from the most recent run if there was an error
-            x['traceset'] = x['traceset_changes']['most_recent']
-
-            if not x['traceset'] is None:
-                    traces = json.loads(x['traceset'])
-                    if not isinstance(traces, list):
-                        raise Exception("traces information for "+site+" is not a list")
-                    if 'master' in traces: traces.remove('master')
-                    x['traces'] = traces
-
-            if not mastertrace is None:
-                x['mastertrace'].update(mastertrace.__dict__)
-                error.append(mastertrace.error)
-            else:
-                error.append("No mastertracefile information")
-
-            x['error'] = "; ".join(filter(lambda x: x is not None, error))
-            if x['error'] == "": x['error'] = None
-            mirrors[site.name] = x
+            mirrors[row['name']] = row
         hierarchy =  MirrorHierarchy(mirrors)
 
         if self.textonly:
             print(hierarchy.tree)
             #for x in hierarchy.get_cells():
             #    print(x)
-            return []
         else:
             cells = list(hierarchy.get_cells())
             del cells[0]
@@ -262,12 +289,11 @@ class Generator():
 
             self.context = {
                 'now': now,
-                'last_run': checkrun.timestamp,
+                'last_run': checkrun['timestamp'],
                 'ftpmastertrace': ftpmastertrace,
                 'hierarchy_table': cells,
                 'recent_hours': self.recent_hours,
             }
-            return [self]
 
 
 if __name__ == "__main__":
@@ -282,6 +308,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     base = BasePageRenderer(**args.__dict__)
-    dbsession = db.MirrorDB(args.dburl).session()
+    dbh = db.RawDB(args.dburl)
     g = Generator(**args.__dict__)
-    for x in g.prepare(dbsession): base.render(x)
+    for x in g.get_pages(dbh):
+        x.prepare(dbh)
+        base.render(x)
