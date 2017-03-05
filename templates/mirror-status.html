@@ -20,42 +20,37 @@
 </tr>
 
 {% for mirror in mirrors %}
-  {% if mirror.error %}
+  {% if mirror.mastertrace_error %}
   <tr class="error">
   {% else %}
-  <tr id="{{mirror.site.name}}">
+  <tr id="{{mirror.name}}">
   {% endif %}
     <td class="hostname">
-    {% if mirror.site.trace_url is defined and mirror.site.trace_url %}
-      <a href="{{mirror.site.trace_url}}">{{ mirror.site.name }}</a>
+    {% if mirror.trace_url is defined and mirror.trace_url %}
+      <a href="{{mirror.trace_url}}">{{ mirror.name }}</a>
     {% else %}
-      {{ mirror.site.name }}
+      {{ mirror.name }}
     {% endif %}
-      [<a href="mirror-hierarchy.html#{{mirror.site.name}}">H</a>,<a href="mirror-info/{{mirror.site.name}}.html">R</a>]
+      [<a href="mirror-hierarchy.html#{{mirror.name}}">H</a>,<a href="mirror-info/{{mirror.name}}.html">R</a>]
     </td>
 
-    {% if mirror.error %}
-      <td>{{ mirror.error }}</td>
+    {% if mirror.mastertrace_error %}
+      <td>{{ mirror.mastertrace_error }}</td>
     {% else %}
-      <td {{mirror.mastertrace.trace_timestamp|agegroupclass(ftpmastertrace)}}>
-      {% if mirror.mastertrace.trace_timestamp == ftpmastertrace %}
+      <td {{mirror.mastertrace_trace_timestamp|agegroupclass(ftpmastertrace)}}>
+      {% if mirror.mastertrace_trace_timestamp == ftpmastertrace %}
         current
       {% else %}
-        {{mirror.mastertrace.trace_timestamp|datetimeage(ftpmastertrace)}}
+        {{mirror.mastertrace_trace_timestamp|datetimeage(ftpmastertrace)}}
       {% endif %}
       </td>
     {% endif %}
 
 
-    {% if mirror.sitetrace.error %}
-      <td class="error">{{ mirror.sitetrace.error }}
-        {% if mirror.sitetrace.trace_timestamp %}
-          &mdash;
-          Using previous data: {{mirror.sitetrace.trace_timestamp|datetimeage(now)}}
-        {% endif %}
-      </td>
+    {% if mirror.sitetrace_error %}
+      <td class="error">{{ mirror.sitetrace_error }}</td>
     {% else %}
-      <td {{mirror.sitetrace.trace_timestamp|agegroupclass(now)}}>{{mirror.sitetrace.trace_timestamp|datetimeage(now)}}</td>
+      <td {{mirror.sitetrace_trace_timestamp|agegroupclass(now)}}>{{mirror.sitetrace_trace_timestamp|datetimeage(now)}}</td>
     {% endif %}
   </tr>
 {% endfor %}

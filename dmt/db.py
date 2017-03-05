@@ -4,6 +4,8 @@ from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 import sqlalchemy
 from sqlalchemy.orm import relationship, backref
 import sqlalchemy.ext.declarative
+import psycopg2
+import psycopg2.extras
 
 Base = sqlalchemy.ext.declarative.declarative_base()
 
@@ -89,7 +91,7 @@ class Traceset(Base):
     error                   = Column(String)
 
 class MirrorDB():
-    DBURL='postgresql:///mirror-status'
+    DBURL = 'postgresql:///mirror-status'
     def __init__(self, dburl=DBURL):
         self.engine = sqlalchemy.create_engine(dburl)
         Base.metadata.bind = self.engine
@@ -97,6 +99,15 @@ class MirrorDB():
 
     def session(self):
         return self.sessionMaker()
+
+class RawDB():
+    DBURL = MirrorDB.DBURL
+    def __init__(self, dburl=DBURL):
+        self.conn = psycopg2.connect(dburl)
+
+    def cursor(self):
+        c = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        return c
 
 def update_or_create(session, model, updates, **kwargs):
     r = session.query(model).filter_by(**kwargs)
