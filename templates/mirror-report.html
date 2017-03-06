@@ -36,7 +36,7 @@
         {% if c.effective_mastertrace_changed is defined and c.effective_mastertrace_changed %}</strong>{% endif %}
       </td>
       {% if not c.effective_mastertrace_lastseen_on_master %}
-        <td class="error">unknown<td>
+        <td class="error">unknown</td>
       {% elif (c.checkrun_timestamp <= c.effective_mastertrace_lastseen_on_master ) %}
         <td class="age0">current</td>
       {% else %}
