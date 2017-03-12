@@ -122,7 +122,10 @@ class TracesetFetcher(BaseCheck):
     @staticmethod
     def _filter_tracefilenames(tracefilenames):
         return filter(lambda x: not x.startswith('_') and
-                                not x.endswith('-stage1'), tracefilenames)
+                                # Used by ftpsync for stagged sync
+                                not x.endswith('-stage1') and
+                                # Used by ftpsync as temporary file
+                                not x.endswith('.new'), tracefilenames)
 
     @staticmethod
     def _clean_link(link, tracedir):
