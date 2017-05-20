@@ -9,7 +9,7 @@ import threading
 import dmt.db as db
 import dmt.checks as checks
 
-PRUNE_HOURS = 24*7
+PRUNE_HOURS = 24*14
 
 MAX_CHECKERS = 64
 MAX_QUEUE_SIZE = 64* MAX_CHECKERS
