@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+set -u
+
+fullpath=$(readlink -f "$0")
+dir=$(dirname "$fullpath")
+cd "$dir"
+
+exec 200< "$fullpath"
+if ! flock -w 60 -e 200; then
+	echo >&1 "Cannot acquire lock"
+	exit 1
+fi
+
+
+TARGET="$dir"/htdocs
+
+./import-mirrors
+./import-mirrors --origin internal --masterlist internal-mirrors.list
+./run-tests
+
+./import-mirrors --archivekey Security --dburl postgresql:///mirror-status-security
+./import-mirrors --archivekey Security --dburl postgresql:///mirror-status-security --origin internal --masterlist internal-mirrors.list
+./run-tests --dburl postgresql:///mirror-status-security
+
+tmpdir=$(mktemp -d /tmp/mirror-status.XXXXXXXXXX)
+trap "rm -r $tmpdir" EXIT
+
+./generate --outdir "$tmpdir/status"
+./generate --outdir "$tmpdir/status-security" --dburl postgresql:///mirror-status-security
+
+mkdir -p "$TARGET"
+rsync -av "$tmpdir"/* "$TARGET"/ --delete
+
+if command -v static-update-component > /dev/null; then
+  static-update-component mirror-master.debian.org
+fi
