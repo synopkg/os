@@ -152,7 +152,7 @@ class TracesetFetcher(BaseCheck):
         tracedir = self.get_tracedir()
         data = self._fetch(tracedir)
 
-        soup = BeautifulSoup(data)
+        soup = BeautifulSoup(data, "html.parser")
         links = soup.find_all('a')
         links = filter(lambda x: 'href' in x.attrs, links)
         links = map(lambda x: self._clean_link(x.get('href'), tracedir), links)
