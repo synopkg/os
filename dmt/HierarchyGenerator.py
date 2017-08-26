@@ -27,7 +27,7 @@ def powersetish(iterable):
     return itertools.chain.from_iterable(itertools.combinations(s, r) for r in range(len(s), -1, -1))
 
 def iter_endcheck(iterable):
-    """iterate over an iterable, and yield tuples of elements and if this is the last element
+    """iterate over an iterable, and for each element i yield a tuples of (i, whether i is the last element)
     """
     it = iter(iterable)
     prev = next(it)

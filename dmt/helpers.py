@@ -33,6 +33,8 @@ def get_tracedir(site):
     return tracedir
 
 def get_ftpmaster_trace(cur):
+    """Get the most current trace file timestamp from ftpmaster
+    """
     assert(isinstance(cur, psycopg2.extras.RealDictCursor))
     cur.execute("""
         SELECT trace_timestamp
@@ -53,6 +55,8 @@ def get_ftpmaster_trace(cur):
     return res['trace_timestamp']
 
 def get_latest_checkrun(cur):
+    """Get the most current checkrun
+    """
     assert(isinstance(cur, psycopg2.extras.RealDictCursor))
     cur.execute("""
         SELECT id, timestamp
@@ -64,7 +68,7 @@ def get_latest_checkrun(cur):
     return checkrun
 
 def get_ftpmaster_traces_lastseen(cur):
-    """For each trace on ftp-master, report when it was last seen.
+    """For each trace timestamp from ftp-master, report when it was last seen on ftp-master
     """
     assert(isinstance(cur, psycopg2.extras.RealDictCursor))
     cur.execute("""
