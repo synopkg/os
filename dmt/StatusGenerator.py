@@ -38,6 +38,7 @@ class Generator():
 
                 checkoverview.error AS checkoverview_error,
                 checkoverview.age AS checkoverview_age,
+                checkoverview.score AS checkoverview_score,
 
                 sitetrace.error AS sitetrace_error,
                 sitetrace.trace_timestamp AS sitetrace_trace_timestamp

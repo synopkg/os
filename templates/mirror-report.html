@@ -20,6 +20,7 @@
   <td><a href="{{site.trace_url}}master">mastertrace</a></td>
   <td><a href="{{site.trace_url}}{{site.name}}">sitetrace</a></td>
   <td><a href="{{site.trace_url}}">traceset</a></td>
+  <td>score</td>
 </tr>
 
 {% for c in checks %}
@@ -76,6 +77,7 @@
     {% else %}
       <td>{{ c.traceset_traceset }}</td>
     {% endif %}
+      <td>{{ '%0.2f'| format(c.checkoverview_score|float) }}</td>
   </tr>
 {% endfor %}
 </table>

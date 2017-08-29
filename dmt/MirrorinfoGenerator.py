@@ -54,7 +54,8 @@ class MirrorReport():
                 checkoverview.id AS checkoverview_id,
                 checkoverview.error AS checkoverview_error,
                 checkoverview.version AS checkoverview_version,
-                checkoverview.age AS checkoverview_age
+                checkoverview.age AS checkoverview_age,
+                checkoverview.score AS checkoverview_score
 
             FROM checkrun LEFT OUTER JOIN
                 (SELECT * FROM mastertrace   WHERE site_id = %(site_id)s) AS mastertrace   ON checkrun.id = mastertrace.checkrun_id LEFT OUTER JOIN

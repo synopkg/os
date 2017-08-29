@@ -17,6 +17,7 @@
   <td class="hostname">Site</td>
   <td><abbr title="mirror lag">archive version (age)</abbr></td>
   <td>last update run</td>
+  <td>score</td>
 </tr>
 
 {% for mirror in mirrors %}
@@ -52,6 +53,7 @@
     {% else %}
       <td {{mirror.sitetrace_trace_timestamp|agegroupdeltaclass(now)}}>{{mirror.sitetrace_trace_timestamp|datetimeage(now)}}</td>
     {% endif %}
+     <td>{{ '%0.2f'| format(mirror.checkoverview_score|float) }}</td>
   </tr>
 {% endfor %}
 </table>
