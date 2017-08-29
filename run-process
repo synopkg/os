@@ -1,0 +1,6 @@
+#!/usr/bin/python3
+
+import dmt.RunProcessor as RunProcessor
+
+if __name__ == "__main__":
+    RunProcessor.main()

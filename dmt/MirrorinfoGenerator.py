@@ -49,12 +49,18 @@ class MirrorReport():
 
                 traceset.id AS traceset_id,
                 traceset.error AS traceset_error,
-                traceset.traceset AS traceset_traceset
+                traceset.traceset AS traceset_traceset,
+
+                checkoverview.id AS checkoverview_id,
+                checkoverview.error AS checkoverview_error,
+                checkoverview.version AS checkoverview_version,
+                checkoverview.age AS checkoverview_age
 
             FROM checkrun LEFT OUTER JOIN
-                (SELECT * FROM mastertrace WHERE site_id = %(site_id)s) AS mastertrace ON checkrun.id = mastertrace.checkrun_id LEFT OUTER JOIN
-                (SELECT * FROM sitetrace   WHERE site_id = %(site_id)s) AS sitetrace   ON checkrun.id = sitetrace.checkrun_id LEFT OUTER JOIN
-                (SELECT * FROM traceset    WHERE site_id = %(site_id)s) AS traceset    ON checkrun.id = traceset.checkrun_id
+                (SELECT * FROM mastertrace   WHERE site_id = %(site_id)s) AS mastertrace   ON checkrun.id = mastertrace.checkrun_id LEFT OUTER JOIN
+                (SELECT * FROM sitetrace     WHERE site_id = %(site_id)s) AS sitetrace     ON checkrun.id = sitetrace.checkrun_id LEFT OUTER JOIN
+                (SELECT * FROM traceset      WHERE site_id = %(site_id)s) AS traceset      ON checkrun.id = traceset.checkrun_id LEFT OUTER JOIN
+                (SELECT * FROM checkoverview WHERE site_id = %(site_id)s) AS checkoverview ON checkrun.id = checkoverview.checkrun_id
             WHERE
                 checkrun.timestamp >= %(check_age_cutoff)s
             ORDER BY
@@ -64,49 +70,15 @@ class MirrorReport():
                 'site_id': self.site['id'],
             })
 
+        track_items = ['mastertrace_trace_timestamp', 'sitetrace_trace_timestamp', 'checkoverview_version']
+        prev = {x: None for x in track_items}
         checks = []
-        # we try to determine the "version" a mirror is running
-        # from its master-tracefile.  As the master-tracefile might
-        # update during a mirrorun, we only believe it when a mirror
-        # run is finished (which we determine from the site-tracefile
-        # being updated.
-        mirror_version_tracker = {
-            'sitetrace.trace_timestamp': None,
-            'mastertrace.trace_timestamp': None
-        }
-        first_sitetrace = True
-
-        first_mastertrace = None
-        last_mastertrace = None
         for row in cur.fetchall():
-            row['effective_mastertrace'] = {}
-            if row['mastertrace_trace_timestamp'] is not None:
-                if last_mastertrace != row['mastertrace_trace_timestamp']:
-                    last_mastertrace = row['mastertrace_trace_timestamp']
-                    # make sure we don't believe the very first master trace entry - it might be a mirrorrun in progress
-                    if first_mastertrace: first_mastertrace = False
-                    else:                 row['mastertrace_changed'] = True
-
-            if row['sitetrace_trace_timestamp'] is not None:
-                if row['sitetrace_trace_timestamp'] != mirror_version_tracker['sitetrace.trace_timestamp']:
-                    mirror_version_tracker['sitetrace.trace_timestamp'] = row['sitetrace_trace_timestamp']
-                    # make sure we don't believe the very first master trace entry - it might be a mirrorrun in progress
-                    if first_sitetrace: first_sitetrace = False
-                    else:
-                        row['sitetrace_changed'] = True
-                        if mirror_version_tracker['mastertrace.trace_timestamp'] != row['mastertrace_trace_timestamp']:
-                            row['effective_mastertrace_changed'] = True
-
-                        mirror_version_tracker['sitetrace.trace_timestamp']   = row['sitetrace_trace_timestamp']
-                        mirror_version_tracker['mastertrace.trace_timestamp'] = row['mastertrace_trace_timestamp']
-
-            # set the mastertrace after the last change of sitetrace (i.e. finished mirrorrun)
-            if row['mastertrace_trace_timestamp'] is not None and\
-               row['sitetrace_trace_timestamp'] is not None: # no errors
-                row['effective_mastertrace_trace_timestamp'] = mirror_version_tracker['mastertrace.trace_timestamp']
-            else:
-                row['effective_mastertrace_trace_timestamp'] = None
-            row['effective_mastertrace_lastseen_on_master'] = self.mastertraces_lastseen.get( row['effective_mastertrace_trace_timestamp'] )
+            for x in track_items:
+                if row[x] is not None:
+                    if prev[x] is not None and prev[x] != row[x]:
+                        row[x+'_changed'] = True
+                    prev[x] = row[x]
             checks.append(row)
 
         context = {

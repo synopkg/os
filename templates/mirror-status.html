@@ -37,7 +37,7 @@
     {% if mirror.mastertrace_error %}
       <td>{{ mirror.mastertrace_error }}</td>
     {% else %}
-      <td {{mirror.mastertrace_trace_timestamp|agegroupclass(ftpmastertrace)}}>
+      <td {{mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}>
       {% if mirror.mastertrace_trace_timestamp == ftpmastertrace %}
         current
       {% else %}
@@ -50,7 +50,7 @@
     {% if mirror.sitetrace_error %}
       <td class="error">{{ mirror.sitetrace_error }}</td>
     {% else %}
-      <td {{mirror.sitetrace_trace_timestamp|agegroupclass(now)}}>{{mirror.sitetrace_trace_timestamp|datetimeage(now)}}</td>
+      <td {{mirror.sitetrace_trace_timestamp|agegroupdeltaclass(now)}}>{{mirror.sitetrace_trace_timestamp|datetimeage(now)}}</td>
     {% endif %}
   </tr>
 {% endfor %}

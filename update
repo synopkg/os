@@ -19,10 +19,12 @@ TARGET="$dir"/htdocs
 ./import-mirrors
 ./import-mirrors --origin internal --masterlist internal-mirrors.list
 ./run-tests
+./run-process
 
 ./import-mirrors --archivekey Security --dburl postgresql:///mirror-status-security
 ./import-mirrors --archivekey Security --dburl postgresql:///mirror-status-security --origin internal --masterlist internal-mirrors.list
 ./run-tests --dburl postgresql:///mirror-status-security
+./run-process --dburl postgresql:///mirror-status-security
 
 tmpdir=$(mktemp -d /tmp/mirror-status.XXXXXXXXXX)
 trap "rm -r $tmpdir" EXIT

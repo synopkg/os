@@ -26,22 +26,21 @@
   <tr>
     <td>{{c.checkrun_timestamp.strftime('%Y-%m-%d %H:%M:%S')}}</td>
 
-    {% if not c.effective_mastertrace_trace_timestamp %}
-      <td class="error">unknown</td>
-      <td>-</td>
+    {% if not c.checkoverview_id %}
+      <td class="error" colspan="2">unknown</td>
+    {% elif c.checkoverview_error %}
+      <td class="error" colspan="2">{{ c.checkoverview_error }}</td>
     {% else %}
       <td>
-        {% if c.effective_mastertrace_changed is defined and c.effective_mastertrace_changed %}<strong>{% endif %}
-        {{ c.effective_mastertrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
-        {% if c.effective_mastertrace_changed is defined and c.effective_mastertrace_changed %}</strong>{% endif %}
+        {% if c.checkoverview_version_changed is defined and c.checkoverview_version_changed %}<strong>{% endif %}
+        {{ c.checkoverview_version.strftime('%Y-%m-%d %H:%M:%S') }}
+        {% if c.checkoverview_version_changed is defined and c.checkoverview_version_changed %}</strong>{% endif %}
       </td>
-      {% if not c.effective_mastertrace_lastseen_on_master %}
-        <td class="error">unknown</td>
-      {% elif (c.checkrun_timestamp <= c.effective_mastertrace_lastseen_on_master ) %}
+      {% if (c.checkoverview_age|timedelta_total_seconds == 0) %}
         <td class="age0">current</td>
       {% else %}
-        <td {{c.effective_mastertrace_lastseen_on_master|agegroupclass(c.checkrun_timestamp)}}>
-        {{c.effective_mastertrace_lastseen_on_master|datetimeage(c.checkrun_timestamp)}}
+        <td {{c.checkoverview_age|agegroupclass}}>
+          {{c.checkoverview_age|timedeltaage(c.checkrun_timestamp)}}
         </td>
       {% endif %}
     {% endif %}
@@ -52,9 +51,9 @@
       <td class="error">{{ c.mastertrace_error }}</td>
     {% else %}
       <td>
-        {% if c.mastertrace_changed is defined and c.mastertrace_changed %}<strong>{% endif %}
+        {% if c.mastertrace_trace_timestamp_changed is defined and c.mastertrace_trace_timestamp_changed %}<strong>{% endif %}
         {{ c.mastertrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
-        {% if c.mastertrace_changed is defined and c.mastertrace_changed %}</strong>{% endif %}
+        {% if c.mastertrace_trace_timestamp_changed is defined and c.mastertrace_trace_timestamp_changed %}</strong>{% endif %}
       </td>
     {% endif %}
 
@@ -64,9 +63,9 @@
       <td class="error">{{ c.sitetrace_error }}</td>
     {% else %}
       <td>
-        {% if c.sitetrace_changed is defined and c.sitetrace_changed %}<strong>{% endif %}
+        {% if c.sitetrace_trace_timestamp_changed is defined and c.sitetrace_trace_timestamp_changed %}<strong>{% endif %}
         {{ c.sitetrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
-        {% if c.sitetrace_changed is defined and c.sitetrace_changed %}</strong>{% endif %}
+        {% if c.sitetrace_trace_timestamp_changed is defined and c.sitetrace_trace_timestamp_changed %}</strong>{% endif %}
       </td>
     {% endif %}
 
