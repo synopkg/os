@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Interval
 import sqlalchemy
 from sqlalchemy.orm import relationship, backref
 import sqlalchemy.ext.declarative
@@ -71,7 +71,7 @@ class Sitetrace(Base):
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
     full                    = Column(String)
-    trace_timestamp         = Column(DateTime(timezone=True))
+    trace_timestamp         = Column(DateTime(timezone=True), index=True)
     error                   = Column(String)
 
 
@@ -89,6 +89,25 @@ class Traceset(Base):
 
     traceset                = Column(String)
     error                   = Column(String)
+
+class Checkoverview(Base):
+    """For a mirror and a check, summarize all we learned from a test-run.
+
+    Data in this table will be populated after the rest runs, and is used
+    to generate the report and compute scores.
+    """
+    __tablename__           = 'checkoverview'
+    __plural__              = __tablename__ + 's'
+    id                      = Column(Integer, primary_key=True)
+
+    site_id                 = Column(Integer, ForeignKey("site.id", ondelete='CASCADE'), nullable=False, index=True)
+    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False, index=True)
+    site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
+    checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
+
+    error                   = Column(String)
+    version                 = Column(DateTime(timezone=True))
+    age                     = Column(Interval)
 
 class MirrorDB():
     DBURL = 'postgresql:///mirror-status'
@@ -108,6 +127,9 @@ class RawDB():
     def cursor(self):
         c = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         return c
+
+    def commit(self):
+       self.conn.commit()
 
 def update_or_create(session, model, updates, **kwargs):
     r = session.query(model).filter_by(**kwargs)
