@@ -16,12 +16,13 @@
 <tr>
   <td class="hostname">Site</td>
   <td><abbr title="mirror lag">archive version (age)</abbr></td>
+  <td>mastertrace timestamp</td>
   <td>last update run</td>
   <td>score</td>
 </tr>
 
 {% for mirror in mirrors %}
-  {% if mirror.checkoverview_error %}
+  {% if mirror.checkoverview_error and mirror.mastertrace_error %}
   <tr class="error">
   {% else %}
   <tr id="{{mirror.name}}">
@@ -35,8 +36,20 @@
       [<a href="mirror-hierarchy.html#{{mirror.name}}">H</a>,<a href="mirror-info/{{mirror.name}}.html">R</a>]
     </td>
 
+    {% if mirror.mastertrace_error %}
+      <td>{{ mirror.mastertrace_error }}</td>
+    {% else %}
+      <td {{mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}>
+      {% if mirror.mastertrace_trace_timestamp == ftpmastertrace %}
+        current
+      {% else %}
+        {{mirror.mastertrace_trace_timestamp|datetimeage(ftpmastertrace)}}
+      {% endif %}
+      </td>
+    {% endif %}
+
     {% if mirror.checkoverview_error %}
-      <td>{{ mirror.checkoverview_error }}</td>
+      <td class="error">{{ mirror.checkoverview_error }}</td>
     {% else %}
       {% if (mirror.checkoverview_age|timedelta_total_seconds == 0) %}
         <td class="age0">current</td>
@@ -46,7 +59,6 @@
         </td>
       {% endif %}
     {% endif %}
-
 
     {% if mirror.sitetrace_error %}
       <td class="error">{{ mirror.sitetrace_error }}</td>

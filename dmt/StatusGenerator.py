@@ -26,6 +26,8 @@ class Generator():
         cur = dbh.cursor()
 
         now = datetime.datetime.now(datetime.timezone.utc)
+        ftpmastertrace = helpers.get_ftpmaster_trace(cur)
+        if ftpmastertrace is None: ftpmastertrace = now
         checkrun = helpers.get_latest_checkrun(cur)
         if checkrun is None: return
 
@@ -40,14 +42,19 @@ class Generator():
                 checkoverview.age AS checkoverview_age,
                 checkoverview.score AS checkoverview_score,
 
+                mastertrace.error AS mastertrace_error,
+                mastertrace.trace_timestamp AS mastertrace_trace_timestamp,
+
                 sitetrace.error AS sitetrace_error,
                 sitetrace.trace_timestamp AS sitetrace_trace_timestamp
 
             FROM site JOIN
                 checkoverview ON site.id = checkoverview.site_id LEFT OUTER JOIN
+                mastertrace ON site.id = mastertrace.site_id LEFT OUTER JOIN
                 sitetrace     ON site.id = sitetrace.site_id
             WHERE
                 (checkoverview.checkrun_id = %(checkrun_id)s) AND
+                (mastertrace.checkrun_id = %(checkrun_id)s OR mastertrace.checkrun_id IS NULL) AND
                 (sitetrace    .checkrun_id = %(checkrun_id)s OR sitetrace.checkrun_id IS NULL)
             """, {
                 'checkrun_id': checkrun['id']
@@ -62,6 +69,7 @@ class Generator():
         context = {
             'mirrors': mirrors,
             'last_run': checkrun['timestamp'],
+            'ftpmastertrace': ftpmastertrace,
             'now': now,
         }
         self.context = context
