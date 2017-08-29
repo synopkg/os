@@ -39,6 +39,11 @@ def timedeltaagefilter(delta, base):
     res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
     return jinja2.Markup(res)
 
+def timedeltaagenoabbrfilter(delta, base):
+    formattedts, hr = get_human_readable_age(base-delta, base)
+    res = '%s - %s'%(hr, formattedts)
+    return res
+
 def datetimeagefilter(ts, base):
     formattedts, hr = get_human_readable_age(ts, base)
     res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
@@ -101,6 +106,7 @@ class BasePageRenderer:
         tmplenv.filters['datetimeage'] = datetimeagefilter
         tmplenv.filters['datetimeagenoabbr'] = datetimeagenoabbrfilter
         tmplenv.filters['timedeltaage'] = timedeltaagefilter
+        tmplenv.filters['timedeltaagenoabbr'] = timedeltaagenoabbrfilter
         tmplenv.filters['agegroupdeltaclass'] = agegroupdeltaclassfilter
         tmplenv.filters['agegroupclass'] = agegroupclassfilter
         tmplenv.filters['timedelta_total_seconds'] = timedelta_total_seconds_filter

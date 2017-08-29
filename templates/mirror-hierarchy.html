@@ -24,7 +24,7 @@
       {% if cell.mirror.error %}
         class="error"
       {% else %}
-        {{cell.mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}
+        {{cell.mirror.checkoverview_age|agegroupclass}}
       {% endif %}
         colspan="{{cell.width}}" rowspan="{{cell.height}}"
       >
@@ -36,10 +36,10 @@
         {% endif %}
           {% if cell.mirror.error %}
             <abbr title="{{cell.mirror.error}}">
-          {% elif cell.mirror.mastertrace_trace_timestamp == ftpmastertrace %}
+          {% elif (cell.mirror.checkoverview_age|timedelta_total_seconds == 0) %}
             <abbr title="current">
           {% else %}
-            <abbr title="{{cell.mirror.mastertrace_trace_timestamp|datetimeagenoabbr(ftpmastertrace)}}">
+            <abbr title="{{cell.mirror.checkoverview_age|timedeltaagenoabbr(last_run)}}">
           {% endif %}
 
             {% if cell.mirror.site_trace_url is defined and cell.mirror.site_trace_url %}

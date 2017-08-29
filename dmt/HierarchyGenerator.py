@@ -220,8 +220,6 @@ class Generator():
         cur2 = dbh.cursor()
 
         now = datetime.datetime.now()
-        ftpmastertrace = helpers.get_ftpmaster_trace(cur)
-        if ftpmastertrace is None: ftpmastertrace = now
         checkrun = helpers.get_latest_checkrun(cur)
         if checkrun is None: return
         traces_last_change_cutoff = now - datetime.timedelta(hours=self.recent_hours)
@@ -234,19 +232,18 @@ class Generator():
                 site.http_override_port,
                 site.http_path,
 
-                mastertrace.id AS mastertrace_id,
-                mastertrace.error AS mastertrace_error,
-                mastertrace.trace_timestamp AS mastertrace_trace_timestamp,
+                checkoverview.error AS checkoverview_error,
+                checkoverview.age AS checkoverview_age,
 
                 traceset.id AS traceset_id,
                 traceset.error AS traceset_error
 
-            FROM site LEFT OUTER JOIN
-                mastertrace ON site.id = mastertrace.site_id LEFT OUTER JOIN
-                traceset    ON site.id = traceset.site_id
+            FROM site JOIN
+                checkoverview ON site.id = checkoverview.site_id LEFT OUTER JOIN
+                traceset      ON site.id = traceset.site_id
             WHERE
-                (mastertrace.checkrun_id = %(checkrun_id)s OR mastertrace.checkrun_id IS NULL) AND
-                (traceset   .checkrun_id = %(checkrun_id)s OR traceset   .checkrun_id IS NULL)
+                (checkoverview.checkrun_id = %(checkrun_id)s) AND
+                (traceset     .checkrun_id = %(checkrun_id)s OR traceset.checkrun_id IS NULL)
             """, {
                 'checkrun_id': checkrun['id']
             })
@@ -258,8 +255,7 @@ class Generator():
 
             error.append(row['traceset_error'])
             if row['traceset_id'] is None: error.append("No traceset information")
-            error.append(row['mastertrace_error'])
-            if row['mastertrace_id'] is None: error.append("No mastertracefile information")
+            error.append(row['checkoverview_error'])
             row['error'] = "; ".join(filter(lambda x: x is not None, error))
             if row['error'] == "": row['error'] = None
 
@@ -290,7 +286,6 @@ class Generator():
             self.context = {
                 'now': now,
                 'last_run': checkrun['timestamp'],
-                'ftpmastertrace': ftpmastertrace,
                 'hierarchy_table': cells,
                 'recent_hours': self.recent_hours,
             }
