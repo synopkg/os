@@ -1,0 +1,8 @@
+
+Packages required:
+ - python3-sqlalchemy
+ - python3-psycopg2
+ - python3-dateutil
+ - python3-jinja2
+ - python3-bs4
+ - python3-alembic
