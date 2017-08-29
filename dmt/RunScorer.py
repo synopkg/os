@@ -59,7 +59,7 @@ class CheckrunScorer():
                 'checkrun_id': self.checkrun['id'],
             })
 
-        print(self.checkrun['timestamp'])
+        #print(self.checkrun['timestamp'])
         for row in cur.fetchall():
             # Get the previous score for this mirror
             cur2.execute("""
@@ -110,7 +110,7 @@ class CheckrunScorer():
             score += float(adj) * weight
             if   score >  100: score = 100
             elif score < -100: score = -100
-            print(self.checkrun['timestamp'], "Mirror is ", row['checkoverview_age'], "old.  Adjusting score by", adj, "; weighted:", float(adj) * weight, "; new score is", score)
+            #print(self.checkrun['timestamp'], "Mirror is ", row['checkoverview_age'], "old.  Adjusting score by", adj, "; weighted:", float(adj) * weight, "; new score is", score)
 
             cur2.execute("""UPDATE checkoverview SET score = %(score)s WHERE id=%(checkoverview_id)s""",
                          {'checkoverview_id': row['checkoverview_id'],
