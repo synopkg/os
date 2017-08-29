@@ -138,9 +138,9 @@ class MirrorProcessor():
                             data['age'] = row['checkrun_timestamp'] - self.mastertraces_lastseen[data['version']]
                     else:
                         data['error'] = 'unexpected mirror version'
-                cur.execute("""INSERT INTO checkoverview (site_id, checkrun_id, error, version, age)
-                               VALUES (%(site_id)s, %(checkrun_id)s, %(error)s, %(version)s, %(age)s)""",
-                            data)
+                cur2.execute("""INSERT INTO checkoverview (site_id, checkrun_id, error, version, age)
+                                VALUES (%(site_id)s, %(checkrun_id)s, %(error)s, %(version)s, %(age)s)""",
+                             data)
         dbh.commit()
 
 class Processor():
