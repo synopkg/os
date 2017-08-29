@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Interval
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Interval, Float
 import sqlalchemy
 from sqlalchemy.orm import relationship, backref
 import sqlalchemy.ext.declarative
@@ -108,6 +108,7 @@ class Checkoverview(Base):
     error                   = Column(String)
     version                 = Column(DateTime(timezone=True))
     age                     = Column(Interval)
+    score                   = Column(Float)
 
 class MirrorDB():
     DBURL = 'postgresql:///mirror-status'
