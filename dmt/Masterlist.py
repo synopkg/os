@@ -27,7 +27,7 @@ import email
 import sys
 
 class MasterlistEntry:
-    MULTI_VALUE_FIELDS = ('Alias', 'Sponsor')
+    MULTI_VALUE_FIELDS = ('Alias', 'Sponsor', 'Provides')
 
     def __init__(self, lines):
         self.data = email.message_from_string('\n'.join(lines))
@@ -54,6 +54,8 @@ class MasterlistEntry:
                 if len(s) != len(self[key]):
                     print("Warning:", self.data['Site'], "duplicate values in", key, file=sys.stderr)
 
+    def _add_included_by(self, alias):
+        self.data['Provides'] = alias # This *adds* an alias; it does not overwrite existing ones
 
     @staticmethod
     def from_fh(fh):
@@ -73,6 +75,8 @@ class Masterlist:
         self.entries = self._load_entries(fn)
 
     def _load_entries(self, fn):
+        seen = {}
+        includes = {}
         entries = OrderedDict()
         with open(fn, encoding='utf-8') as masterlist:
             while True:
@@ -80,9 +84,25 @@ class Masterlist:
                 if e is None: break
                 if not 'Site' in e:
                     print("Mirror is lacking sitename: skipping", file=sys.stderr)
-                if e['Site'] in entries:
+                    continue
+
+                if e['Site'] in seen:
                     print("Duplicate site", e['Site'], "- dropping.", file=sys.stderr)
-                entries[e['Site']] = e
+                    continue
+
+                seen[e['Site']] = True
+                if 'Includes' in e:
+                    includes[e['Site']] = e['Includes'].split()
+                else:
+                    entries[e['Site']] = e
+
+        for alias in includes:
+            for site in includes[alias]:
+                if not site in entries:
+                    print("Site", alias, "is allegedly provided by", site,"but we do not know about that.", file=sys.stderr)
+                    continue
+                entries[site]._add_included_by(alias)
+
         return entries
 
 if __name__ == "__main__":

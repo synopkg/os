@@ -44,6 +44,15 @@ if __name__ == "__main__":
             dbdata['http_override_port'] = up.port
 
         db.update_or_create(session, db.Site, dbdata, name=sitename)
+        site = session.query(db.Site).filter_by(name = sitename).first()
+
+        provides = sitedata['Provides'] if 'Provides' in sitedata else []
+        for alias in provides:
+            db.update_or_create(session, db.SiteAlias, {}, name=alias, site_id=site.id)
+        for alias in session.query(db.SiteAlias).filter_by(site_id = site.id):
+            if alias.name not in provides:
+                session.delete(alias)
+
 
     for site in session.query(db.Site).filter_by(origin_id = origin.id):
         if site.name not in masterlist:

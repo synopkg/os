@@ -32,6 +32,17 @@ class Site(Base):
     http_override_host      = Column(String)
     http_override_port      = Column(Integer)
 
+class SiteAlias(Base):
+    """Alias name for a site offering the debian archive.
+    """
+    __tablename__           = 'sitealias'
+    id                      = Column(Integer, primary_key=True)
+
+    site_id                 = Column(Integer, ForeignKey('site.id', ondelete='CASCADE'), nullable=False, index=True)
+    site                    = relationship("Site", backref=backref("sitealiases", passive_deletes=True))
+
+    name                    = Column(String, nullable=False)
+
 class Checkrun(Base):
     """Instance of a mirror check run
     """
