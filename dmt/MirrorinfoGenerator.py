@@ -31,6 +31,7 @@ class MirrorReport():
 
     def prepare(self, dbh):
         cur = dbh.cursor()
+        cur2 = dbh.cursor()
 
         now = datetime.datetime.now()
         check_age_cutoff = now - datetime.timedelta(hours=self.history_hours)
@@ -55,6 +56,7 @@ class MirrorReport():
                 checkoverview.error AS checkoverview_error,
                 checkoverview.version AS checkoverview_version,
                 checkoverview.age AS checkoverview_age,
+                checkoverview.aliases AS checkoverview_aliases,
                 checkoverview.score AS checkoverview_score
 
             FROM checkrun LEFT OUTER JOIN
@@ -80,6 +82,8 @@ class MirrorReport():
                     if prev[x] is not None and prev[x] != row[x]:
                         row[x+'_changed'] = True
                     prev[x] = row[x]
+            aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
+            row['aliases' ] = aliases
             checks.append(row)
 
         context = {

@@ -2,6 +2,7 @@
 
 import argparse
 import datetime
+import json
 import sys
 
 if __name__ == '__main__' and __package__ is None:
@@ -41,6 +42,7 @@ class Generator():
                 checkoverview.error AS checkoverview_error,
                 checkoverview.age AS checkoverview_age,
                 checkoverview.score AS checkoverview_score,
+                checkoverview.aliases AS checkoverview_aliases,
 
                 mastertrace.error AS mastertrace_error,
                 mastertrace.trace_timestamp AS mastertrace_trace_timestamp,
@@ -63,6 +65,8 @@ class Generator():
         mirrors = []
         for row in cur.fetchall():
             row['site_trace_url'] = helpers.get_tracedir(row)
+            aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
+            row['aliases' ] = aliases
             mirrors.append(row)
 
         mirrors.sort(key=lambda m: helpers.hostname_comparator(m['name']))

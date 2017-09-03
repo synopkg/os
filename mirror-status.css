@@ -25,6 +25,8 @@
 #results-table td.age9 { background-color: #c00000; }
 #results-table td.age10{ background-color: #900000; }
 #results-table td.ageunknown{ background-color: #34897c; } /* teal */
+#results-table span.aliaserror { font-weight: bold; color: red; }
+#results-table span.aliaswarning { font-weight: italic; color: yellow; }
 #footer { font-size: 75%; }
 
 #hiera-table table {
