@@ -35,9 +35,10 @@ class BaseCheck:
         return helpers.get_tracedir(self.site)
 
     @staticmethod
-    def _fetch(url):
+    def _fetch(url, request_headers={}):
         try:
-            with urllib.request.urlopen(url, timeout=BaseCheck.TIMEOUT) as response:
+            req = urllib.request.Request(url, headers=request_headers)
+            with urllib.request.urlopen(req, timeout=BaseCheck.TIMEOUT) as response:
                 data = response.read()
                 return data
         except socket.timeout as e:
@@ -64,9 +65,12 @@ class BaseCheck:
 
 
 class TracfileFetcher(BaseCheck):
-    def __init__(self, site, checkrun_id, tracefilename):
+    def __init__(self, site, checkrun_id, tracefilename, request_host=None):
         super().__init__(site, checkrun_id)
         self.tracefilename = tracefilename
+        self.request_headers = {}
+        if request_host is not None:
+            self.request_headers['Host'] = request_host
 
     def parse_tracefile(self, rawcontents):
         try:
@@ -93,7 +97,7 @@ class TracfileFetcher(BaseCheck):
     def run(self):
         try:
             traceurl = urllib.parse.urljoin(self.get_tracedir(), self.tracefilename)
-            rawtracefilecontents = self._fetch(traceurl)
+            rawtracefilecontents = self._fetch(traceurl, request_headers=self.request_headers)
             self.parse_tracefile(rawtracefilecontents)
         except MirrorFailureException as e:
             self.result['error'] = e.message
@@ -114,6 +118,20 @@ class SitetraceFetcher(TracfileFetcher):
         i = db.Sitetrace(**self.result)
         session.add(i)
 
+class SiteAliasFetcher(TracfileFetcher):
+    def __init__(self, site, checkrun_id, sitealias):
+        #self.sitealias = sitealias
+        super().__init__(site, checkrun_id, 'master', request_host=sitealias.name)
+        del self.result['site_id']
+        self.result['sitealias_id'] = sitealias.id
+
+    def store(self, session, checkrun_id):
+        i = db.SiteAliasMastertrace(**self.result)
+        session.add(i)
+
+def siteAliasChecker_generator(site, checkrun_id):
+    for alias in site.sitealiases:
+        yield SiteAliasFetcher(site, checkrun_id, alias)
 
 class TracesetFetcher(BaseCheck):
     def __init__(self, site, checkrun_id):

@@ -101,6 +101,22 @@ class Traceset(Base):
     traceset                = Column(String)
     error                   = Column(String)
 
+class SiteAliasMastertrace(Base):
+    """Age of the master tracefile
+    """
+    __tablename__           = 'sitealiasmastertrace'
+    __plural__              = __tablename__ + 's'
+    id                      = Column(Integer, primary_key=True)
+
+    sitealias_id            = Column(Integer, ForeignKey("sitealias.id", ondelete='CASCADE'), nullable=False, index=True)
+    checkrun_id             = Column(Integer, ForeignKey("checkrun.id", ondelete='CASCADE'), nullable=False, index=True)
+    sitealias               = relationship("SiteAlias", backref=backref(__plural__, passive_deletes=True))
+    checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
+
+    full                    = Column(String)
+    trace_timestamp         = Column(DateTime(timezone=True))
+    error                   = Column(String)
+
 class Checkoverview(Base):
     """For a mirror and a check, summarize all we learned from a test-run.
 
@@ -120,6 +136,7 @@ class Checkoverview(Base):
     version                 = Column(DateTime(timezone=True))
     age                     = Column(Interval)
     score                   = Column(Float)
+    aliases                 = Column(String)
 
 class MirrorDB():
     DBURL = 'postgresql:///mirror-status'

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import datetime
-import json
 import queue
 from multiprocessing.pool import ThreadPool
 import threading
@@ -62,6 +61,8 @@ if __name__ == "__main__":
         checklist.append( checks.MastertraceFetcher(site, checkrun.id) )
         checklist.append( checks.SitetraceFetcher(site, checkrun.id) )
         checklist.append( checks.TracesetFetcher(site, checkrun.id) )
+        for c in checks.siteAliasChecker_generator(site, checkrun.id):
+            checklist.append(c)
 
     for check_result in check_result_generator(checklist):
         check_result.store(session, checkrun.id)

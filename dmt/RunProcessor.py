@@ -82,6 +82,40 @@ class MirrorProcessor():
 
         cache = {}
         for row in cur.fetchall():
+            cur2.execute("""
+                SELECT
+                    sitealias.name as sitealias_name,
+
+                    sitealiasmastertrace.id AS sitealiasmastertrace_id,
+                    sitealiasmastertrace.error AS sitealiasmastertrace_error,
+                    sitealiasmastertrace.trace_timestamp AS sitealiasmastertrace_trace_timestamp
+
+                FROM sitealias LEFT OUTER JOIN
+                    sitealiasmastertrace ON sitealias.id = sitealiasmastertrace.sitealias_id
+                WHERE
+                    site_id = %(site_id)s AND
+                    checkrun_id = %(checkrun_id)s
+                ORDER BY
+                    sitealias.name
+                """, {
+                    'site_id': self.site['id'],
+                    'checkrun_id': row['checkrun_id'],
+                })
+            aliases = {}
+            for row2 in cur2.fetchall():
+                if row2['sitealiasmastertrace_id'] is None:
+                    continue
+                d = {}
+                if row2['sitealiasmastertrace_error'] is not None:
+                    d['error'] = row2['sitealiasmastertrace_error']
+                    d['ok'] = False
+                elif row2['sitealiasmastertrace_trace_timestamp'] == row['mastertrace_trace_timestamp']:
+                    d['ok'] = True
+                else:
+                    d['ok'] = True
+                aliases[row2['sitealias_name']] = d
+            aliases = json.dumps(aliases, separators=(',', ':'))
+
             errors = []
             for kind in ('master', 'site'):
                 if row[kind+'trace_error'] is not None:
@@ -95,6 +129,7 @@ class MirrorProcessor():
             data['error'] = None
             data['version'] = None
             data['age'] = None
+            data['aliases'] = aliases
             if len(errors) > 0:
                 data['error'] = '; '.join(errors)
             else:
@@ -138,8 +173,8 @@ class MirrorProcessor():
                             data['age'] = row['checkrun_timestamp'] - self.mastertraces_lastseen[data['version']]
                     else:
                         data['error'] = 'unexpected mirror version'
-            cur2.execute("""INSERT INTO checkoverview (site_id, checkrun_id, error, version, age)
-                            VALUES (%(site_id)s, %(checkrun_id)s, %(error)s, %(version)s, %(age)s)""",
+            cur2.execute("""INSERT INTO checkoverview (site_id, checkrun_id, error, version, age, aliases)
+                            VALUES (%(site_id)s, %(checkrun_id)s, %(error)s, %(version)s, %(age)s, %(aliases)s)""",
                          data)
         dbh.commit()
 
