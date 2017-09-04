@@ -2,8 +2,6 @@
 - score adjustment:
   - negative adjustment if we can't get a traceset
   - negative adjustment if traceset changed
-- support aliases/provides (such as ftp.CC.d.o):
-  - check a mirror answers on alias names
 - generate a mirror masterlist only of mirrors with good score
 - generate a list of ftp.CC.d.o entries based on providers
 - check HTTPs
