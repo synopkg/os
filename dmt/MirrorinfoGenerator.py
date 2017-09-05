@@ -94,6 +94,7 @@ class MirrorReport():
             'name'     : self.site['name'],
             'base_url' : helpers.get_baseurl(self.site),
             'trace_url': helpers.get_tracedir(self.site),
+            'bugs'     : helpers.get_bugs_for_mirror(self.site['name']),
         }
 
         self.context = context

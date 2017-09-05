@@ -11,6 +11,16 @@
 
 [<a href="../mirror-status.html#{{site.name}}">S</a>,<a href="../mirror-hierarchy.html#{{site.name}}">H</a>]
 
+{% if site.bugs %}
+  <br>
+{% endif %}
+{% for k in site.bugs %}
+  {% if k.done %}<del>{% endif %}
+    <a href="https://bugs.debian.org/{{k.bug_num}}"</a>#{{k.bug_num}}: {{k.subject}}</a>
+  {% if k.done %}</del>{% endif %}
+  {% if not loop.last %}<br>{% endif %}
+{% endfor %}
+
 <div id="results-table">
 <table>
 <tr>
