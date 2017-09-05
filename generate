@@ -19,6 +19,7 @@ import threading
 MAX_RENDERERS = multiprocessing.cpu_count()
 MAX_RENDERER_Q_SIZE = MAX_RENDERERS*16
 
+
 def prepare(dbh, args):
     for cl in (StatusGenerator, HierarchyGenerator, MirrorinfoGenerator):
         of = os.path.join(args.outdir, cl.OUTFILE)

@@ -19,7 +19,7 @@
   <td><abbr title="mirror lag">archive version (age)</abbr></td>
   <td>last update run</td>
   <td>score</td>
-  <td>aliases/candidate</td>
+  <td>extra</td>
 </tr>
 
 {% for mirror in mirrors %}
@@ -84,9 +84,15 @@
         {% endif %}
       {{ ";" if not loop.last else "" }}
       {% endfor %}
-      {% if not mirror.aliases %}
-        - none -
+      {% if mirror.aliases and mirror.bugs %}
+        <br>
       {% endif %}
+      {% for k in mirror.bugs %}
+        {% if k.done %}<del>{% endif %}
+          <a href="https://bugs.debian.org/{{k.bug_num}}"</a>#{{k.bug_num}}: {{k.subject}}</a>
+        {% if k.done %}</del>{% endif %}
+        {% if not loop.last %}<br>{% endif %}
+      {% endfor %}
     </td>
   </tr>
 {% endfor %}

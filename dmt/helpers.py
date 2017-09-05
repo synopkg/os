@@ -2,6 +2,10 @@
 
 import urllib
 import psycopg2.extras
+import errno
+import json
+import os
+import re
 
 if __name__ == '__main__' and __package__ is None:
 
@@ -13,8 +17,31 @@ if __name__ == '__main__' and __package__ is None:
 
 import dmt.db as db
 
-
 FTPMASTER = "ftp-master.debian.org"
+
+class BTSInfo:
+    STATE_FILE = ".bugs-state.json"
+    state = None
+
+    @classmethod
+    def _load_bts_state(cls):
+        if cls.state is not None: return
+        try:
+            with open(cls.STATE_FILE) as data_file:
+                cls.state = json.load(data_file)
+        except IOError as e:
+            if e.errno != errno.ENOENT:
+                raise
+    @classmethod
+    def bugs_for_mirror(cls, hostname):
+        cls._load_bts_state()
+        if cls.state is None: return []
+
+        hn = re.escape(hostname)
+        regex = '(^|\s|[:,;\[])%(hn)s(\s|$|[:,;\]])' % { 'hn': hn}
+        p = re.compile(regex)
+
+        yield from filter(lambda bug: p.search(bug['subject']), cls.state)
 
 def get_baseurl(site):
     hn = site['name']
@@ -93,3 +120,6 @@ def get_ftpmaster_traces_lastseen(cur):
 
 def hostname_comparator(hostname):
     return list(reversed(hostname.split('.')))
+
+def get_bugs_for_mirror(hostname):
+    yield from BTSInfo.bugs_for_mirror(hostname)

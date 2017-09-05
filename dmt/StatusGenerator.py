@@ -67,6 +67,7 @@ class Generator():
             row['site_trace_url'] = helpers.get_tracedir(row)
             aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
             row['aliases' ] = aliases
+            row['bugs'] = helpers.get_bugs_for_mirror(row['name'])
             mirrors.append(row)
 
         mirrors.sort(key=lambda m: helpers.hostname_comparator(m['name']))
