@@ -3,6 +3,9 @@
 set -e
 set -u
 
+BTS_STATE_FILE=".bugs-state.json"
+BTS_STATE_AGE="3600"
+
 fullpath=$(readlink -f "$0")
 dir=$(dirname "$fullpath")
 cd "$dir"
@@ -37,4 +40,8 @@ rsync -av "$tmpdir"/* "$TARGET"/ --delete
 
 if command -v static-update-component > /dev/null; then
   static-update-component mirror-master.debian.org
+fi
+
+if ! [ -e "$BTS_STATE_FILE" ] || [ "$(stat --format=%Y "$BTS_STATE_FILE" )" -le "$(( $(date +%s) - $BTS_STATE_AGE ))" ]; then
+  ./get-bug-status | sponge "$BTS_STATE_FILE"
 fi

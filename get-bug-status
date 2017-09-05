@@ -1,0 +1,17 @@
+#!/usr/bin/python3
+
+import httplib2
+httplib2.CA_CERTS = "/etc/ssl/ca-global/ca-certificates.crt"
+
+import debianbts
+import json
+import os
+
+RELEVANT_FIELDS = ('subject', 'done', 'bug_num', 'tags')
+
+bug_numbers = debianbts.get_bugs('package', 'mirrors')
+bugs = debianbts.get_status(bug_numbers)
+dicts = [b.__dict__ for b in bugs]
+relevant_fields = [ { k: b[k] for k in RELEVANT_FIELDS } for b in dicts ]
+j = json.dumps(relevant_fields, indent=4, sort_keys=True)
+print(j)
