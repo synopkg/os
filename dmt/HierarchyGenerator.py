@@ -234,6 +234,7 @@ class Generator():
 
                 checkoverview.error AS checkoverview_error,
                 checkoverview.age AS checkoverview_age,
+                checkoverview.aliases AS checkoverview_aliases,
 
                 traceset.id AS traceset_id,
                 traceset.error AS traceset_error
@@ -270,6 +271,9 @@ class Generator():
                 row['traces'] = traces
             else:
                 row['traces'] = []
+
+            aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
+            row['aliases' ] = aliases
 
             mirrors[row['name']] = row
         hierarchy =  MirrorHierarchy(mirrors)

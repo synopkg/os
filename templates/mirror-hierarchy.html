@@ -69,6 +69,21 @@
            {% endif %}
          </span>
        {% endif %}
+       {% if cell.mirror.aliases %}<br>{% endif %}
+       {% for k in cell.mirror.aliases %}
+         {% if cell.mirror.aliases[k].error is defined %}
+           <span class="aliaserror">
+             {{k}}: {{cell.mirror.aliases[k].error}}
+           </span>
+         {% elif cell.mirror.aliases[k].ok %}
+             {{k}}: OK
+         {% else %}
+           <span class="aliaswarning">
+             {{k}}: mismatch?
+           </span>
+         {% endif %}
+       {{ ";" if not loop.last else "" }}
+       {% endfor %}
       </td>
   {% else %}
     {{ raise("unknown cell.entrytype") }}
