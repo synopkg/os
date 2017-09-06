@@ -91,7 +91,9 @@ class Masterlist:
                     continue
 
                 seen[e['Site']] = True
-                if 'Includes' in e:
+                if e['Type'] in ('GeoDNS', ):
+                    pass
+                elif 'Includes' in e:
                     includes[e['Site']] = e['Includes'].split()
                 else:
                     entries[e['Site']] = e
