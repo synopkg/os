@@ -70,7 +70,7 @@
 
     <td>{{ '%0.2f'| format(mirror.checkoverview_score|float) }}</td>
 
-    {% if mirror.runs_per_day == 0 %}
+    {% if not mirror.runs_per_day or mirror.runs_per_day == 0 %}
       <td class="error">?</td>
     {% else %}
       {% if mirror.runs_per_day < 1.5 %}
