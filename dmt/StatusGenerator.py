@@ -48,15 +48,29 @@ class Generator():
                 mastertrace.trace_timestamp AS mastertrace_trace_timestamp,
 
                 sitetrace.error AS sitetrace_error,
-                sitetrace.trace_timestamp AS sitetrace_trace_timestamp
+                sitetrace.trace_timestamp AS sitetrace_trace_timestamp,
+
+                runs_per_day.runs_per_day
 
             FROM site JOIN
                 checkoverview ON site.id = checkoverview.site_id LEFT OUTER JOIN
                 mastertrace ON site.id = mastertrace.site_id LEFT OUTER JOIN
-                sitetrace     ON site.id = sitetrace.site_id
+                sitetrace     ON site.id = sitetrace.site_id LEFT OUTER JOIN
+                (
+                 SELECT num_runs / days AS runs_per_day,
+                        site_id
+                 FROM (
+                  SELECT COUNT(distinct trace_timestamp) AS num_runs,
+                         EXTRACT(epoch from CURRENT_TIMESTAMP - MIN(checkrun.timestamp))/24/3600 AS days,
+                         sitetrace.site_id
+                  FROM sitetrace JOIN
+                       checkrun ON sitetrace.checkrun_id = checkrun.id
+                  WHERE checkrun.timestamp > CURRENT_TIMESTAMP - INTERVAL '2 week'
+                  GROUP BY sitetrace.site_id) AS sub
+                ) AS runs_per_day ON site.id = runs_per_day.site_id
             WHERE
                 (checkoverview.checkrun_id = %(checkrun_id)s) AND
-                (mastertrace.checkrun_id = %(checkrun_id)s OR mastertrace.checkrun_id IS NULL) AND
+                (mastertrace  .checkrun_id = %(checkrun_id)s OR mastertrace.checkrun_id IS NULL) AND
                 (sitetrace    .checkrun_id = %(checkrun_id)s OR sitetrace.checkrun_id IS NULL)
             """, {
                 'checkrun_id': checkrun['id']

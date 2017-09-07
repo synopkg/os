@@ -19,6 +19,7 @@
   <td><abbr title="mirror lag">archive version (age)</abbr></td>
   <td>last update run</td>
   <td>score</td>
+  <td>~#/d</td>
   <td>extra</td>
 </tr>
 
@@ -68,6 +69,26 @@
     {% endif %}
 
     <td>{{ '%0.2f'| format(mirror.checkoverview_score|float) }}</td>
+
+    {% if mirror.runs_per_day == 0 %}
+      <td class="error">?</td>
+    {% else %}
+      {% if mirror.runs_per_day < 1.5 %}
+        <td class="age7">
+      {% elif mirror.runs_per_day < 3.5 %}
+        <td class="age3">
+      {% elif mirror.runs_per_day > 6.5 %}
+        <td class="age5">
+      {% elif mirror.runs_per_day > 5.5 %}
+        <td class="age3">
+      {% elif mirror.runs_per_day > 4.5 %}
+        <td class="age2">
+      {% else %}
+        <td>
+      {% endif %}
+        {{ '%0.2f'| format(mirror.runs_per_day|float) }}
+      </td>
+    {% endif %}
 
     <td>
       {% for k in mirror.aliases %}
