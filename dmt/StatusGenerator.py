@@ -65,7 +65,8 @@ class Generator():
                          sitetrace.site_id
                   FROM sitetrace JOIN
                        checkrun ON sitetrace.checkrun_id = checkrun.id
-                  WHERE checkrun.timestamp > CURRENT_TIMESTAMP - INTERVAL '2 week'
+                  WHERE sitetrace.trace_timestamp IS NOT NULL AND
+                        checkrun.timestamp > CURRENT_TIMESTAMP - INTERVAL '2 week'
                   GROUP BY sitetrace.site_id) AS sub
                 ) AS runs_per_day ON site.id = runs_per_day.site_id
             WHERE
