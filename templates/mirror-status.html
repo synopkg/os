@@ -72,22 +72,18 @@
 
     {% if not mirror.runs_per_day or mirror.runs_per_day == 0 %}
       <td class="error">?</td>
+    {% elif mirror.runs_per_day < 1.5 %}
+      <td class="age7">{{ '%0.2f'| format(mirror.runs_per_day|float) }}</td>
+    {% elif mirror.runs_per_day < 3.5 %}
+      <td class="age3">{{ '%0.2f'| format(mirror.runs_per_day|float) }}</td>
+    {% elif mirror.runs_per_day > 6.5 %}
+      <td class="age5">{{ '%0.2f'| format(mirror.runs_per_day|float) }}</td>
+    {% elif mirror.runs_per_day > 5.5 %}
+      <td class="age3">{{ '%0.2f'| format(mirror.runs_per_day|float) }}</td>
+    {% elif mirror.runs_per_day > 4.5 %}
+      <td class="age2">{{ '%0.2f'| format(mirror.runs_per_day|float) }}</td>
     {% else %}
-      {% if mirror.runs_per_day < 1.5 %}
-        <td class="age7">
-      {% elif mirror.runs_per_day < 3.5 %}
-        <td class="age3">
-      {% elif mirror.runs_per_day > 6.5 %}
-        <td class="age5">
-      {% elif mirror.runs_per_day > 5.5 %}
-        <td class="age3">
-      {% elif mirror.runs_per_day > 4.5 %}
-        <td class="age2">
-      {% else %}
-        <td>
-      {% endif %}
-        {{ '%0.2f'| format(mirror.runs_per_day|float) }}
-      </td>
+      <td><abbr title="{{ '%0.2f'| format(mirror.runs_per_day|float) }}">&#x2714;</abbr></td>
     {% endif %}
 
     <td>
