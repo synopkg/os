@@ -22,6 +22,7 @@
   <th>last update run</th>
   <th>score</th>
   <th>~#/d</th>
+  <th>delay (&mu;/&sigma;)</th>
   <th>extra</th>
 </tr>
 </thead>
@@ -87,7 +88,27 @@
     {% elif mirror.runs_per_day > 4.5 %}
       <td class="age2">{{ '%0.2f'| format(mirror.runs_per_day|float) }}</td>
     {% else %}
-      <td><abbr title="{{ '%0.2f'| format(mirror.runs_per_day|float) }}">&#x2714;</abbr></td>
+      <td class="age0"><abbr title="{{ '%0.2f'| format(mirror.runs_per_day|float) }}">&#x2714;</abbr></td>
+    {% endif %}
+
+    {% if not mirror.max_age_avg %}
+      <td class="error" sorttable_customkey="-1">?</td>
+    {% else %}
+      <td sorttable_customkey="{{mirror.max_age_avg|timedelta_total_seconds}}"
+      {% if mirror.max_age_avg|timedelta_total_seconds > 24*3600 %}
+        class="age7"
+      {% elif mirror.max_age_avg|timedelta_total_seconds > 8*3600 %}
+        class="age4"
+      {% elif mirror.max_age_avg|timedelta_total_seconds > 4*3600 %}
+        class="age2"
+      {% elif mirror.max_age_avg|timedelta_total_seconds > 2*3600 %}
+        class="age1"
+      {% else %}
+        class="age0"
+      {% endif %}
+      >
+      {{ mirror.max_age_avg|timedelta_hrs_mins }}&nbsp;/&nbsp;{% if not mirror.max_age_stddev %}-{% else %}{{ mirror.max_age_stddev|timedelta_hrs_mins }}{% endif %}
+      </td>
     {% endif %}
 
     <td>

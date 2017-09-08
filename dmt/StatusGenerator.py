@@ -50,7 +50,10 @@ class Generator():
                 sitetrace.error AS sitetrace_error,
                 sitetrace.trace_timestamp AS sitetrace_trace_timestamp,
 
-                runs_per_day.runs_per_day
+                runs_per_day.runs_per_day,
+
+                max_age.avg    AS max_age_avg,
+                max_age.stddev AS max_age_stddev
 
             FROM site JOIN
                 checkoverview ON site.id = checkoverview.site_id LEFT OUTER JOIN
@@ -68,7 +71,21 @@ class Generator():
                   WHERE sitetrace.trace_timestamp IS NOT NULL AND
                         checkrun.timestamp > CURRENT_TIMESTAMP - INTERVAL '2 week'
                   GROUP BY sitetrace.site_id) AS sub
-                ) AS runs_per_day ON site.id = runs_per_day.site_id
+                ) AS runs_per_day ON site.id = runs_per_day.site_id  LEFT OUTER JOIN
+                (
+                 SELECT
+                        site_id,
+                        AVG(max_age) AS avg,
+                        STDDEV_SAMP(extract('epoch' from max_age)) as stddev
+                  FROM
+                        (SELECT
+                                site_id,
+                                CASE WHEN age > lead(age) OVER (PARTITION BY site_id ORDER BY checkrun.timestamp)
+                                     THEN age END AS max_age
+                                FROM checkrun LEFT OUTER JOIN checkoverview ON checkrun.id = checkoverview.checkrun_id
+                        ) AS SUB
+                          GROUP BY site_id
+                 ) as max_age ON site.id = max_age.site_id
             WHERE
                 (checkoverview.checkrun_id = %(checkrun_id)s) AND
                 (mastertrace  .checkrun_id = %(checkrun_id)s OR mastertrace.checkrun_id IS NULL) AND

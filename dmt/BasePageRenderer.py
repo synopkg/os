@@ -35,15 +35,28 @@ def get_human_readable_age(ts, base):
 
     return (formattedts, hr)
 
+# this shows relativedelta, i.e. months and days correctly done starting from a fixed timestamp.
 def timedeltaagefilter(delta, base):
     formattedts, hr = get_human_readable_age(base-delta, base)
     res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
     return jinja2.Markup(res)
 
+# this shows relativedelta, i.e. months and days correctly done starting from a fixed timestamp.
 def timedeltaagenoabbrfilter(delta, base):
     formattedts, hr = get_human_readable_age(base-delta, base)
     res = '%s - %s'%(hr, formattedts)
     return res
+
+# return hrs:mins
+def timedelta_hrs_mins_filter(delta):
+    if isinstance(delta, datetime.timedelta):
+        secs = delta.total_seconds()
+    else:
+        secs = delta
+
+    mins = secs / 60
+    hrs, mins = divmod(mins, 60)
+    return "%d:%02d"%(hrs,mins)
 
 def datetimeagefilter(ts, base):
     formattedts, hr = get_human_readable_age(ts, base)
@@ -111,6 +124,7 @@ class BasePageRenderer:
         tmplenv.filters['agegroupdeltaclass'] = agegroupdeltaclassfilter
         tmplenv.filters['agegroupclass'] = agegroupclassfilter
         tmplenv.filters['timedelta_total_seconds'] = timedelta_total_seconds_filter
+        tmplenv.filters['timedelta_hrs_mins'] = timedelta_hrs_mins_filter
         tmplenv.filters['mirrorsortkey'] = helpers.hostname_comparator
         tmplenv.globals['raise'] = raise_helper
         return tmplenv
