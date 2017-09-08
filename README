@@ -8,3 +8,17 @@ Packages required:
  - python3-alembic
  - python3-debianbts
  - python3-dateutil
+
+Quick start
+-----------
+
+Setup:
+
+  1. Create a "mirror-status" pg db
+  2. Run ./db-create (or alembic upgrade head)
+
+Maintenance:
+
+  1. Run ./import-mirrors --masterlist /path/to/Mirrors.masterlist
+  2. Run ./run-tests && ./run-process
+  3. Run ./generate --outdir /path/to/output/directory
