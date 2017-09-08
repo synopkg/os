@@ -119,7 +119,7 @@ def get_ftpmaster_traces_lastseen(cur):
     return trace_timestamp_lastseen
 
 def hostname_comparator(hostname):
-    return list(reversed(hostname.split('.')))
+    return '.'.join(reversed(hostname.split('.')))
 
 def get_bugs_for_mirror(hostname):
     yield from BTSInfo.bugs_for_mirror(hostname)
