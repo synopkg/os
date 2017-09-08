@@ -1,4 +1,9 @@
 $(function() {
   // call the tablesorter plugin
-  $("#results").tablesorter();
+  $("#results").tablesorter({
+    widgets : [ "zebra", "filter" ],
+    widgetOptions: {
+      filter_useParsedData: false,
+    },
+  });
 });
