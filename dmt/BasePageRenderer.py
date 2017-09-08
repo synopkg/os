@@ -12,6 +12,7 @@ if __name__ == '__main__' and __package__ is None:
     __package__ = 'dmt.BasePageRenderer'
 
 import dmt.db as db
+from dmt import helpers
 
 def get_human_readable_age(ts, base):
     assert(ts is not None)
@@ -110,6 +111,7 @@ class BasePageRenderer:
         tmplenv.filters['agegroupdeltaclass'] = agegroupdeltaclassfilter
         tmplenv.filters['agegroupclass'] = agegroupclassfilter
         tmplenv.filters['timedelta_total_seconds'] = timedelta_total_seconds_filter
+        tmplenv.filters['mirrorsortkey'] = helpers.hostname_comparator
         tmplenv.globals['raise'] = raise_helper
         return tmplenv
 
