@@ -5,3 +5,7 @@
 - generate a mirror masterlist only of mirrors with good score
 - generate a list of ftp.CC.d.o entries based on providers
 - check HTTPs
+- compute update delay (archive version age at update time) mean and variance
+
+UI:
+- allow hiding mirrors based on origin in the status table
