@@ -62,7 +62,7 @@ if __name__ == "__main__":
     if not os.path.isdir(args.outdir):
         os.mkdir(args.outdir)
     shutil.copy('mirror-status.css', args.outdir)
-    shutil.copy('sorttable.js', args.outdir)
+    shutil.copy('mirror-status.js', args.outdir)
 
 
     # start fetching things to render
