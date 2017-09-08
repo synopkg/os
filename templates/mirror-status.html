@@ -33,7 +33,7 @@
   {% else %}
   <tr id="{{mirror.name}}">
   {% endif %}
-    <td class="hostname">
+    <td sorttable_customkey="{{mirror.name|mirrorsortkey}}" class="hostname">
     {% if mirror.trace_url is defined and mirror.trace_url %}
       <a href="{{mirror.trace_url}}">{{ mirror.name }}</a>
     {% else %}
@@ -45,7 +45,7 @@
     {% if mirror.mastertrace_error %}
       <td>{{ mirror.mastertrace_error }}</td>
     {% else %}
-      <td {{mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}>
+      <td sorttable_customkey="{{mirror.mastertrace_trace_timestamp}}" {{mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}>
       {% if mirror.mastertrace_trace_timestamp == ftpmastertrace %}
         current
       {% else %}
@@ -58,9 +58,9 @@
       <td class="error">{{ mirror.checkoverview_error }}</td>
     {% else %}
       {% if (mirror.checkoverview_age|timedelta_total_seconds == 0) %}
-        <td class="age0">current</td>
+        <td sorttable_customkey="{{mirror.checkoverview_age}}" class="age0">current</td>
       {% else %}
-        <td {{mirror.checkoverview_age|agegroupclass}}>
+        <td sorrtable_customkey="{{mirror.checkoverview_age}}" {{mirror.checkoverview_age|agegroupclass}}>
           {{mirror.checkoverview_age|timedeltaage(last_run)}}
         </td>
       {% endif %}
@@ -69,7 +69,7 @@
     {% if mirror.sitetrace_error %}
       <td class="error">{{ mirror.sitetrace_error }}</td>
     {% else %}
-      <td {{mirror.sitetrace_trace_timestamp|agegroupdeltaclass(now)}}>{{mirror.sitetrace_trace_timestamp|datetimeage(now)}}</td>
+      <td sorttable_customkey="{{mirror.sitetrace_trace_timestamp}}" {{mirror.sitetrace_trace_timestamp|agegroupdeltaclass(now)}}>{{mirror.sitetrace_trace_timestamp|datetimeage(now)}}</td>
     {% endif %}
 
     <td>{{ '%0.2f'| format(mirror.checkoverview_score|float) }}</td>
