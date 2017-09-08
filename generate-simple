@@ -34,3 +34,4 @@ if __name__ == "__main__":
             base.render(x)
 
     shutil.copy('mirror-status.css', args.outdir)
+    shutil.copy('sorttable.js', args.outdir)
