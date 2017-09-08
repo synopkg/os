@@ -1,15 +1,16 @@
 #results-table table {
   border-collapse: collapse;
 }
-#results-table table td {
+#results-table table td,
+#results-table table th {
   padding: 4pt;
   border: 1px black solid;
 }
-#results-table tr:first-child { font-weight: bold; }
-#results-table tr:first-child { background-color: #eeeeff; }
+#results-table th { font-weight: bold; }
+#results-table th { background-color: #eeeeff; }
 #results-table tr:nth-child(3n+3) { background-color: #f0f0f0; }
 #results-table tr.error { background-color: #b267fc; }
-#results-table td.hostname { text-align: right; }
+#results-table tr .hostname { text-align: right; }
 #results-table td.error { background-color: #b267fc; }
 #results-table td.warning { background-color: #ffffaa; }
 #results-table td.tiny { font-size: 50%; }
