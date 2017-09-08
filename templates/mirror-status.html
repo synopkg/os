@@ -13,6 +13,7 @@
 
 <div id="results-table">
 <table>
+<thead>
 <tr>
   <th class="hostname">Site</th>
   <th>mastertrace timestamp</th>
@@ -22,7 +23,9 @@
   <th>~#/d</th>
   <th>extra</th>
 </tr>
+</thead>
 
+<tbody>
 {% for mirror in mirrors %}
   {% if mirror.checkoverview_error and mirror.mastertrace_error %}
   <tr class="error">
@@ -113,6 +116,7 @@
     </td>
   </tr>
 {% endfor %}
+</tbody>
 </table>
 </div>
 
