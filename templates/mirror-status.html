@@ -55,12 +55,12 @@
     {% endif %}
 
     {% if mirror.checkoverview_error %}
-      <td class="error">{{ mirror.checkoverview_error }}</td>
+      <td class="error" sorttable_customkey="-1">{{ mirror.checkoverview_error }}</td>
     {% else %}
       {% if (mirror.checkoverview_age|timedelta_total_seconds == 0) %}
-        <td sorttable_customkey="{{mirror.checkoverview_age}}" class="age0">current</td>
+        <td sorttable_customkey="0" class="age0">current</td>
       {% else %}
-        <td sorrtable_customkey="{{mirror.checkoverview_age}}" {{mirror.checkoverview_age|agegroupclass}}>
+        <td sorttable_customkey="{{mirror.checkoverview_age|timedelta_total_seconds}}" {{mirror.checkoverview_age|agegroupclass}}>
           {{mirror.checkoverview_age|timedeltaage(last_run)}}
         </td>
       {% endif %}
