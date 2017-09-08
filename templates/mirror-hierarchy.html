@@ -11,8 +11,7 @@
 
 [<a href="mirror-status.html">S</a>]
 
-<div id="hiera-table">
-<table>
+<table id="hiera">
 <tr>
 {% for cell in hierarchy_table %}
   {% if cell.entrytype == "labels-only" %}
@@ -100,7 +99,6 @@
   {% endif %}
 {% endfor %}
 </table>
-</div>
 
 <p>
 Italic text refers to tracefile names, cells with color-status correspond to mirrors from the masterlist that are being checked.

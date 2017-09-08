@@ -1,56 +1,56 @@
-#results-table table {
+table#results {
   border-collapse: collapse;
 }
-#results-table table td,
-#results-table table th {
+table#results td,
+table#results th {
   padding: 4pt;
   border: 1px black solid;
 }
-#results-table th { font-weight: bold; }
-#results-table th { background-color: #eeeeff; }
-#results-table tr:nth-child(3n+3) { background-color: #f0f0f0; }
-#results-table tr.error { background-color: #b267fc; }
-#results-table tr .hostname { text-align: right; }
-#results-table td.error { background-color: #b267fc; }
-#results-table td.warning { background-color: #ffffaa; }
-#results-table td.tiny { font-size: 50%; }
-#results-table td.age0 { background-color: #50f442; } /* green */
-#results-table td.age1 { background-color: #89f442; }
-#results-table td.age2 { background-color: #bcf442; }
-#results-table td.age3 { background-color: #f4f142; } /* yellow */
-#results-table td.age4 { background-color: #f4c842; } /* orange */
-#results-table td.age5 { background-color: #f48c42; }
-#results-table td.age6 { background-color: #f66666; } /* red */
-#results-table td.age7 { background-color: #ff4444; } /* red */
-#results-table td.age8 { background-color: #ff0000; } /* red */
-#results-table td.age9 { background-color: #c00000; }
-#results-table td.age10{ background-color: #900000; }
-#results-table td.ageunknown{ background-color: #34897c; } /* teal */
-#results-table span.aliaserror { font-weight: bold; color: red; }
-#results-table span.aliaswarning { font-weight: italic; color: yellow; }
+table#results th { font-weight: bold; }
+table#results th { background-color: #eeeeff; }
+table#results tr:nth-child(3n+3) { background-color: #f0f0f0; }
+table#results tr.error { background-color: #b267fc; }
+table#results tr .hostname { text-align: right; }
+table#results td.error { background-color: #b267fc; }
+table#results td.warning { background-color: #ffffaa; }
+table#results td.tiny { font-size: 50%; }
+table#results td.age0 { background-color: #50f442; } /* green */
+table#results td.age1 { background-color: #89f442; }
+table#results td.age2 { background-color: #bcf442; }
+table#results td.age3 { background-color: #f4f142; } /* yellow */
+table#results td.age4 { background-color: #f4c842; } /* orange */
+table#results td.age5 { background-color: #f48c42; }
+table#results td.age6 { background-color: #f66666; } /* red */
+table#results td.age7 { background-color: #ff4444; } /* red */
+table#results td.age8 { background-color: #ff0000; } /* red */
+table#results td.age9 { background-color: #c00000; }
+table#results td.age10{ background-color: #900000; }
+table#results td.ageunknown{ background-color: #34897c; } /* teal */
+table#results span.aliaserror { font-weight: bold; color: red; }
+table#results span.aliaswarning { font-weight: italic; color: yellow; }
 #footer { font-size: 75%; }
 
-#hiera-table table {
+table#hiera {
   border-collapse: collapse;
 }
-#hiera-table table td {
+table#hiera td {
   padding: 4pt;
   border: 1px black solid;
   vertical-align: top;
 }
-#hiera-table td.trace { font-style: italic; }
-#hiera-table span.main { font-style: italic; }
-#hiera-table span.tracesetwarning { font-weight: bold; color: red; }
-#hiera-table td.error { background-color: #b267fc; }
-#hiera-table td.age0 { background-color: #50f442; } /* green */
-#hiera-table td.age1 { background-color: #89f442; }
-#hiera-table td.age2 { background-color: #bcf442; }
-#hiera-table td.age3 { background-color: #f4f142; } /* yellow */
-#hiera-table td.age4 { background-color: #f4c842; } /* orange */
-#hiera-table td.age5 { background-color: #f48c42; }
-#hiera-table td.age6 { background-color: #f66666; } /* red */
-#hiera-table td.age7 { background-color: #ff4444; } /* red */
-#hiera-table td.age8 { background-color: #ff0000; } /* red */
-#hiera-table td.age9 { background-color: #c00000; }
-#hiera-table td.age10{ background-color: #900000; }
-#hiera-table td.ageunknown{ background-color: #34897c; } /* teal */
+table#hiera td.trace { font-style: italic; }
+table#hiera span.main { font-style: italic; }
+table#hiera span.tracesetwarning { font-weight: bold; color: red; }
+table#hiera td.error { background-color: #b267fc; }
+table#hiera td.age0 { background-color: #50f442; } /* green */
+table#hiera td.age1 { background-color: #89f442; }
+table#hiera td.age2 { background-color: #bcf442; }
+table#hiera td.age3 { background-color: #f4f142; } /* yellow */
+table#hiera td.age4 { background-color: #f4c842; } /* orange */
+table#hiera td.age5 { background-color: #f48c42; }
+table#hiera td.age6 { background-color: #f66666; } /* red */
+table#hiera td.age7 { background-color: #ff4444; } /* red */
+table#hiera td.age8 { background-color: #ff0000; } /* red */
+table#hiera td.age9 { background-color: #c00000; }
+table#hiera td.age10{ background-color: #900000; }
+table#hiera td.ageunknown{ background-color: #34897c; } /* teal */

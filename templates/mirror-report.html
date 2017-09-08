@@ -21,8 +21,7 @@
   {% if not loop.last %}<br>{% endif %}
 {% endfor %}
 
-<div id="results-table">
-<table>
+<table id="results">
 <tr>
   <td><a href="{{site.base_url}}">Site</a></td>
   <td><abbr title="master trace as of last update of site tracefile"><a href="{{site.trace_url}}master">mirror version</a></abbr></td>
@@ -112,7 +111,6 @@
   </tr>
 {% endfor %}
 </table>
-</div>
 
 <p>
 <hr NOSHADE>
