@@ -37,8 +37,11 @@ def get_human_readable_age(ts, base):
 
 # this shows relativedelta, i.e. months and days correctly done starting from a fixed timestamp.
 def timedeltaagefilter(delta, base):
-    formattedts, hr = get_human_readable_age(base-delta, base)
-    res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
+    if delta.total_seconds() == 0:
+        res = 'current'
+    else:
+        formattedts, hr = get_human_readable_age(base-delta, base)
+        res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
     return jinja2.Markup(res)
 
 # this shows relativedelta, i.e. months and days correctly done starting from a fixed timestamp.
@@ -59,8 +62,11 @@ def timedelta_hrs_mins_filter(delta):
     return "%d:%02d"%(hrs,mins)
 
 def datetimeagefilter(ts, base):
-    formattedts, hr = get_human_readable_age(ts, base)
-    res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
+    if ts == base:
+        res = 'current'
+    else:
+        formattedts, hr = get_human_readable_age(ts, base)
+        res = '<abbr title="%s">%s</abbr>'%(formattedts, hr)
     return jinja2.Markup(res)
 
 def datetimeagenoabbrfilter(ts, base):
