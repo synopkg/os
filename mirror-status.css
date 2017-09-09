@@ -2,6 +2,7 @@ p#footer {
   border-top-style: solid;
   border-width: 1px;
   padding-top: 2px;
+  font-size: 75%;
 }
 
 table#results {
@@ -37,7 +38,6 @@ table#results td.age10{ background-color: #900000; }
 table#results td.ageunknown{ background-color: #34897c; } /* teal */
 table#results span.aliaserror { font-weight: bold; color: red; }
 table#results span.aliaswarning { font-weight: italic; color: yellow; }
-#footer { font-size: 75%; }
 
 table#hiera {
   border-collapse: collapse;
