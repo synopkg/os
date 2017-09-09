@@ -1,3 +1,9 @@
+p#footer {
+  border-top-style: solid;
+  border-width: 1px;
+  padding-top: 2px;
+}
+
 table#results {
   border-collapse: collapse;
 }
