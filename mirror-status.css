@@ -21,6 +21,7 @@ table#results th { background-color: #eeeeff; }
 table#results tr:nth-child(3n+3) { background-color: #f0f0f0; }
 table#results tr.error { background-color: #b267fc; }
 table#results tr .hostname { text-align: right; }
+table#results td.date { white-space: nowrap; }
 table#results td.error { background-color: #b267fc; }
 table#results td.warning { background-color: #ffffaa; }
 table#results td.tiny { font-size: 50%; }

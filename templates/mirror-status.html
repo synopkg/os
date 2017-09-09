@@ -36,7 +36,7 @@
     {% if mirror.mastertrace_error %}
       <td class="error" data-text="1970-01-01">{{ mirror.mastertrace_error }}</td>
     {% else %}
-      <td data-text="{{mirror.mastertrace_trace_timestamp}}" {{mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}>
+      <td class="date {{mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}" data-text="{{mirror.mastertrace_trace_timestamp}}">
       {% if mirror.mastertrace_trace_timestamp == ftpmastertrace %}
         current
       {% else %}
@@ -49,9 +49,9 @@
       <td class="error" data-text="1970-01-01">{{ mirror.checkoverview_error }}</td>
     {% else %}
       {% if (mirror.checkoverview_age|timedelta_total_seconds == 0) %}
-        <td data-text="0" class="age0">current</td>
+        <td class="date age0" data-text="0">current</td>
       {% else %}
-        <td data-text="{{last_run - mirror.checkoverview_age}}" {{mirror.checkoverview_age|agegroupclass}}>
+        <td class="date {{mirror.checkoverview_age|agegroupclass}}" data-text="{{last_run - mirror.checkoverview_age}}">
           {{mirror.checkoverview_age|timedeltaage(last_run)}}
         </td>
       {% endif %}
@@ -60,7 +60,9 @@
     {% if mirror.sitetrace_error %}
       <td class="error" data-text="1970-01-01">{{ mirror.sitetrace_error }}</td>
     {% else %}
-      <td data-text="{{mirror.sitetrace_trace_timestamp}}" {{mirror.sitetrace_trace_timestamp|agegroupdeltaclass(now)}}>{{mirror.sitetrace_trace_timestamp|datetimeage(now)}}</td>
+      <td class="date {{mirror.sitetrace_trace_timestamp|agegroupdeltaclass(now)}}" data-text="{{mirror.sitetrace_trace_timestamp}}">
+        {{mirror.sitetrace_trace_timestamp|datetimeage(now)}}
+      </td>
     {% endif %}
 
     <td>{{ '%0.2f'| format(mirror.checkoverview_score|float) }}</td>

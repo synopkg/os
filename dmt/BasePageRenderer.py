@@ -76,28 +76,27 @@ def timedelta_total_seconds_filter(delta):
 def agegroupclassfilter(delta):
     # our template defines 8 agegroups from OK(0) to okish(2) to warn(3) and Warn(4-5) to Error(6-7)
     if delta < datetime.timedelta(hours=6):
-        r = 'class="age0"'
+        return 'age0'
     elif delta < datetime.timedelta(hours=11):
-        r = 'class="age1"'
+        return 'age1'
     elif delta < datetime.timedelta(hours=16):
-        r = 'class="age2"'
+        return 'age2'
     elif delta < datetime.timedelta(hours=24):
-        r = 'class="age3"'
+        return 'age3'
     elif delta < datetime.timedelta(hours=48):
-        r = 'class="age4"'
+        return 'age4'
     elif delta < datetime.timedelta(days=3):
-        r = 'class="age5"'
+        return 'age5'
     elif delta < datetime.timedelta(days=4):
-        r = 'class="age6"'
+        return 'age6'
     elif delta < datetime.timedelta(days=8):
-        r = 'class="age7"'
+        return 'age7'
     elif delta < datetime.timedelta(days=14):
-        r = 'class="age8"'
+        return 'age8'
     elif delta < datetime.timedelta(days=30):
-        r = 'class="age9"'
+        return 'age9'
     else:
-        r = 'class="age10"'
-    return jinja2.Markup(r)
+        return 'age10'
 
 def agegroupdeltaclassfilter(ts, base):
     delta = base - ts
