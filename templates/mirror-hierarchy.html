@@ -1,14 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Debian mirror hierarchy</title>
-  <link rel="stylesheet" type="text/css" href="mirror-status.css">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-</head>
-<body>
-
-<h1>Debian mirror hierarchy</h1>
-
+{% extends "base.html" %}
+{% block title %}Debian mirror hierarchy{% endblock %}
+{% block content %}
 [<a href="mirror-status.html">S</a>]
 
 <table id="hiera">
@@ -102,16 +94,4 @@
 
 <p>
 Italic text refers to tracefile names, cells with color-status correspond to mirrors from the masterlist that are being checked.
-
-<p id="footer"
->Debian mirrors team - mirrors@d.o
-&mdash;
-last test run: {{last_run.strftime('%Y-%m-%d %H:%M:%S') }}
-&mdash;
-generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
-&mdash;
-(check <a href="https://validator.w3.org/check?uri=referer">HTML</a>, <a href="https://jigsaw.w3.org/css-validator/check/referer">CSS</a>)
-</p>
-</body>
-</html>
-
+{% endblock content %}

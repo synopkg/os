@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ baseurl }}/mirror-status.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tablesorter@2.28.15/dist/js/jquery.tablesorter.combined.min.js" integrity="sha256-WHm2h/38srdbq290ZchoKZkN3XZvEnxGXXN4h6VzTes=" crossorigin="anonymous"></script>
+    <script src="{{ baseurl }}/mirror-status.js"></script>
+  </head>
+  <body>
+    <h1>{{ self.title() }}</h1>
+
+    {% block content %}
+    {% endblock %}
+
+    <p id="footer">
+       Debian mirrors team - mirrors@d.o
+       &mdash;
+       last test run: {{last_run.strftime('%Y-%m-%d %H:%M:%S') }}
+       &mdash;
+       generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
+       &mdash;
+       (check <a href="https://validator.w3.org/check?uri=referer">HTML</a>, <a href="https://jigsaw.w3.org/css-validator/check/referer">CSS</a>)
+    </p>
+  </body>
+</html>
+

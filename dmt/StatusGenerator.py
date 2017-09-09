@@ -104,6 +104,7 @@ class Generator():
 
         mirrors.sort(key=lambda m: helpers.hostname_comparator(m['name']))
         context = {
+            'baseurl': '.',
             'mirrors': mirrors,
             'last_run': checkrun['timestamp'],
             'ftpmastertrace': ftpmastertrace,

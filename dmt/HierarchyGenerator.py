@@ -288,6 +288,7 @@ class Generator():
             cells[-1]['last'] = True
 
             self.context = {
+                'baseurl': '.',
                 'now': now,
                 'last_run': checkrun['timestamp'],
                 'hierarchy_table': cells,

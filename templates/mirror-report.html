@@ -1,14 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Debian mirror report for {{site.name}}</title>
-  <link rel="stylesheet" type="text/css" href="../mirror-status.css">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-</head>
-<body>
-
-<h1>Debian mirror report for {{site.name}}</h1>
-
+{% extends "base.html" %}
+{% block title %}Debian mirror report for {{site.name}}{% endblock %}
+{% block content %}
 [<a href="../mirror-status.html#{{site.name}}">S</a>,<a href="../mirror-hierarchy.html#{{site.name}}">H</a>]
 
 {% if site.bugs %}
@@ -111,14 +103,4 @@
   </tr>
 {% endfor %}
 </table>
-
-<p id="footer"
->Debian mirrors team - mirrors@d.o
-&mdash;
-generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
-&mdash;
-(check <a href="https://validator.w3.org/check?uri=referer">HTML</a>, <a href="https://jigsaw.w3.org/css-validator/check/referer">CSS</a>)
-</p>
-</body>
-</html>
-
+{% endblock content %}

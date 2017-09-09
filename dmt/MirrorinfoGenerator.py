@@ -34,6 +34,7 @@ class MirrorReport():
         cur2 = dbh.cursor()
 
         now = datetime.datetime.now()
+        checkrun = helpers.get_latest_checkrun(cur)
         check_age_cutoff = now - datetime.timedelta(hours=self.history_hours)
 
         cur.execute("""
@@ -87,7 +88,9 @@ class MirrorReport():
             checks.append(row)
 
         context = {
+            'baseurl': '..',
             'now': now,
+            'last_run': checkrun['timestamp'],
             'checks': reversed(checks),
         }
         context['site'] = {
