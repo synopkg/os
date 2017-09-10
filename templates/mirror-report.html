@@ -8,7 +8,7 @@
 {% endif %}
 {% for k in site.bugs %}
   {% if k.done %}<del>{% endif %}
-    [{{k.date}}/<strong>{{k.log_modified}}</strong>]&nbsp;<a href="https://bugs.debian.org/{{k.bug_num}}"</a>#{{k.bug_num}}: {{k.subject}}</a>
+    [{{k.date}}/<strong>{{k.log_modified}}</strong>]&nbsp;<a href="https://bugs.debian.org/{{k.bug_num}}">#{{k.bug_num}}: {{k.subject}}</a>
   {% if k.done %}</del>{% endif %}
   {% if not loop.last %}<br>{% endif %}
 {% endfor %}
