@@ -27,14 +27,16 @@
 
 {% for c in checks %}
   <tr>
-    <td>{{c.checkrun_timestamp.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+    <td class="date">
+      {{c.checkrun_timestamp.strftime('%Y-%m-%d %H:%M:%S')}}
+    </td>
 
     {% if not c.checkoverview_id %}
       <td class="error" colspan="2">unknown</td>
     {% elif c.checkoverview_error %}
       <td class="error" colspan="2">{{ c.checkoverview_error }}</td>
     {% else %}
-      <td>
+      <td class="date">
         {% if c.checkoverview_version_changed is defined and c.checkoverview_version_changed %}<strong>{% endif %}
         {{ c.checkoverview_version.strftime('%Y-%m-%d %H:%M:%S') }}
         {% if c.checkoverview_version_changed is defined and c.checkoverview_version_changed %}</strong>{% endif %}
@@ -49,7 +51,7 @@
     {% elif c.mastertrace_error %}
       <td class="error">{{ c.mastertrace_error }}</td>
     {% else %}
-      <td>
+      <td class="date">
         {% if c.mastertrace_trace_timestamp_changed is defined and c.mastertrace_trace_timestamp_changed %}<strong>{% endif %}
         {{ c.mastertrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
         {% if c.mastertrace_trace_timestamp_changed is defined and c.mastertrace_trace_timestamp_changed %}</strong>{% endif %}
@@ -61,7 +63,7 @@
     {% elif c.sitetrace_error %}
       <td class="error">{{ c.sitetrace_error }}</td>
     {% else %}
-      <td>
+      <td class="date">
         {% if c.sitetrace_trace_timestamp_changed is defined and c.sitetrace_trace_timestamp_changed %}<strong>{% endif %}
         {{ c.sitetrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
         {% if c.sitetrace_trace_timestamp_changed is defined and c.sitetrace_trace_timestamp_changed %}</strong>{% endif %}
