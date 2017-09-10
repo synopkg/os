@@ -15,7 +15,7 @@
       {% if cell.mirror.error %}
         class="error"
       {% else %}
-        {{cell.mirror.checkoverview_age|agegroupclass}}
+        class="{{cell.mirror.checkoverview_age|agegroupclass}}"
       {% endif %}
         colspan="{{cell.width}}" rowspan="{{cell.height}}"
       >
