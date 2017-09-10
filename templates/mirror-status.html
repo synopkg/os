@@ -68,7 +68,7 @@
     {% elif mirror.runs_per_day > 4.5 %}
       <td class="age2">{{ '%0.2f'| format(mirror.runs_per_day|float) }}</td>
     {% else %}
-      <td class="age0"><abbr title="{{ '%0.2f'| format(mirror.runs_per_day|float) }}">&#x2714;</abbr></td>
+      <td class="age0" data-text="{{ '%0.2f'| format(mirror.runs_per_day|float) }}"><abbr title="{{ '%0.2f'| format(mirror.runs_per_day|float) }}">&#x2714;</abbr></td>
     {% endif %}
 
     {% if not mirror.max_age_avg %}
