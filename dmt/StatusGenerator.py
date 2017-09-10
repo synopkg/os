@@ -97,6 +97,18 @@ class Generator():
         mirrors = []
         for row in cur.fetchall():
             row['trace_url'] = helpers.get_tracedir(row)
+
+            mastertrace_trace_timestamp = row['mastertrace_trace_timestamp']
+            if mastertrace_trace_timestamp is not None:
+                row['mastertrace_trace_age'] = ftpmastertrace - mastertrace_trace_timestamp
+            else:
+                row['mastertrace_trace_age'] = None
+            sitetrace_trace_timestamp = row['sitetrace_trace_timestamp']
+            if sitetrace_trace_timestamp is not None:
+                row['sitetrace_trace_age'] = now - sitetrace_trace_timestamp
+            else:
+                row['sitetrace_trace_age'] = None
+
             aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
             row['aliases' ] = aliases
             row['bugs'] = helpers.get_bugs_for_mirror(row['name'])

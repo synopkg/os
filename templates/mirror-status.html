@@ -7,9 +7,9 @@
 <thead>
 <tr>
   <th class="hostname">Site</th>
-  <th data-sorter="shortDate">mastertrace timestamp</th>
-  <th data-sorter="shortDate"><abbr title="mirror lag">archive version (age)</abbr></th>
-  <th data-sorter="shortDate">last update run</th>
+  <th data-sorter="digit">mastertrace timestamp</th>
+  <th data-sorter="digit"><abbr title="mirror lag">archive version (age)</abbr></th>
+  <th data-sorter="digit">last update run</th>
   <th data-sorter="digit">score</th>
   <th data-sorter="digit">~#/d</th>
   <th data-sorter="digit">delay (&mu;/&sigma;)</th>
@@ -30,25 +30,25 @@
     </td>
 
     {% if mirror.mastertrace_error %}
-      <td class="error" data-text="1970-01-01">{{ mirror.mastertrace_error | formaterror }} <span class="error-details">{{ mirror.mastertrace_error }}</span></td>
+      <td class="error" data-text="max">{{ mirror.mastertrace_error | formaterror }} <span class="error-details">{{ mirror.mastertrace_error }}</span></td>
     {% else %}
-      <td class="date {{mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}" data-text="{{mirror.mastertrace_trace_timestamp}}">
+      <td class="date {{mirror.mastertrace_trace_timestamp|agegroupdeltaclass(ftpmastertrace)}}" data-text="{{ mirror.mastertrace_trace_age | timedelta_total_seconds }}">
         {{mirror.mastertrace_trace_timestamp|datetimeage(ftpmastertrace)}}
       </td>
     {% endif %}
 
     {% if mirror.checkoverview_error %}
-      <td class="error" data-text="1970-01-01">{{ mirror.checkoverview_error | formaterror }} <span class="error-details">{{ mirror.checkoverview_error }}</span></td>
+      <td class="error" data-text="max">{{ mirror.checkoverview_error | formaterror }} <span class="error-details">{{ mirror.checkoverview_error }}</span></td>
     {% else %}
-      <td class="date {{mirror.checkoverview_age|agegroupclass}}" data-text="{{last_run - mirror.checkoverview_age}}">
+      <td class="date {{mirror.checkoverview_age|agegroupclass}}" data-text="{{ mirror.checkoverview_age | timedelta_total_seconds }}">
         {{mirror.checkoverview_age|timedeltaage(last_run)}}
       </td>
     {% endif %}
 
     {% if mirror.sitetrace_error %}
-      <td class="error" data-text="1970-01-01">{{ mirror.sitetrace_error | formaterror }} <span class="error-details">{{ mirror.sitetrace_error }}</span></td>
+      <td class="error" data-text="max">{{ mirror.sitetrace_error | formaterror }} <span class="error-details">{{ mirror.sitetrace_error }}</span></td>
     {% else %}
-      <td class="date {{mirror.sitetrace_trace_timestamp|agegroupdeltaclass(now)}}" data-text="{{mirror.sitetrace_trace_timestamp}}">
+      <td class="date {{mirror.sitetrace_trace_timestamp|agegroupdeltaclass(now)}}" data-text="{{ mirror.sitetrace_trace_age | timedelta_total_seconds }}">
         {{mirror.sitetrace_trace_timestamp|datetimeage(now)}}
       </td>
     {% endif %}
