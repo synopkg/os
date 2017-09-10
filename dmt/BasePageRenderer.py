@@ -108,6 +108,11 @@ def agegroupdeltaclassfilter(ts, base):
     delta = base - ts
     return agegroupclassfilter(delta)
 
+def formaterrorfilter(error):
+    if len(error) > 20:
+        return '{}...'.format(error[:16])
+    return error
+
 def raise_helper(msg):
     raise Exception(msg)
 
@@ -131,6 +136,7 @@ class BasePageRenderer:
         tmplenv.filters['timedelta_total_seconds'] = timedelta_total_seconds_filter
         tmplenv.filters['timedelta_hrs_mins'] = timedelta_hrs_mins_filter
         tmplenv.filters['mirrorsortkey'] = helpers.hostname_comparator
+        tmplenv.filters['formaterror'] = formaterrorfilter
         tmplenv.globals['raise'] = raise_helper
         return tmplenv
 

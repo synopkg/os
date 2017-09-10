@@ -5,6 +5,24 @@ p#footer {
   font-size: 75%;
 }
 
+td.error {
+  background-color: #b267fc;
+  text-decoration: underline dotted;
+}
+td.error .error-details {
+  background-color: white;
+  visibility: hidden;
+  position: absolute;
+  padding: .5rem;
+  border: 1px black solid;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+  width: auto;
+}
+td.error:hover .error-details {
+  z-index: 10;
+  visibility: visible;
+}
+
 table#results {
   border-collapse: collapse;
 }
@@ -19,10 +37,8 @@ table#results th {
 table#results th { font-weight: bold; }
 table#results th { background-color: #eeeeff; }
 table#results tr:nth-child(3n+3) { background-color: #f0f0f0; }
-table#results tr.error { background-color: #b267fc; }
 table#results tr .hostname { text-align: right; }
 table#results td.date { white-space: nowrap; }
-table#results td.error { background-color: #b267fc; }
 table#results td.warning { background-color: #ffffaa; }
 table#results td.tiny { font-size: 50%; }
 table#results td.age0 { background-color: #50f442; } /* green */
