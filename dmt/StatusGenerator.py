@@ -96,7 +96,7 @@ class Generator():
 
         mirrors = []
         for row in cur.fetchall():
-            row['site_trace_url'] = helpers.get_tracedir(row)
+            row['trace_url'] = helpers.get_tracedir(row)
             aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
             row['aliases' ] = aliases
             row['bugs'] = helpers.get_bugs_for_mirror(row['name'])

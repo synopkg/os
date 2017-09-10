@@ -25,11 +25,7 @@
   <tr id="{{mirror.name}}">
   {% endif %}
     <td data-text="{{mirror.name}}" class="hostname">
-    {% if mirror.trace_url is defined and mirror.trace_url %}
       <a href="{{mirror.trace_url}}">{{ mirror.name }}</a>
-    {% else %}
-      {{ mirror.name }}
-    {% endif %}
       [<a href="mirror-hierarchy.html#{{mirror.name}}">H</a>,<a href="mirror-info/{{mirror.name}}.html">R</a>]
     </td>
 
