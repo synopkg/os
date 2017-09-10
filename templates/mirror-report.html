@@ -39,13 +39,9 @@
         {{ c.checkoverview_version.strftime('%Y-%m-%d %H:%M:%S') }}
         {% if c.checkoverview_version_changed is defined and c.checkoverview_version_changed %}</strong>{% endif %}
       </td>
-      {% if (c.checkoverview_age|timedelta_total_seconds == 0) %}
-        <td class="age0">current</td>
-      {% else %}
-        <td {{c.checkoverview_age|agegroupclass}}>
-          {{c.checkoverview_age|timedeltaage(c.checkrun_timestamp)}}
-        </td>
-      {% endif %}
+      <td class="date {{c.checkoverview_age|agegroupclass}}">
+        {{c.checkoverview_age|timedeltaage(c.checkrun_timestamp)}}
+      </td>
     {% endif %}
 
     {% if not c.mastertrace_id %}
