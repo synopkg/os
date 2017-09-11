@@ -75,7 +75,16 @@
     {% elif c.traceset_error %}
       <td class="error">{{ c.traceset_error }}</td>
     {% else %}
-      <td>{{ c.traceset_traceset }}</td>
+      <td>
+        {% for trace in c.traceset_traceset %}
+          {% if trace in allsitenames and trace != site.name %}
+            <a href="{{ trace }}.html">{{ trace }}</a>
+          {%- else %}
+            {{ trace }}
+          {%- endif %}
+          {%- if not loop.last %},{% endif %}
+        {% endfor %}
+      </td>
     {% endif %}
     <td>{{ '%0.2f'| format(c.checkoverview_score|float) }}</td>
 

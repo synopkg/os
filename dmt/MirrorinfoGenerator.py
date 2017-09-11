@@ -22,9 +22,13 @@ HISTORY_HOURS=24*7
 
 
 class MirrorReport():
-    def __init__(self, site, mastertraces_lastseen, history_hours=HISTORY_HOURS, outfile = OUTFILE, **kwargs):
+    def __init__(self,
+            site, allsitenames,
+            mastertraces_lastseen,
+            history_hours=HISTORY_HOURS, outfile=OUTFILE, **kwargs):
         self.outfile = outfile
         self.site = site
+        self.allsitenames = allsitenames
         self.history_hours = history_hours
         self.mastertraces_lastseen = mastertraces_lastseen
         self.template_name = 'mirror-report.html'
@@ -51,7 +55,7 @@ class MirrorReport():
 
                 traceset.id AS traceset_id,
                 traceset.error AS traceset_error,
-                traceset.traceset AS traceset_traceset,
+                traceset.traceset::jsonb AS traceset_traceset,
 
                 checkoverview.id AS checkoverview_id,
                 checkoverview.error AS checkoverview_error,
@@ -92,6 +96,7 @@ class MirrorReport():
             'now': now,
             'last_run': checkrun['timestamp'],
             'checks': reversed(checks),
+            'allsitenames': self.allsitenames,
         }
         context['site'] = {
             'name'     : self.site['name'],
@@ -116,6 +121,7 @@ class Generator():
         cur = dbh.cursor()
         mastertraces_lastseen = helpers.get_ftpmaster_traces_lastseen(cur)
 
+        sites = {}
         cur.execute("""
             SELECT
                 site.id,
@@ -125,9 +131,17 @@ class Generator():
                 site.http_path
             FROM site
             """)
-        for site in cur.fetchall():
+        for row in cur.fetchall():
+            sites[row['name']] = row
+
+        for site in sites.values():
             of = os.path.join(outdir, site['name'] + '.html')
-            i = MirrorReport(base = self, outfile=of, site = site, mastertraces_lastseen = mastertraces_lastseen)
+            i = MirrorReport(
+                    base=self,
+                    outfile=of,
+                    site=site,
+                    allsitenames=list(sites.keys()),
+                    mastertraces_lastseen=mastertraces_lastseen)
             yield i
 
 
