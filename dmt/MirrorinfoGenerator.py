@@ -25,12 +25,14 @@ class MirrorReport():
     def __init__(self,
             site, allsitenames,
             mastertraces_lastseen,
+            traceset_elem_ctr,
             history_hours=HISTORY_HOURS, outfile=OUTFILE, **kwargs):
         self.outfile = outfile
         self.site = site
         self.allsitenames = allsitenames
         self.history_hours = history_hours
         self.mastertraces_lastseen = mastertraces_lastseen
+        self.traceset_elem_ctr = traceset_elem_ctr
         self.template_name = 'mirror-report.html'
 
     def prepare(self, dbh):
@@ -87,6 +89,12 @@ class MirrorReport():
                     if prev[x] is not None and prev[x] != row[x]:
                         row[x+'_changed'] = True
                     prev[x] = row[x]
+            if row['traceset_traceset'] is not None:
+                if not isinstance(row['traceset_traceset'], list):
+                    raise Exception("Hmm.  traceset_traceset for traceset_id %s is not a list"%(row['traceset_id'], ))
+                if 'master' in row['traceset_traceset']:
+                    row['traceset_traceset'].remove('master')
+                row['traceset_traceset'].sort(key=lambda traceset_elem: -self.traceset_elem_ctr.get(traceset_elem, 0))
             aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
             row['aliases' ] = aliases
             checks.append(row)
@@ -128,11 +136,25 @@ class Generator():
                 site.name,
                 site.http_override_host,
                 site.http_override_port,
-                site.http_path
-            FROM site
+                site.http_path,
+
+                traceset.traceset::jsonb AS traceset_traceset
+            FROM site LEFT JOIN
+                (
+                 SELECT *
+                   FROM traceset
+                   WHERE checkrun_id = (SELECT id FROM checkrun ORDER BY checkrun.timestamp LIMIT 1)
+                ) AS traceset ON site.id = traceset.site_id
             """)
+
+        traceset_elem_ctr = {}
         for row in cur.fetchall():
             sites[row['name']] = row
+            if row['traceset_traceset'] is not None:
+                if not isinstance(row['traceset_traceset'], list):
+                    raise Exception("Hmm.  traceset_traceset for site %s(%s) is not a list"%(row['id'], row['name']))
+                for traceset_elem in row['traceset_traceset']:
+                    traceset_elem_ctr[traceset_elem] = traceset_elem_ctr.get(traceset_elem, 0) + 1
 
         for site in sites.values():
             of = os.path.join(outdir, site['name'] + '.html')
@@ -141,7 +163,8 @@ class Generator():
                     outfile=of,
                     site=site,
                     allsitenames=list(sites.keys()),
-                    mastertraces_lastseen=mastertraces_lastseen)
+                    mastertraces_lastseen=mastertraces_lastseen,
+                    traceset_elem_ctr=traceset_elem_ctr)
             yield i
 
 
