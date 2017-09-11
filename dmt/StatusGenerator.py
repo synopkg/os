@@ -82,7 +82,9 @@ class Generator():
                                 site_id,
                                 CASE WHEN age > lead(age) OVER (PARTITION BY site_id ORDER BY checkrun.timestamp)
                                      THEN age END AS max_age
-                                FROM checkrun LEFT OUTER JOIN checkoverview ON checkrun.id = checkoverview.checkrun_id
+                                FROM checkrun LEFT OUTER JOIN
+                                     checkoverview ON checkrun.id = checkoverview.checkrun_id
+                                WHERE checkrun.timestamp > CURRENT_TIMESTAMP - INTERVAL '2 week'
                         ) AS SUB
                           GROUP BY site_id
                  ) as max_age ON site.id = max_age.site_id
