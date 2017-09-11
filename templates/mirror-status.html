@@ -75,13 +75,15 @@
       <td class="error" data-text="max">?</td>
     {% else %}
       <td data-text="{{mirror.max_age_avg|timedelta_total_seconds}}"
-      {% if mirror.max_age_avg|timedelta_total_seconds > 24*3600 %}
+      {% if mirror.max_age_avg|timedelta_total_seconds > 36*3600 %}
         class="age7"
-      {% elif mirror.max_age_avg|timedelta_total_seconds > 8*3600 %}
+      {% elif mirror.max_age_avg|timedelta_total_seconds > 24*3600 %}
         class="age4"
-      {% elif mirror.max_age_avg|timedelta_total_seconds > 4*3600 %}
+      {% elif mirror.max_age_avg|timedelta_total_seconds > 16*3600 %}
+        class="age3"
+      {% elif mirror.max_age_avg|timedelta_total_seconds > 8*3600 %}
         class="age2"
-      {% elif mirror.max_age_avg|timedelta_total_seconds > 2*3600 %}
+      {% elif mirror.max_age_avg|timedelta_total_seconds > 4*3600 %}
         class="age1"
       {% else %}
         class="age0"
