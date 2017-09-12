@@ -8,6 +8,12 @@ import threading
 import dmt.db as db
 import dmt.checks as checks
 
+import os
+
+DEBIANORG_CA_DIR = '/etc/ssl/ca-global'
+if os.path.exists(DEBIANORG_CA_DIR):
+    os.environ['SSL_CERT_DIR'] = DEBIANORG_CA_DIR
+
 PRUNE_HOURS = 24*14
 
 MAX_CHECKERS = 64
