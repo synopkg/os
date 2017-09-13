@@ -24,8 +24,10 @@ import dmt.helpers as helpers
 
 class MirrorFailureException(Exception):
     def __init__(self, e, msg):
-        assert(not msg is None)
-        self.message = str(msg)
+        if msg is None:
+            self.message = repr(e)
+        else:
+            self.message = str(msg)
         self.origin = e
 
 class BaseCheck:
