@@ -68,6 +68,7 @@ class Mastertrace(Base):
     full                    = Column(String)
     trace_timestamp         = Column(DateTime(timezone=True))
     error                   = Column(String)
+    content                 = Column(JSONB)
 
 
 class Sitetrace(Base):
@@ -85,6 +86,7 @@ class Sitetrace(Base):
     full                    = Column(String)
     trace_timestamp         = Column(DateTime(timezone=True), index=True)
     error                   = Column(String)
+    content                 = Column(JSONB)
 
 
 class Traceset(Base):
@@ -117,6 +119,7 @@ class SiteAliasMastertrace(Base):
     full                    = Column(String)
     trace_timestamp         = Column(DateTime(timezone=True))
     error                   = Column(String)
+    content                 = Column(JSONB)
 
 class Checkoverview(Base):
     """For a mirror and a check, summarize all we learned from a test-run.
