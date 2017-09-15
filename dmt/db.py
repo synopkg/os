@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Interval, Float
+from sqlalchemy.dialects.postgresql import JSONB
 import sqlalchemy
 from sqlalchemy.orm import relationship, backref
 import sqlalchemy.ext.declarative
@@ -98,7 +99,7 @@ class Traceset(Base):
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
-    traceset                = Column(String)
+    traceset                = Column(JSONB)
     error                   = Column(String)
 
 class SiteAliasMastertrace(Base):

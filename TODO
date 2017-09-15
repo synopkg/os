@@ -6,7 +6,6 @@
 - generate a list of ftp.CC.d.o entries based on providers
 - check HTTPs
 - read trace hierarchy
-- change traceset field to jsonb
 - parse master trace fields to jsonb
 - parse site trace fields to jsonb
 
