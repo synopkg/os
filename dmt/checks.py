@@ -78,6 +78,7 @@ class TracfileFetcher(BaseCheck):
         try:
             decoded = rawcontents.decode('utf-8')
             self.result['full'] = decoded
+            content = {}
 
             lines = decoded.split('\n')
             first = lines.pop(0)
@@ -93,6 +94,15 @@ class TracfileFetcher(BaseCheck):
                 self.result['error'] = "Invalid tracefile"
             else:
                 self.result['trace_timestamp'] = ts
+
+            for line in lines:
+                line = line.split(':', 1)
+                if len(line) == 2:
+                    key = line[0].lower()
+                    value = line[1].lstrip()
+                    content[key] = {'text': value}
+
+            self.result['content'] = content
         except:
             self.result['error'] = "Invalid tracefile"
 
