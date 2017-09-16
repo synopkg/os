@@ -37,7 +37,7 @@ class Generator():
 
         for row in cur.fetchall():
             full = row['full']
-            digest = hashlib.sha224(full.encode('utf-8')).hexdigest()
+            digest = hashlib.sha256(full.encode('utf-8')).hexdigest()
             dstdir = self.outfile+'/'+digest[:2]
             try:
                 os.mkdir(dstdir)
