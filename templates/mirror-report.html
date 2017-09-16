@@ -114,7 +114,7 @@
       <td class="error"></td>
     {% else %}
       <td class="date,tiny">
-        {% if c.sitetrace_archive_update_required %}{{ c.sitetrace_archive_update_required }}
+        {% if c.sitetrace_archive_update_in_progress %}{{ c.sitetrace_archive_update_in_progress }}
         {% else %}-
         {% endif %}
       </td>
@@ -124,7 +124,7 @@
       <td class="error"></td>
     {% else %}
       <td class="date,tiny">
-        {% if c.sitetrace_archive_update_in_progress %}{{ c.sitetrace_archive_update_in_progress }}
+        {% if c.sitetrace_archive_update_required %}{{ c.sitetrace_archive_update_required }}
         {% else %}-
         {% endif %}
       </td>
