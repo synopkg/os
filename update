@@ -35,6 +35,8 @@ trap "rm -r $tmpdir" EXIT
 ./generate --outdir "$tmpdir/status"
 ./generate --outdir "$tmpdir/status-security" --dburl postgresql:///mirror-status-security
 
+chmod a+rX -R "$tmpdir"
+
 mkdir -p "$TARGET"
 rsync -av "$tmpdir"/* "$TARGET"/ --delete
 
