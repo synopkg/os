@@ -54,6 +54,7 @@ class MirrorReport():
                 sitetrace.id AS sitetrace_id,
                 sitetrace.error AS sitetrace_error,
                 sitetrace.trace_timestamp AS sitetrace_trace_timestamp,
+                encode(digest(sitetrace.full, 'sha256'), 'hex') as sitetrace_trace_digest,
 
                 traceset.id AS traceset_id,
                 traceset.error AS traceset_error,
