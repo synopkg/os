@@ -65,8 +65,7 @@
     {% else %}
       <td class="date">
         {% if c.sitetrace_trace_timestamp_changed is defined and c.sitetrace_trace_timestamp_changed %}<strong>{% endif %}
-        <div class="blocklink" id="link:trace-{{c.sitetrace_trace_digest}}">{{ c.sitetrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</div>
-        <iframe id="trace-{{c.sitetrace_trace_digest}}" class="tracebox"></iframe>
+        <a href="../mirror-traces/{{c.sitetrace_trace_digest[:2]}}/{{c.sitetrace_trace_digest}}.txt">{{ c.sitetrace_trace_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</a>
         {% if c.sitetrace_trace_timestamp_changed is defined and c.sitetrace_trace_timestamp_changed %}</strong>{% endif %}
       </td>
     {% endif %}
