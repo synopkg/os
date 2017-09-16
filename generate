@@ -65,6 +65,7 @@ if __name__ == "__main__":
         os.mkdir(args.outdir)
     shutil.copy('mirror-status.css', args.outdir)
     shutil.copy('mirror-status.js', args.outdir)
+    shutil.copy('mirror-info.js', args.outdir)
     shutil.copy('external/jquery-3.2.1/jquery.min.js', args.outdir)
     shutil.copy('external/jquery.tablesorter-2.28.15/jquery.tablesorter.combined.min.js', args.outdir)
 
