@@ -46,6 +46,7 @@ class Generator():
             WHERE
                 checkrun.timestamp > CURRENT_TIMESTAMP - INTERVAL '1 day'
                 AND sitetrace.content IS NOT NULL
+            ORDER BY site.id, checkrun.timestamp DESC
             """)
 
         mirrors = []
