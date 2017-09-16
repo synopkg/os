@@ -141,5 +141,8 @@ class BasePageRenderer:
         return tmplenv
 
     def render(self, page):
-        self.template = self.tmplenv.get_template(page.template_name)
-        self.template.stream(page.context).dump(page.outfile, errors='strict')
+        try: # Maybe this page brings its own rendering stuff
+            page.render()
+        except AttributeError:
+            self.template = self.tmplenv.get_template(page.template_name)
+            self.template.stream(page.context).dump(page.outfile, errors='strict')

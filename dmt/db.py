@@ -65,7 +65,7 @@ class Mastertrace(Base):
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
-    full                    = Column(String)
+    full                    = Column(String, index=True)
     trace_timestamp         = Column(DateTime(timezone=True))
     error                   = Column(String)
     content                 = Column(JSONB)
@@ -83,7 +83,7 @@ class Sitetrace(Base):
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
-    full                    = Column(String)
+    full                    = Column(String, index=True)
     trace_timestamp         = Column(DateTime(timezone=True), index=True)
     error                   = Column(String)
     content                 = Column(JSONB)
