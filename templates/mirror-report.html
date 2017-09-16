@@ -23,6 +23,8 @@
   <td><a href="{{site.trace_url}}">traceset</a></td>
   <td>score</td>
   <td>aliases/candidate</td>
+  <td><abbr title="Archive-Update-in-Progress">AUiP</abbr></td>
+  <td><abbr title="Archive-Update-Required">AUR</abbr></td>
 </tr>
 
 {% for c in checks %}
@@ -107,6 +109,26 @@
         - none -
       {% endif %}
     </td>
+
+    {% if not c.sitetrace_id or c.sitetrace_error %}
+      <td class="error"></td>
+    {% else %}
+      <td class="date,tiny">
+        {% if c.sitetrace_archive_update_required %}{{ c.sitetrace_archive_update_required }}
+        {% else %}-
+        {% endif %}
+      </td>
+    {% endif %}
+
+    {% if not c.sitetrace_id or c.sitetrace_error %}
+      <td class="error"></td>
+    {% else %}
+      <td class="date,tiny">
+        {% if c.sitetrace_archive_update_in_progress %}{{ c.sitetrace_archive_update_in_progress }}
+        {% else %}-
+        {% endif %}
+      </td>
+    {% endif %}
   </tr>
 {% endfor %}
 </table>
