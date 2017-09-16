@@ -125,6 +125,35 @@ class SitetraceFetcher(TracfileFetcher):
     def __init__(self, site, checkrun_id):
         super().__init__(site, checkrun_id, site.name)
 
+    def run(self):
+        super().run()
+        if 'error' in self.result: return
+
+        base = helpers.get_baseurl(self.site)
+        errors = []
+        for key in ('Archive-Update-in-Progress', 'Archive-Update-Required'):
+            url = base + key + '-' + self.site['name']
+            req = urllib.request.Request(url)
+            lm = None
+            try:
+                with urllib.request.urlopen(req, timeout=self.TIMEOUT) as response:
+                    data = response.read()
+                lm = response.getheader('Last-Modified')
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    pass
+                else:
+                    errors.append(key+": "+str(e))
+            except MirrorFailureException as e:
+                errors.append(key+": "+str(e))
+            if lm is not None:
+                try:
+                    self.result[key.replace('-','_').lower()] = datetime.datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S %Z')
+                except ValueError:
+                    errors.append(key+": Invalid Last-Modified value %s"%(lm,))
+        if len(errors) > 0:
+            self.result['error'] = '; '.join(errors)
+
     def store(self, session, checkrun_id):
         i = db.Sitetrace(**self.result)
         session.add(i)

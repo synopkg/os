@@ -83,6 +83,9 @@ class Sitetrace(Base):
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
+    archive_update_in_progress = Column(DateTime(timezone=True))
+    archive_update_required    = Column(DateTime(timezone=True))
+
     full                    = Column(String, index=True)
     trace_timestamp         = Column(DateTime(timezone=True), index=True)
     error                   = Column(String)
