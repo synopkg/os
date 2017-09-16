@@ -1,5 +1,6 @@
 
 Packages required:
+ - postgresql-contrib
  - python3-sqlalchemy
  - python3-psycopg2
  - python3-dateutil
@@ -15,7 +16,8 @@ Quick start
 Setup:
 
   1. Create a "mirror-status" pg db
-  2. Run ./db-create (or alembic upgrade head)
+  2. "CREATE EXTENSION pgcrypto" as a dbms superuser in the mirror-status database.
+  3. Run ./db-create (or alembic upgrade head)
 
 Maintenance:
 
