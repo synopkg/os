@@ -3,10 +3,18 @@
 {% block content %}
 [<a href="mirror-hierarchy.html">H</a>]
 
+<div class="columnSelectorWrapper">
+  <input id="colSelect1" type="checkbox" class="hidden">
+  <label class="columnSelectorButton" for="colSelect1">Column</label>
+  <div id="columnSelector" class="columnSelector">
+    <!-- this div is where the column selector is added -->
+  </div>
+</div>
+
 <table id="results">
 <thead>
 <tr>
-  <th data-sorter="hostname" class="hostname">Site</th>
+  <th data-priority="critical" data-sorter="hostname" class="hostname">Site</th>
   <th data-sorter="hostname" class="hostname">Upstream</th>
   <th>Software</th>
   <th>Trigger</th>

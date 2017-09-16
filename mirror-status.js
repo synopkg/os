@@ -17,11 +17,15 @@ $(function() {
   // call the tablesorter plugin
   $("#results").tablesorter({
     widgets: [
+      "columnSelector",
       "filter",
       "sort2Hash",
       "zebra",
     ],
     widgetOptions: {
+      columnSelector_container: $('#columnSelector'),
+      columnSelector_mediaquery: false,
+      columnSelector_saveColumns: false,
       filter_useParsedData: false,
     },
   });
