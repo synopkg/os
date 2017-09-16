@@ -16,7 +16,11 @@ $(function() {
 
   // call the tablesorter plugin
   $("#results").tablesorter({
-    widgets : [ "zebra", "filter" ],
+    widgets: [
+      "filter",
+      "sort2Hash",
+      "zebra",
+    ],
     widgetOptions: {
       filter_useParsedData: false,
     },
