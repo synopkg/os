@@ -45,7 +45,7 @@ class Generator():
                 if e.errno != errno.EEXIST:
                     raise
             dstfile = dstdir + '/' + digest + '.txt'
-            with open(dstfile, "w") as f:
+            with open(dstfile, "w", encoding='utf-8') as f:
                 f.write(full)
             if row['ts'] is not None:
                 os.utime(dstfile, (row['ts'], row['ts']))
