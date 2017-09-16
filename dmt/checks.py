@@ -41,7 +41,7 @@ class BaseCheck:
             req = urllib.request.Request(url, headers=request_headers)
             with urllib.request.urlopen(req, timeout=BaseCheck.TIMEOUT) as response:
                 data = response.read()
-                return data
+                return (data, response)
         except socket.timeout as e:
             raise MirrorFailureException(e, 'timed out fetching '+url)
         except urllib.error.URLError as e:
@@ -108,7 +108,7 @@ class TracfileFetcher(BaseCheck):
     def run(self):
         try:
             traceurl = urllib.parse.urljoin(self.get_tracedir(), self.tracefilename)
-            rawtracefilecontents = self._fetch(traceurl, request_headers=self.request_headers)
+            (rawtracefilecontents, _) = self._fetch(traceurl, request_headers=self.request_headers)
             self.parse_tracefile(rawtracefilecontents)
         except MirrorFailureException as e:
             self.result['error'] = e.message
@@ -136,16 +136,13 @@ class SitetraceFetcher(TracfileFetcher):
             req = urllib.request.Request(url)
             lm = None
             try:
-                with urllib.request.urlopen(req, timeout=self.TIMEOUT) as response:
-                    data = response.read()
+                (_, response) = self._fetch(url)
                 lm = response.getheader('Last-Modified')
-            except urllib.error.HTTPError as e:
-                if e.code == 404:
+            except MirrorFailureException as e:
+                if isinstance(e.origin, urllib.error.HTTPError) and (e.origin.code == 404 or e.origin.code == 403):
                     pass
                 else:
                     errors.append(key+": "+str(e))
-            except MirrorFailureException as e:
-                errors.append(key+": "+str(e))
             if lm is not None:
                 try:
                     self.result[key.replace('-','_').lower()] = datetime.datetime.strptime(lm, '%a, %d %b %Y %H:%M:%S %Z')
@@ -208,7 +205,7 @@ class TracesetFetcher(BaseCheck):
 
     def list_tracefiles(self):
         tracedir = self.get_tracedir()
-        data = self._fetch(tracedir)
+        (data, _) = self._fetch(tracedir)
 
         soup = BeautifulSoup(data, "html.parser")
         links = soup.find_all('a')
