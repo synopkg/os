@@ -57,7 +57,7 @@ class MirrorReport():
 
                 traceset.id AS traceset_id,
                 traceset.error AS traceset_error,
-                traceset.traceset::jsonb AS traceset_traceset,
+                traceset.traceset AS traceset_traceset,
 
                 checkoverview.id AS checkoverview_id,
                 checkoverview.error AS checkoverview_error,

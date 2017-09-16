@@ -4,7 +4,6 @@ from collections import OrderedDict
 #import dateutil.parser
 import datetime
 from bs4 import BeautifulSoup
-import json
 import re
 import socket
 import sys
@@ -195,7 +194,7 @@ class TracesetFetcher(BaseCheck):
             traces = self.list_tracefiles()
 
             if len(traces) > 0:
-                self.result['traceset'] = json.dumps(traces, separators=(',', ':'))
+                self.result['traceset'] = traces
             else:
                 self.result['error'] = "No traces found"
         except MirrorFailureException as e:

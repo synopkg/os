@@ -264,9 +264,7 @@ class Generator():
             row['traceset'] = row['traceset_changes']['most_recent']
 
             if row['traceset'] is not None:
-                traces = json.loads(row['traceset'])
-                if not isinstance(traces, list):
-                    raise Exception("traces information for "+site+" is not a list")
+                traces = row['traceset']
                 if 'master' in traces: traces.remove('master')
                 row['traces'] = traces
             else:
