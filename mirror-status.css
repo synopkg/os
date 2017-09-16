@@ -164,3 +164,34 @@ table#hiera td.ageunknown{ background-color: #34897c; } /* teal */
   -o-transition: height 0.1s ease;
   transition: height 0.1s ease;
 }
+
+#tracebox_mask {
+  z-index: 1;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+  display: none;
+}
+.blocklink:before { content: "\25BE  "; }
+.blocklink:after { content: ""; }
+.blocklink { color:black; text-decoration:underline; }
+.tracebox {
+  padding-left:10px;
+  padding-right:10px;
+  padding-top:10px;
+  padding-bottom:10px;
+  display: block;
+  background-color: #ffffff;
+  font-family: "monospace";
+  font-size: small;
+  white-space: pre;
+  display: none;
+  width: 800px;
+  height: 400px;
+  position: absolute;
+  /* left: 60px; */
+  z-index: 1;
+  border: #000 1px solid;
+}
