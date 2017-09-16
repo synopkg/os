@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Debian mirror trace{% endblock %}
+{% block content %}
+[<a href="mirror-hierarchy.html">H</a>]
+
+<table id="results">
+<thead>
+<tr>
+  <th data-sorter="hostname" class="hostname">Site</th>
+  <th data-sorter="hostname" class="hostname">Upstream</th>
+  <th>Software</th>
+  <th>Trigger</th>
+</tr>
+</thead>
+
+<tbody>
+{% for mirror in mirrors %}
+  <tr id="{{mirror.name}}">
+    <td data-text="{{mirror.name}}" class="hostname">
+      <a href="{{mirror.trace_url}}">{{ mirror.name }}</a>
+      [<a href="mirror-hierarchy.html#{{mirror.name}}">H</a>,<a href="mirror-info/{{mirror.name}}.html">R</a>]
+    </td>
+
+    <td data-text="{{ mirror.upstream or '' }}" class="hostname">
+      {{ mirror.upstream or '-' }}
+    </td>
+
+    <td data-text="{{ mirror.creator or '' }}">
+      {{ mirror.creator or '-' }}
+    </td>
+
+    <td data-text="{{ mirror.trigger or '' }}">
+      {{ mirror.trigger or '-' }}
+    </td>
+
+  </tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock content %}

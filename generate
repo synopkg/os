@@ -12,6 +12,7 @@ import dmt.StatusGenerator as StatusGenerator
 import dmt.HierarchyGenerator as HierarchyGenerator
 import dmt.MirrorinfoGenerator as MirrorinfoGenerator
 import dmt.MirrorTracefileWriter as MirrorTracefileWriter
+from dmt import TraceGenerator
 
 from multiprocessing.pool import Pool
 import multiprocessing
@@ -22,7 +23,7 @@ MAX_RENDERER_Q_SIZE = MAX_RENDERERS*16
 
 
 def prepare(dbh, args):
-    for cl in (MirrorTracefileWriter, StatusGenerator, HierarchyGenerator, MirrorinfoGenerator):
+    for cl in (MirrorTracefileWriter, StatusGenerator, TraceGenerator, HierarchyGenerator, MirrorinfoGenerator):
         of = os.path.join(args.outdir, cl.OUTFILE)
         i = cl.Generator(outfile=of)
         yield from i.get_pages(dbh)
