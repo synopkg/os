@@ -27,7 +27,7 @@ import email
 import sys
 
 class MasterlistEntry:
-    MULTI_VALUE_FIELDS = ('Alias', 'Sponsor', 'Provides')
+    MULTI_VALUE_FIELDS = ('Alias', 'Candidate', 'Sponsor', 'Provides')
 
     def __init__(self, lines):
         self.data = email.message_from_string('\n'.join(lines))
