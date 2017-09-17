@@ -50,6 +50,10 @@ class Generator():
                 sitetrace.error AS sitetrace_error,
                 sitetrace.trace_timestamp AS sitetrace_trace_timestamp,
 
+                traceset.id AS traceset_id,
+                traceset.error AS traceset_error,
+                traceset.traceset AS traceset_traceset,
+
                 runs_per_day.runs_per_day,
 
                 max_age.avg    AS max_age_avg,
@@ -59,6 +63,7 @@ class Generator():
                 checkoverview ON site.id = checkoverview.site_id LEFT OUTER JOIN
                 mastertrace ON site.id = mastertrace.site_id LEFT OUTER JOIN
                 sitetrace     ON site.id = sitetrace.site_id LEFT OUTER JOIN
+                traceset      ON site.id = traceset.site_id LEFT OUTER JOIN
                 (
                  SELECT num_runs / days AS runs_per_day,
                         site_id
@@ -91,12 +96,14 @@ class Generator():
             WHERE
                 (checkoverview.checkrun_id = %(checkrun_id)s) AND
                 (mastertrace  .checkrun_id = %(checkrun_id)s OR mastertrace.checkrun_id IS NULL) AND
-                (sitetrace    .checkrun_id = %(checkrun_id)s OR sitetrace.checkrun_id IS NULL)
+                (sitetrace    .checkrun_id = %(checkrun_id)s OR sitetrace.checkrun_id IS NULL) AND
+                (traceset     .checkrun_id = %(checkrun_id)s OR traceset.checkrun_id IS NULL)
             """, {
                 'checkrun_id': checkrun['id']
             })
 
         mirrors = []
+        traceset_elem_ctr = {}
         for row in cur.fetchall():
             row['trace_url'] = helpers.get_tracedir(row)
 
@@ -111,10 +118,26 @@ class Generator():
             else:
                 row['sitetrace_trace_age'] = None
 
+            if row['traceset_traceset'] is not None:
+                if not isinstance(row['traceset_traceset'], list):
+                    raise Exception("Hmm.  traceset_traceset for site %s(%s) is not a list"%(row['id'], row['name']))
+                for traceset_elem in row['traceset_traceset']:
+                    traceset_elem_ctr[traceset_elem] = traceset_elem_ctr.get(traceset_elem, 0) + 1
+
             aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
             row['aliases' ] = aliases
             row['bugs'] = helpers.get_bugs_for_mirror(row['name'])
             mirrors.append(row)
+
+        for m in mirrors:
+            if m['traceset_traceset'] is not None:
+                assert(isinstance(m['traceset_traceset'], list))
+                if 'master' in m['traceset_traceset']:
+                    m['traceset_traceset'].remove('master')
+                m['traceset_traceset'].sort(key=lambda traceset_elem: -traceset_elem_ctr.get(traceset_elem, 0))
+                m['traceset_traceset_sorter'] = ':'.join([helpers.hostname_comparator(h) for h in m['traceset_traceset']])
+            else:
+                m['traceset_traceset_sorter'] = '??:'+helpers.hostname_comparator(m['name'])
 
         mirrors.sort(key=lambda m: helpers.hostname_comparator(m['name']))
         context = {
@@ -122,6 +145,7 @@ class Generator():
             'mirrors': mirrors,
             'last_run': checkrun['timestamp'],
             'ftpmastertrace': ftpmastertrace,
+            'allsitenames': set([row['name'] for row in mirrors]),
             'now': now,
         }
         self.context = context

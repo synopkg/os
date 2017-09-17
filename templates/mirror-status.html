@@ -23,6 +23,7 @@
   <th data-sorter="digit">~#/d</th>
   <th data-sorter="digit">delay (&mu;/&sigma;)</th>
   <th data-sorter="false">extra</th>
+  <th data-sorter="text">Traces</th>
 </tr>
 </thead>
 
@@ -127,6 +128,22 @@
         {% if not loop.last %}<br>{% endif %}
       {% endfor %}
     </td>
+
+    {% if mirror.traceset_error %}
+      <td data-text="{{mirror.traceset_traceset_sorter}}" class="error">{{ mirror.traceset_error | formaterror }} <span class="error-details">{{ mirror.traceset_error }}</span></td>
+    {% else %}
+      <td data-text="{{mirror.traceset_traceset_sorter}}" class="traceset">
+        {% for trace in mirror.traceset_traceset %}
+          {% if trace in allsitenames and trace != mirror.name %}
+            <a href="mirror-info/{{ trace }}.html">{{ trace }}</a>
+          {%- else %}
+            {{ trace }}
+          {%- endif %}
+          {%- if not loop.last %}<br>{% endif %}
+        {% endfor %}
+      </td>
+    {% endif %}
+
   </tr>
 {% endfor %}
 </tbody>

@@ -53,6 +53,7 @@ table#results td.age8 { background-color: #ff0000; } /* red */
 table#results td.age9 { background-color: #c00000; }
 table#results td.age10{ background-color: #900000; }
 table#results td.ageunknown{ background-color: #34897c; } /* teal */
+table#results td.traceset { white-space: nowrap; font-size: 75%; }
 table#results span.aliaserror { font-weight: bold; color: red; }
 table#results span.aliaswarning { font-weight: italic; color: yellow; }
 
