@@ -43,6 +43,7 @@ class SiteAlias(Base):
     site                    = relationship("Site", backref=backref("sitealiases", passive_deletes=True))
 
     name                    = Column(String, nullable=False)
+    priority                = Column(Integer)
 
 class Checkrun(Base):
     """Instance of a mirror check run

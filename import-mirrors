@@ -46,17 +46,22 @@ if __name__ == "__main__":
         db.update_or_create(session, db.Site, dbdata, name=sitename)
         site = session.query(db.Site).filter_by(name = sitename).first()
 
-        provides = sitedata['Provides'] if 'Provides' in sitedata else []
-        for alias in provides:
-            db.update_or_create(session, db.SiteAlias, {}, name=alias, site_id=site.id)
+        added = set()
         candidates = sitedata['Candidate'] if 'Candidate' in sitedata else []
         for candidate in candidates:
-            (_, name) = candidate.split(' ', 1)
-            db.update_or_create(session, db.SiteAlias, {}, name=name, site_id=site.id)
-        for alias in session.query(db.SiteAlias).filter_by(site_id = site.id):
-            if alias.name not in provides:
-                session.delete(alias)
+            (pri, name) = candidate.split(' ', 1)
+            db.update_or_create(session, db.SiteAlias, {'priority': int(pri)}, name=name, site_id=site.id)
+            added.add(name)
 
+        provides = sitedata['Provides'] if 'Provides' in sitedata else []
+        for alias in provides:
+            if not alias in added:
+                db.update_or_create(session, db.SiteAlias, {'priority': None}, name=alias, site_id=site.id)
+                added.add(alias)
+
+        for alias in session.query(db.SiteAlias).filter_by(site_id = site.id):
+            if alias.name not in added:
+                session.delete(alias)
 
     for site in session.query(db.Site).filter_by(origin_id = origin.id):
         if site.name not in masterlist:
