@@ -16,7 +16,7 @@ if os.path.exists(DEBIANORG_CA_DIR):
 
 PRUNE_HOURS = 24*28
 
-MAX_CHECKERS = 64
+MAX_CHECKERS = 128
 MAX_QUEUE_SIZE = 64* MAX_CHECKERS
 
 def _run_one_check(checkitem):
