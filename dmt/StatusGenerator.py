@@ -2,7 +2,6 @@
 
 import argparse
 import datetime
-import json
 import sys
 
 if __name__ == '__main__' and __package__ is None:
@@ -124,8 +123,7 @@ class Generator():
                 for traceset_elem in row['traceset_traceset']:
                     traceset_elem_ctr[traceset_elem] = traceset_elem_ctr.get(traceset_elem, 0) + 1
 
-            aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
-            row['aliases' ] = aliases
+            row['aliases' ] = row['checkoverview_aliases']
             row['bugs'] = helpers.get_bugs_for_mirror(row['name'])
             mirrors.append(row)
 

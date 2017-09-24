@@ -3,7 +3,6 @@
 import argparse
 import datetime
 import itertools
-import json
 import sys
 import os
 
@@ -98,8 +97,7 @@ class MirrorReport():
                 if 'master' in row['traceset_traceset']:
                     row['traceset_traceset'].remove('master')
                 row['traceset_traceset'].sort(key=lambda traceset_elem: -self.traceset_elem_ctr.get(traceset_elem, 0))
-            aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
-            row['aliases' ] = aliases
+            row['aliases' ] = row['checkoverview_aliases']
             checks.append(row)
 
         context = {

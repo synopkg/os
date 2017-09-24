@@ -3,7 +3,6 @@
 import argparse
 import datetime
 import itertools
-import json
 import sys
 
 if __name__ == '__main__' and __package__ is None:
@@ -270,8 +269,7 @@ class Generator():
             else:
                 row['traces'] = []
 
-            aliases = json.loads(row['checkoverview_aliases']) if row['checkoverview_aliases'] is not None else {}
-            row['aliases' ] = aliases
+            row['aliases' ] = row['checkoverview_aliases']
 
             mirrors[row['name']] = row
         hierarchy =  MirrorHierarchy(mirrors)

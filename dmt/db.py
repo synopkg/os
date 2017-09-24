@@ -144,7 +144,7 @@ class Checkoverview(Base):
     version                 = Column(DateTime(timezone=True))
     age                     = Column(Interval)
     score                   = Column(Float)
-    aliases                 = Column(String)
+    aliases                 = Column(JSONB)
 
 class MirrorDB():
     DBURL = 'postgresql:///mirror-status'
