@@ -39,7 +39,7 @@ trap "rm -r $tmpdir" EXIT
 chmod a+rX -R "$tmpdir"
 
 mkdir -p "$TARGET"
-rsync -av "$tmpdir"/* "$TARGET"/ --delete
+rsync -av --copy-unsafe-links "$tmpdir"/* "$TARGET"/ --delete
 
 (
 flock -u 200

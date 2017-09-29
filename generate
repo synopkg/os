@@ -63,12 +63,11 @@ if __name__ == "__main__":
 
     if not os.path.isdir(args.outdir):
         os.mkdir(args.outdir)
+    if os.path.islink(os.path.join(args.outdir, 'external')):
+        os.unlink(os.path.join(args.outdir, 'external'))
+    os.symlink(os.path.realpath('external'), os.path.join(args.outdir, 'external'))
     shutil.copy('mirror-status.css', args.outdir)
     shutil.copy('mirror-status.js', args.outdir)
-    shutil.copy('external/jquery-3.2.1/jquery.min.js', args.outdir)
-    shutil.copy('external/jquery.tablesorter-2.28.15/jquery.tablesorter.combined.min.js', args.outdir)
-    shutil.copy('external/jquery.tablesorter-2.28.15/jquery.tablesorter.widget-columnSelector.min.js', args.outdir)
-    shutil.copy('external/jquery.tablesorter-2.28.15/jquery.tablesorter.widget-sort2Hash.min.js', args.outdir)
 
 
     # start fetching things to render
