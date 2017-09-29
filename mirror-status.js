@@ -16,6 +16,7 @@ $(function() {
 
   // call the tablesorter plugin
   $("#results").tablesorter({
+    theme: "bootstrap",
     widgets: [
       "columnSelector",
       "filter",
@@ -26,6 +27,7 @@ $(function() {
       columnSelector_container: $('#columnSelector'),
       columnSelector_mediaquery: false,
       columnSelector_saveColumns: false,
+      filter_cssFilter: "form-control",
       filter_useParsedData: false,
     },
   });

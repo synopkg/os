@@ -13,8 +13,8 @@
   {% if not loop.last %}<br>{% endif %}
 {% endfor %}
 
-<table id="results">
-<tr>
+<table class="table table-striped" id="results">
+<tr class="thead-default">
   <td><a href="{{site.base_url}}">Site</a></td>
   <td><abbr title="master trace as of last update of site tracefile"><a href="{{site.trace_url}}master">mirror version</a></abbr></td>
   <td><abbr title="master trace last seen on archive master">age</abbr></td>
