@@ -2,29 +2,59 @@
 <html>
   <head>
     <title>{% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" href="{{ baseurl }}/external/bootstrap-4.0.0-alpha.6/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{{ baseurl }}/mirror-status.css">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="{{ baseurl }}/external/jquery-3.2.1/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script src="{{ baseurl }}/external/jquery.tablesorter-2.28.15/jquery.tablesorter.combined.min.js" integrity="sha256-WHm2h/38srdbq290ZchoKZkN3XZvEnxGXXN4h6VzTes=" crossorigin="anonymous"></script>
     <script src="{{ baseurl }}/external/jquery.tablesorter-2.28.15/jquery.tablesorter.widget-columnSelector.min.js" integrity="sha256-DreKNhINX3fQHY3yGja+vRYJCJhZzfkllQjQuZDQvR8=" crossorigin="anonymous"></script>
     <script src="{{ baseurl }}/external/jquery.tablesorter-2.28.15/jquery.tablesorter.widget-sort2Hash.min.js" integrity="sha256-0Opb+5t2gdv7+rpiQxM55bJdjslFpCyjez/9sBNjNR8=" crossorigin="anonymous"></script>
+    <script src="{{ baseurl }}/external/tether-1.4.0/tether.min.js" crossorigin="anonymous"></script>
+    <script src="{{ baseurl }}/external/bootstrap-4.0.0-alpha.6/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="{{ baseurl }}/mirror-status.js"></script>
   </head>
   <body>
-    <h1>{{ self.title() }}</h1>
+    <nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse">
+      <button class="navbar-toggler navbar-toggler-right hidden-lg-up" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="{{ baseurl }}">Debian mirror</a>
 
-    {% block content %}
-    {% endblock %}
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ baseurl }}/mirror-status.html">Status</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ baseurl }}/mirror-trace.html">Trace</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ baseurl }}/mirror-hierarchy.html">Hierarchy</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
-    <p id="footer">
-       Debian mirrors team - mirrors@d.o
-       &mdash;
-       last test run: {{last_run.strftime('%Y-%m-%d %H:%M:%S') }}
-       &mdash;
-       generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
-       &mdash;
-       (check <a href="https://validator.w3.org/check?uri=referer">HTML</a>, <a href="https://jigsaw.w3.org/css-validator/check/referer">CSS</a>)
-    </p>
+    <div class="container-fluid">
+      <h1>{{ self.title() }}</h1>
+
+      {% block content %}
+      {% endblock %}
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <p id="text-muted">
+          Debian mirrors team - mirrors@d.o
+          &mdash;
+          last test run: {{last_run.strftime('%Y-%m-%d %H:%M:%S') }}
+          &mdash;
+          generated: {{now.strftime('%Y-%m-%d %H:%M:%S') }}
+          &mdash;
+          (check <a href="https://validator.w3.org/check?uri=referer">HTML</a>, <a href="https://jigsaw.w3.org/css-validator/check/referer">CSS</a>)
+        </p>
+      </div>
+    </footer>
   </body>
 </html>
 
