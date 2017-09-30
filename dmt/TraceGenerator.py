@@ -37,6 +37,7 @@ class Generator():
                 sitetrace.content->'upstream-mirror'->>'text' AS upstream,
                 coalesce(sitetrace.content->'creator'->>'text', sitetrace.content->'used ftpsync version'->>'text') AS creator,
                 sitetrace.content->'trigger'->>'text' AS trigger,
+                sitetrace.content->'total time spent in rsync'->>'text' AS time_total,
                 sitetrace.content->'architectures-configuration'->>'text' AS arches
 
             FROM

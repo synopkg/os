@@ -16,6 +16,7 @@
   <th data-sorter="hostname" class="hostname">Upstream</th>
   <th data-sorter="text">Software</th>
   <th>Trigger</th>
+  <th>Total time</th>
   <th>Architectures configured</th>
 </tr>
 </thead>
@@ -38,6 +39,10 @@
 
     <td data-text="{{ mirror.trigger or '' }}">
       {{ mirror.trigger or '-' }}
+    </td>
+
+    <td data-text="{{ mirror.time_total or '' }}">
+      {{ mirror.time_total or '-' }}
     </td>
 
     <td data-text="{{ mirror.arches or '' }}">
