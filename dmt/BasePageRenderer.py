@@ -25,8 +25,8 @@ def get_human_readable_age(ts, base):
     else:
         rounding_skew = datetime.timedelta(0)
     rd = dateutil.relativedelta.relativedelta(base, ts + rounding_skew)
-    attrs = ['years', 'months', 'days', 'hours', 'minutes']
-    elems = ['%d %s' % (getattr(rd, attr), getattr(rd, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(rd, attr)]
+    attrs = [('years', 'y'), ('months', 'm'), ('days', 'd'), ('hours', 'h'), ('minutes', 'min')]
+    elems = ['%d %s' % (getattr(rd, attr), text) for attr, text in attrs if getattr(rd, attr)]
 
     hr = ', '.join(elems[0:2])
     if hr == "": hr = "seconds"
