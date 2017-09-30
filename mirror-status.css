@@ -23,6 +23,13 @@ td.error:hover .error-details {
   visibility: visible;
 }
 
+table#results thead th,
+table#results thead td,
+table#results tfoot th,
+table#results tfoot td {
+  white-space: nowrap;
+}
+
 table#results tr .hostname { text-align: right; }
 table#results td.date { white-space: nowrap; }
 table#results td.warning { background-color: #ffffaa; }
