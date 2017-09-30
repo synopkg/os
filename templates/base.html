@@ -23,13 +23,13 @@
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item">
-            <a class="nav-link" href="{{ baseurl }}/mirror-status.html">Status</a>
+            <a class="nav-link{{ " active" if self._TemplateReference__context.name == "mirror-status.html" else "" }}" href="{{ baseurl }}/mirror-status.html">Status</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ baseurl }}/mirror-trace.html">Trace</a>
+            <a class="nav-link{{ " active" if self._TemplateReference__context.name == "mirror-trace.html" else "" }}" href="{{ baseurl }}/mirror-trace.html">Trace</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ baseurl }}/mirror-hierarchy.html">Hierarchy</a>
+            <a class="nav-link{{ " active" if self._TemplateReference__context.name == "mirror-hierarchy.html" else "" }}" href="{{ baseurl }}/mirror-hierarchy.html">Hierarchy</a>
           </li>
         </ul>
       </div>
