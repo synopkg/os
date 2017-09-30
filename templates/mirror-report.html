@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}{{site.name}} - Debian mirror report{% endblock %}
 {% block content %}
+[<a href="../mirror-status.html#{{site.name}}">S</a>,<a href="../mirror-hierarchy.html#{{site.name}}">H</a>]
+
 {% if site.bugs %}
   <br>
 {% endif %}
