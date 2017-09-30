@@ -224,7 +224,7 @@ class Generator():
         traces_last_change_cutoff = now - datetime.timedelta(hours=self.recent_hours)
 
         cur.execute("""
-            SELECT
+            SELECT DISTINCT ON (site.id)
                 site.id AS site_id,
                 site.name,
                 site.http_override_host,
@@ -236,16 +236,22 @@ class Generator():
                 checkoverview.aliases AS checkoverview_aliases,
 
                 traceset.id AS traceset_id,
-                traceset.error AS traceset_error
+                traceset.error AS traceset_error,
+                traceset.traceset AS traces
 
-            FROM site JOIN
-                checkoverview ON site.id = checkoverview.site_id LEFT OUTER JOIN
-                traceset      ON site.id = traceset.site_id
+            FROM
+                site
+                LEFT OUTER JOIN traceset ON site.id = traceset.site_id
+                LEFT OUTER JOIN checkoverview ON site.id = checkoverview.site_id
+                INNER JOIN checkrun ON checkrun.id = traceset.checkrun_id AND checkrun.id = checkoverview.checkrun_id
             WHERE
-                (checkoverview.checkrun_id = %(checkrun_id)s) AND
-                (traceset     .checkrun_id = %(checkrun_id)s OR traceset.checkrun_id IS NULL)
-            """, {
-                'checkrun_id': checkrun['id']
+                checkrun.timestamp > CURRENT_TIMESTAMP - INTERVAL '%(recent_hours)s hours'
+            ORDER BY
+                site.id,
+                traceset.traceset = 'null'::jsonb ASC,
+                checkrun.timestamp DESC
+            """ % {
+                'recent_hours': self.recent_hours,
             })
 
         mirrors = {}
@@ -260,12 +266,9 @@ class Generator():
             if row['error'] == "": row['error'] = None
 
             row['traceset_changes'] = get_traceset_changes(cur2, row['site_id'], traces_last_change_cutoff)
-            row['traceset'] = row['traceset_changes']['most_recent']
 
-            if row['traceset'] is not None:
-                traces = row['traceset']
-                if 'master' in traces: traces.remove('master')
-                row['traces'] = traces
+            if row['traces'] is not None:
+                row['traces'].remove('master')
             else:
                 row['traces'] = []
 
