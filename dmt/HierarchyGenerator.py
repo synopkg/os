@@ -248,7 +248,7 @@ class Generator():
                 checkrun.timestamp > CURRENT_TIMESTAMP - INTERVAL '%(recent_hours)s hours'
             ORDER BY
                 site.id,
-                traceset.traceset = 'null'::jsonb ASC,
+                traceset.traceset IS NULL ASC,
                 checkrun.timestamp DESC
             """ % {
                 'recent_hours': self.recent_hours,

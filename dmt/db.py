@@ -69,7 +69,7 @@ class Mastertrace(Base):
     full                    = Column(String, index=True)
     trace_timestamp         = Column(DateTime(timezone=True))
     error                   = Column(String)
-    content                 = Column(JSONB)
+    content                 = Column(JSONB(none_as_null=True))
 
 
 class Sitetrace(Base):
@@ -90,7 +90,7 @@ class Sitetrace(Base):
     full                    = Column(String, index=True)
     trace_timestamp         = Column(DateTime(timezone=True), index=True)
     error                   = Column(String)
-    content                 = Column(JSONB)
+    content                 = Column(JSONB(none_as_null=True))
 
 
 class Traceset(Base):
@@ -105,7 +105,7 @@ class Traceset(Base):
     site                    = relationship("Site", backref=backref(__plural__, passive_deletes=True))
     checkrun                = relationship("Checkrun", backref=backref(__plural__, passive_deletes=True))
 
-    traceset                = Column(JSONB)
+    traceset                = Column(JSONB(none_as_null=True))
     error                   = Column(String)
 
 class SiteAliasMastertrace(Base):
@@ -123,7 +123,7 @@ class SiteAliasMastertrace(Base):
     full                    = Column(String)
     trace_timestamp         = Column(DateTime(timezone=True))
     error                   = Column(String)
-    content                 = Column(JSONB)
+    content                 = Column(JSONB(none_as_null=True))
 
 class Checkoverview(Base):
     """For a mirror and a check, summarize all we learned from a test-run.
@@ -144,7 +144,7 @@ class Checkoverview(Base):
     version                 = Column(DateTime(timezone=True))
     age                     = Column(Interval)
     score                   = Column(Float)
-    aliases                 = Column(JSONB)
+    aliases                 = Column(JSONB(none_as_null=True))
 
 class MirrorDB():
     DBURL = 'postgresql:///mirror-status'
