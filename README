@@ -1,4 +1,6 @@
 
+Public mirror of git repository at https://salsa.debian.org/mirror-team/mirror/status
+
 Packages required:
  - postgresql-contrib
  - python3-sqlalchemy
