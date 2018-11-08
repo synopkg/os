@@ -27,7 +27,7 @@ if __name__ == "__main__":
     assert(origin is not None)
 
     for sitename, sitedata in masterlist.items():
-        for k in (args.archivekey+"-"+SERVICE, args.archivekey+"-unlisted-"+SERVICE):
+        for k in (args.archivekey+"-"+SERVICE+"-monitor", args.archivekey+"-"+SERVICE):
             if k in sitedata:
                 http_path = sitedata[k]
                 break
@@ -38,8 +38,8 @@ if __name__ == "__main__":
                    'http_path': http_path
                  }
 
-        if 'Connect-http' in sitedata:
-            up = urllib.parse.urlparse('//'+sitedata['Connect-http'])
+        if 'Connect-http-monitor' in sitedata:
+            up = urllib.parse.urlparse('//'+sitedata['Connect-http-monitor'])
             dbdata['http_override_host'] = up.hostname
             dbdata['http_override_port'] = up.port
 
