@@ -35,6 +35,13 @@ class BaseCheck:
     def get_tracedir(self):
         return helpers.get_tracedir(self.site)
 
+    def _decode(bytes):
+        try:
+            return rawcontents.decode('utf-8')
+        except:
+            pass
+        return rawcontents.decode('iso8859-1')
+
     @staticmethod
     def _fetch(url, request_headers={}):
         try:
@@ -75,7 +82,7 @@ class TracfileFetcher(BaseCheck):
 
     def parse_tracefile(self, rawcontents):
         try:
-            decoded = rawcontents.decode('utf-8')
+            decoded = self._decode(rawcontents)
             self.result['full'] = decoded
             content = {}
 
