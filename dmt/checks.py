@@ -35,6 +35,7 @@ class BaseCheck:
     def get_tracedir(self):
         return helpers.get_tracedir(self.site)
 
+    @staticmethod
     def _decode(b):
         try:
             return b.decode('utf-8')
