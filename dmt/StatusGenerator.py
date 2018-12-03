@@ -48,6 +48,7 @@ class Generator():
 
                 sitetrace.error AS sitetrace_error,
                 sitetrace.trace_timestamp AS sitetrace_trace_timestamp,
+                sitetrace.content AS sitetrace_content,
 
                 traceset.id AS traceset_id,
                 traceset.error AS traceset_error,
@@ -125,6 +126,14 @@ class Generator():
 
             row['aliases' ] = row['checkoverview_aliases']
             row['bugs'] = helpers.get_bugs_for_mirror(row['name'])
+
+            if row['sitetrace_content'] is not None:
+                row['sitetrace_content'] = dict(
+                  (key
+                      .replace(" ", "_")
+                      .replace("-", "_")
+                  , value) for (key, value) in row['sitetrace_content'].items())
+
             mirrors.append(row)
 
         for m in mirrors:

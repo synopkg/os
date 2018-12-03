@@ -20,7 +20,10 @@
   <th data-sorter="digit">~#/d</th>
   <th data-sorter="digit">delay (&mu;/&sigma;)</th>
   <th data-sorter="false">extra</th>
-  <th data-sorter="text">Traces</th>
+  <th data-sorter="text">traces</th>
+  <th data-sorter="text">ftpsync</th>
+  <th data-sorter="text">configured upstream</th>
+  <th data-sorter="text">architectures</th>
 </tr>
 </thead>
 
@@ -139,6 +142,38 @@
           {%- if not loop.last %}<br>{% endif %}
         {% endfor %}
       </td>
+    {% endif %}
+
+    {% if not mirror.sitetrace_content is defined %}
+      <td class="error" colspan="3"><span class="error">N/A</span></td>
+    {% else %}
+
+      {% if not mirror.sitetrace_content.used_ftpsync_version is defined or not mirror.sitetrace_content.used_ftpsync_version.text is defined%}
+        <td class="error"><span class="error">unknown</span></td>
+      {% else %}
+        <td data-text="{{ mirror.sitetrace_content.used_ftpsync_version.text }}" class="extrainfo">{{ mirror.sitetrace_content.used_ftpsync_version.text }}</td>
+      {% endif %}
+
+      {% if not mirror.sitetrace_content.upstream_mirror is defined or not mirror.sitetrace_content.upstream_mirror.text is defined%}
+        <td class="error"><span class="error">unknown</span></td>
+      {% else %}
+        <td data-text="{{ mirror.sitetrace_content.upstream_mirror.text }}" class="extrainfo">{{ mirror.sitetrace_content.upstream_mirror.text }}</td>
+      {% endif %}
+
+      {% if mirror.sitetrace_content.architectures is defined and mirror.sitetrace_content.architectures.text is defined
+         and mirror.sitetrace_content.architectures_configuration is defined and mirror.sitetrace_content.architectures_configuration.text is defined %}
+        <td data-text="{{ mirror.sitetrace_content.architectures.text }}" class="extrainfo">
+          C: {{ mirror.sitetrace_content.architectures_configuration.text }}<br>
+          R: {{ mirror.sitetrace_content.architectures.text }}
+        </td>
+      {% elif mirror.sitetrace_content.architectures is defined and mirror.sitetrace_content.architectures.text is defined %}
+        <td data-text="{{ mirror.sitetrace_content.architectures.text }}" class="extrainfo">R: {{ mirror.sitetrace_content.architectures.text }}</td>
+      {% elif mirror.sitetrace_content.architectures_configuration is defined and mirror.sitetrace_content.architectures_configuration.text is defined %}
+        <td data-text="{{ mirror.sitetrace_content.architectures_configuration.text }}" class="extrainfo">C: {{ mirror.sitetrace_content.architectures_configuration.text }}</td>
+      {% else %}
+        <td class="error"><span class="error">unknown</span></td>
+      {% endif %}
+
     {% endif %}
 
   </tr>
