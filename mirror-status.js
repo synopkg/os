@@ -27,6 +27,11 @@ $(function() {
       columnSelector_container: $('#columnSelector'),
       columnSelector_mediaquery: false,
       columnSelector_saveColumns: false,
+      columnSelector_columns : {
+        0 : "disable", /* disable; i.e. remove column from selector */
+        1 : false,     /* start with column hidden */
+        2 : true,      /* start with column visible; default for undefined columns */
+      },
       filter_cssFilter: "form-control",
       filter_useParsedData: false,
     },
