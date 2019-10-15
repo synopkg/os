@@ -91,22 +91,23 @@
     <td>{{ '%0.2f'| format(c.checkoverview_score|float) }}</td>
 
     <td>
-      {% for k in c.aliases %}
-        {% if c.aliases[k].error is defined %}
-          <span class="aliaserror">
-            {{k}}: {{c.aliases[k].error}}
-          </span>
-        {% elif c.aliases[k].ok %}
-            {{k}}: OK
-        {% else %}
-          <span class="aliaswarning">
-            {{k}}: mismatch?
-          </span>
-        {% endif %}
-      {{ "," if not loop.last else "" }}
-      {% endfor %}
       {% if not c.aliases %}
         - none -
+      {% else %}
+        {% for k in c.aliases %}
+          {% if c.aliases[k].error is defined %}
+            <span class="aliaserror">
+              {{k}}: {{c.aliases[k].error}}
+            </span>
+          {% elif c.aliases[k].ok %}
+              {{k}}: OK
+          {% else %}
+            <span class="aliaswarning">
+              {{k}}: mismatch?
+            </span>
+          {% endif %}
+        {{ "," if not loop.last else "" }}
+        {% endfor %}
       {% endif %}
     </td>
 
