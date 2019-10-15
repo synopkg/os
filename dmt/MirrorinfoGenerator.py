@@ -75,6 +75,16 @@ class MirrorReport():
                 (SELECT * FROM checkoverview WHERE site_id = %(site_id)s) AS checkoverview ON checkrun.id = checkoverview.checkrun_id
             WHERE
                 checkrun.timestamp >= %(check_age_cutoff)s
+              AND
+                (
+                mastertrace.id IS NOT NULL
+                OR
+                sitetrace.id IS NOT NULL
+                OR
+                traceset.id IS NOT NULL
+                OR
+                checkoverview.id IS NOT NULL
+                )
             ORDER BY
                 checkrun.timestamp
             """, {
