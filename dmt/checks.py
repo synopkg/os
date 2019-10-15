@@ -73,7 +73,7 @@ class BaseCheck:
         raise Exception("store called on abstractish base class")
 
 
-class TracfileFetcher(BaseCheck):
+class TracefileFetcher(BaseCheck):
     def __init__(self, site, checkrun_id, tracefilename, request_host=None):
         super().__init__(site, checkrun_id)
         self.tracefilename = tracefilename
@@ -121,7 +121,7 @@ class TracfileFetcher(BaseCheck):
         except MirrorFailureException as e:
             self.result['error'] = e.message
 
-class MastertraceFetcher(TracfileFetcher):
+class MastertraceFetcher(TracefileFetcher):
     def __init__(self, site, checkrun_id):
         super().__init__(site, checkrun_id, 'master')
 
@@ -129,7 +129,7 @@ class MastertraceFetcher(TracfileFetcher):
         i = db.Mastertrace(**self.result)
         session.add(i)
 
-class SitetraceFetcher(TracfileFetcher):
+class SitetraceFetcher(TracefileFetcher):
     def __init__(self, site, checkrun_id):
         super().__init__(site, checkrun_id, site.name)
 
@@ -163,7 +163,7 @@ class SitetraceFetcher(TracfileFetcher):
         i = db.Sitetrace(**self.result)
         session.add(i)
 
-class SiteAliasFetcher(TracfileFetcher):
+class SiteAliasFetcher(TracefileFetcher):
     def __init__(self, site, checkrun_id, sitealias):
         #self.sitealias = sitealias
         super().__init__(site, checkrun_id, 'master', request_host=sitealias.name)
