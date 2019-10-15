@@ -50,7 +50,24 @@ class MirrorProcessor():
                 (SELECT * FROM mastertrace WHERE site_id = %(site_id)s) AS mastertrace ON checkrun.id = mastertrace.checkrun_id LEFT OUTER JOIN
                 (SELECT * FROM sitetrace   WHERE site_id = %(site_id)s) AS sitetrace   ON checkrun.id = sitetrace.checkrun_id
             WHERE
+              -- Select check runs that have not been processed yet
                 checkrun.id NOT in (SELECT checkrun_id FROM checkoverview WHERE site_id = %(site_id)s)
+              AND
+              -- assuming they are either newer than previously processed ones
+                (checkrun.timestamp > (
+                  SELECT max(checkrun.timestamp)
+                  FROM checkrun
+                    JOIN checkoverview
+                    ON checkrun.id = checkoverview.checkrun_id
+                  WHERE site_id = %(site_id)s
+                  )
+              -- or there is data.  This way new mirrors that don't have any data yet will not
+              -- get a bunch of negative checkoverview entries.
+                OR
+                 mastertrace.id IS NOT NULL
+                OR
+                 sitetrace.id IS NOT NULL
+                )
             ORDER BY
                 checkrun.timestamp
             """, {
