@@ -189,7 +189,7 @@ class MirrorProcessor():
                         else:
                             data['age'] = row['checkrun_timestamp'] - self.mastertraces_lastseen[data['version']]
                     else:
-                        data['error'] = 'unexpected mirror version'
+                        data['error'] = 'unexpected mirror version: ' + data['version']
             cur2.execute("""INSERT INTO checkoverview (site_id, checkrun_id, error, version, age, aliases)
                             VALUES (%(site_id)s, %(checkrun_id)s, %(error)s, %(version)s, %(age)s, %(aliases)s)""",
                          data)
