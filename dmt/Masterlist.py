@@ -72,11 +72,11 @@ class MasterlistEntry:
 
 class Masterlist:
     def __init__(self, fn):
-        self.entries = self._load_entries(fn)
+        self._load_entries(fn)
 
     def _load_entries(self, fn):
         seen = {}
-        includes = {}
+        includes = OrderedDict()
         entries = OrderedDict()
         with open(fn, encoding='utf-8') as masterlist:
             while True:
@@ -94,18 +94,19 @@ class Masterlist:
                 if e['Type'] in ('GeoDNS', ):
                     pass
                 elif 'Includes' in e:
-                    includes[e['Site']] = e['Includes'].split()
+                    includes[e['Site']] = e
                 else:
                     entries[e['Site']] = e
 
         for alias in includes:
-            for site in includes[alias]:
+            for site in includes[alias]['Includes'].split():
                 if not site in entries:
                     print("Site", alias, "is allegedly provided by", site,"but we do not know about that.", file=sys.stderr)
                     continue
                 entries[site]._add_included_by(alias)
 
-        return entries
+        self.entries = entries
+        self.includes = includes
 
 if __name__ == "__main__":
     import argparse
