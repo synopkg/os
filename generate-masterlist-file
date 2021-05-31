@@ -47,15 +47,26 @@ def get_mirror_status(dbh):
 
     cur.execute("""
         SELECT
-            (SELECT name FROM site WHERE site.id = checkoverview.site_id) AS site,
+            site.name AS site,
             score,
-            content AS sitetrace
+
+            (SELECT
+                    content
+                 FROM
+                    sitetrace
+                    JOIN checkrun ON (sitetrace.checkrun_id = checkrun.id)
+                 WHERE
+                    site.id = sitetrace.site_id
+                    AND content IS NOT NULL
+                 ORDER BY
+                    timestamp DESC
+                 LIMIT 1
+                 ) AS sitetrace
         FROM
-            checkoverview
-            JOIN sitetrace ON (checkoverview.site_id = sitetrace.site_id AND
-                               checkoverview.checkrun_id = sitetrace.checkrun_id)
+            site
+            JOIN checkoverview ON (site.id = checkoverview.site_id)
         WHERE
-            checkoverview.checkrun_id = (SELECT id fROM checkrun ORDER BY timestamp DESC LIMIT 1)
+            checkoverview.checkrun_id = (SELECT id FROM checkrun ORDER BY timestamp DESC LIMIT 1)
         """)
 
     mirror_status = {}
@@ -104,6 +115,7 @@ def print_role_host(role, roledata, provider, override):
 def extract_archs(site_status):
     if 'sitetrace' not in site_status: return None
     sitetrace = site_status['sitetrace']
+    if sitetrace is None: return None
 
     if 'architectures' not in sitetrace: return None
     archs = sitetrace['architectures']
