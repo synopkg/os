@@ -1,22 +1,24 @@
 #!/usr/bin/python3
 
-import argparse
-import datetime
-import os
-import shutil
 
 import dmt.db as db
 import dmt.helpers as helpers
 from dmt.Masterlist import Masterlist
 
+import argparse
+import datetime
 import email.policy
+import json
 import logging
-import sys
+import os
 import re
+import shutil
+import subprocess
+import sys
+
 
 SCORE_CUTOFF = 50.0
 FTP_CC_MIRROR = re.compile('ftp[0-9]*\.[a-z][a-z]\.debian\.org')
-
 KEYS = [
         'Country',
         'Location',
@@ -37,6 +39,7 @@ KEYS = [
         ]
 # for roles:
 ROLE_FTP_CC_ONLY_KEYS = set(['Country', 'Archive-http', 'Archive-architecture'])  # unless overwritten in role
+KNOWN_ARCHS = set(subprocess.check_output(['dpkg-architecture', '--list-known']).decode().split())
 
 
 def get_mirror_status(dbh):
@@ -98,13 +101,32 @@ def print_role_host(role, roledata, provider, override):
                 print("%s: %s"%(key, value))
     print()
 
+def extract_archs(site_status):
+    if 'sitetrace' not in site_status: return None
+    sitetrace = site_status['sitetrace']
+
+    if 'architectures' not in sitetrace: return None
+    archs = sitetrace['architectures']
+    if 'text' not in archs: return None
+    archs = archs['text'].split()
+
+    archs = sorted([a for a in archs if a in KNOWN_ARCHS])
+    return ' '.join(archs)
+
 def build_updated_masterlist(masterlist, mirror_status):
     valid_sites = {}
     for sitename, sitedata in masterlist.entries.items():
-        if sitename in mirror_status and mirror_status[sitename]['score'] < SCORE_CUTOFF:
-            logging.info("Skipping %s due to score of %.1f", sitename, mirror_status[sitename]['score'])
-            continue
+        if sitename in mirror_status:
+            if mirror_status[sitename]['score'] < SCORE_CUTOFF:
+                logging.info("Skipping %s due to score of %.1f", sitename, mirror_status[sitename]['score'])
+                continue
+            archs_from_sitetrace = extract_archs(mirror_status[sitename])
+            if archs_from_sitetrace is not None:
+                sitedata['Archive-architecture'] = archs_from_sitetrace
+        else:
+            logging.info("No mirror info for %s in database", sitename)
         valid_sites[sitename] = True
+
 
         if 'Internal' in sitedata: continue
         print_base_host(sitedata)
@@ -116,9 +138,9 @@ def build_updated_masterlist(masterlist, mirror_status):
             logging.info("No valid provider for role %s. Skipping", rolename);
             continue
 
-        countries = list(set([i for site in providers for i in listify(masterlist.entries[site]['Country' ]) if i is not None]))
-        locations = list(set([i for site in providers for i in listify(masterlist.entries[site]['Location']) if i is not None]))
-        sponsors  = list(set([i for site in providers for i in listify(masterlist.entries[site]['Sponsor' ]) if i is not None]))
+        countries = sorted(set([i for site in providers for i in listify(masterlist.entries[site]['Country' ]) if i is not None]))
+        locations = sorted(set([i for site in providers for i in listify(masterlist.entries[site]['Location']) if i is not None]))
+        sponsors  = sorted(set([i for site in providers for i in listify(masterlist.entries[site]['Sponsor' ]) if i is not None]))
 
         print_role_host(rolename, roledata, masterlist.entries[ providers[0] ],
             { 'Country': countries,

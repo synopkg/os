@@ -39,6 +39,9 @@ class MasterlistEntry:
             return self.data.get_all(key)
         else:
             return self.data[key]
+    def __setitem__(self, key, data):
+        del self.data[key]
+        self.data[key] = data
     def __contains__(self, key):
         return key in self.data
     def _clean(self):
