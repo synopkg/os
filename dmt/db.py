@@ -12,7 +12,7 @@ Base = sqlalchemy.ext.declarative.declarative_base()
 
 class Origin(Base):
     """Origin of site information, i.e. the place from which we learned that
-       a site exists.  E.g. "Mirrors.masterlist"
+       a site exists.  E.g. "Mirrors.masterlist.in"
        """
     __tablename__           = 'origin'
     id                      = Column(Integer, primary_key=True)

@@ -23,6 +23,6 @@ Setup:
 
 Maintenance:
 
-  1. Run ./import-mirrors --masterlist /path/to/Mirrors.masterlist
+  1. Run ./import-mirrors --masterlist /path/to/Mirrors.masterlist.in
   2. Run ./run-tests && ./run-process
   3. Run ./generate --outdir /path/to/output/directory

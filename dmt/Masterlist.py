@@ -114,7 +114,7 @@ class Masterlist:
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('masterlist', help='Mirrors.masterlist')
+    parser.add_argument('masterlist', help='Mirrors.masterlist.in file')
     args = parser.parse_args()
 
     masterlist = Masterlist(args.masterlist)

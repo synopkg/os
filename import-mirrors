@@ -6,7 +6,7 @@ import urllib.parse
 import dmt.db as db
 from dmt.Masterlist import Masterlist
 
-MASTERLIST='Mirrors.masterlist'
+MASTERLIST='Mirrors.masterlist.in'
 ARCHIVEKEY = 'Archive'
 SERVICE = 'http'
 
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--archivekey', help='Key for the current archive', default=ARCHIVEKEY)
     parser.add_argument('--origin', help='Label for the origin', default=MASTERLIST)
-    parser.add_argument('--masterlist', help='Mirrors.masterlist file', default=MASTERLIST)
+    parser.add_argument('--masterlist', help='Mirrors.masterlist.in file', default=MASTERLIST)
     parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
     args = parser.parse_args()
 
