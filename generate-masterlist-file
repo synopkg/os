@@ -95,10 +95,10 @@ def print_base_host(sitedata):
 def print_role_host(role, roledata, provider, override):
     print("%s: %s"%('Site', role))
     for key in KEYS:
-        if key in override and len(override[key]) > 0:
-            value = override[key]
-        elif key in roledata:
+        if key in roledata:
             value = roledata[key]
+        elif key in override and len(override[key]) > 0:
+            value = override[key]
         elif key in provider:
             value = provider[key]
         else:
