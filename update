@@ -36,6 +36,11 @@ trap "rm -r $tmpdir" EXIT
 ./generate --outdir "$tmpdir/status"
 ./generate --outdir "$tmpdir/status-security" --dburl postgresql:///mirror-status-security
 ./generate-masterlist-file > "$tmpdir/status/Mirrors.masterlist"
+cat > "$tmpdir/status/.htaccess" << EOF
+<Files "Mirrors.masterlist">
+ForceType 'text/plain; charset=UTF-8'
+</Files>
+EOF
 
 chmod a+rX -R "$tmpdir"
 
