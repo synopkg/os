@@ -22,6 +22,7 @@ FTP_CC_MIRROR = re.compile('ftp[0-9]*\.[a-z][a-z]\.debian\.org')
 KEYS = [
         'Country',
         'Location',
+        'Type',
         'Archive-architecture',
         'Archive-http',
         'Archive-rsync',
