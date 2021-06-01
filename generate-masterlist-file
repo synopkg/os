@@ -130,24 +130,26 @@ def build_updated_masterlist(masterlist, mirror_status):
     for sitename, sitedata in masterlist.entries.items():
         if sitename in mirror_status:
             if mirror_status[sitename]['score'] < SCORE_CUTOFF:
-                logging.info("Skipping %s due to score of %.1f", sitename, mirror_status[sitename]['score'])
+                logging.info("Skipping %s due to score of %.1f.", sitename, mirror_status[sitename]['score'])
                 continue
             archs_from_sitetrace = extract_archs(mirror_status[sitename])
             if archs_from_sitetrace is not None:
                 sitedata['Archive-architecture'] = archs_from_sitetrace
         else:
-            logging.info("No mirror info for %s in database", sitename)
+            logging.info("No mirror info for %s in database; just using it as is.", sitename)
         valid_sites[sitename] = True
 
 
-        if 'Internal' in sitedata: continue
+        if 'Internal' in sitedata:
+            logging.info("Not including internal site %s.", sitename)
+            continue
         print_base_host(sitedata)
 
     for rolename, roledata in masterlist.includes.items():
         providers = roledata['Includes'].split();
         providers = list(filter(lambda sitename: sitename in valid_sites, providers))
         if len(providers) == 0:
-            logging.info("No valid provider for role %s. Skipping", rolename);
+            logging.info("No valid provider for role %s. Skipping.", rolename);
             continue
 
         countries = sorted(set([i for site in providers for i in listify(masterlist.entries[site]['Country' ]) if i is not None]))

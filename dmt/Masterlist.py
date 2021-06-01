@@ -94,7 +94,7 @@ class Masterlist:
                     continue
 
                 seen[e['Site']] = True
-                if e['Type'] in ('GeoDNS', ):
+                if e['Type'] in ('GeoDNS', ) and ignore_geodns:
                     pass
                 elif 'Includes' in e:
                     includes[e['Site']] = e
