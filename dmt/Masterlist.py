@@ -74,10 +74,10 @@ class MasterlistEntry:
         return None
 
 class Masterlist:
-    def __init__(self, fn):
-        self._load_entries(fn)
+    def __init__(self, fn, ignore_geodns=True):
+        self._load_entries(fn, ignore_geodns)
 
-    def _load_entries(self, fn):
+    def _load_entries(self, fn, ignore_geodns):
         seen = {}
         includes = OrderedDict()
         entries = OrderedDict()
