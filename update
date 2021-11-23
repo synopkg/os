@@ -62,5 +62,5 @@ fi
 disown
 
 if ! [ -e "$BTS_STATE_FILE" ] || [ "$(stat --format=%Y "$BTS_STATE_FILE" )" -le "$(( $(date +%s) - $BTS_STATE_AGE ))" ]; then
-  ./get-bug-status | sponge "$BTS_STATE_FILE"
+  ./get-bug-status > "$BTS_STATE_FILE".new && mv "$BTS_STATE_FILE".new "$BTS_STATE_FILE"
 fi
