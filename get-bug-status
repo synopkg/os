@@ -9,7 +9,7 @@ import os
 
 RELEVANT_FIELDS = ('subject', 'done', 'bug_num', 'tags')
 
-bug_numbers = debianbts.get_bugs('package', 'mirrors')
+bug_numbers = debianbts.get_bugs(package='mirrors')
 bugs = debianbts.get_status(bug_numbers)
 dicts = [b.__dict__ for b in bugs]
 data = []
