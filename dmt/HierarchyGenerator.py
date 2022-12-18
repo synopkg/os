@@ -268,7 +268,14 @@ class Generator():
             row['traceset_changes'] = get_traceset_changes(cur2, row['site_id'], traces_last_change_cutoff)
 
             if row['traces'] is not None:
-                row['traces'].remove('master')
+                try:
+                    row['traces'].remove('master')
+                except ValueError:
+                    msg = 'Traceset missing master item'
+                    if row['error']:
+                        row['error'] = row['error'] + "; " + msg
+                    else:
+                        row['error'] = msg
             else:
                 row['traces'] = []
 
