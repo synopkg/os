@@ -17,7 +17,8 @@ if __name__ == '__main__' and __package__ is None:
 
 import dmt.db as db
 
-FTPMASTER = "ftp-master.debian.org"
+#FTPMASTER = "ftp-master.debian.org"
+FTPMASTER = "repo.kali.org"
 
 class BTSInfo:
     STATE_FILE = ".bugs-state.json"
