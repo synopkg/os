@@ -14,8 +14,10 @@ if __name__ == '__main__' and __package__ is None:
 import dmt.db as db
 from dmt import helpers
 
-CONTACT_EMAIL = 'mirrors@d.o'
-DISTRO = 'Debian'
+#CONTACT_EMAIL = 'mirrors@d.o'
+#DISTRO = 'Debian'
+CONTACT_EMAIL = 'devel@k.o'
+DISTRO = 'Kali Linux'
 
 def get_human_readable_age(ts, base):
     assert(ts is not None)
