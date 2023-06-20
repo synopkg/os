@@ -36,4 +36,4 @@ cp -a external $tmpdir/
 chmod a+rX -R "$tmpdir"
 
 mkdir -p "$TARGET"
-rsync -av --copy-unsafe-links "$tmpdir"/* "$TARGET"/ --delete
+rsync -aq --copy-unsafe-links "$tmpdir"/* "$TARGET"/ --delete
