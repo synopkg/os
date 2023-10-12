@@ -3,4 +3,4 @@
 set -e
 set -u
 
-python3-alembic upgrade head
+alembic upgrade head

@@ -14,6 +14,9 @@ if __name__ == '__main__' and __package__ is None:
 import dmt.db as db
 from dmt import helpers
 
+CONTACT_EMAIL = 'mirrors@d.o'
+DISTRO = 'Debian'
+
 def get_human_readable_age(ts, base):
     assert(ts is not None)
     assert(base is not None)
@@ -138,6 +141,8 @@ class BasePageRenderer:
         tmplenv.filters['mirrorsortkey'] = helpers.hostname_comparator
         tmplenv.filters['formaterror'] = formaterrorfilter
         tmplenv.globals['raise'] = raise_helper
+        tmplenv.globals['contact_email'] = CONTACT_EMAIL
+        tmplenv.globals['distro'] = DISTRO
         return tmplenv
 
     def render(self, page):

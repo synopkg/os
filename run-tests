@@ -48,7 +48,7 @@ def check_result_generator(checklist):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--prune-hours', help='delete checks oder than <x> hours', type=float, default=PRUNE_HOURS)
+    parser.add_argument('--prune-hours', help='delete checks older than <x> hours', type=float, default=PRUNE_HOURS)
     parser.add_argument('--dburl', help='database', default=db.MirrorDB.DBURL)
     args = parser.parse_args()
 

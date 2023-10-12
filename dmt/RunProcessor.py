@@ -26,12 +26,12 @@ class MirrorProcessor():
         cur = dbh.cursor()
         cur2 = dbh.cursor()
 
-        # Get all Checkruns for $site which have not been analized yet,
+        # Get all Checkruns for $site which have not been analyzed yet,
         # i.e., that don't have a corresponding entry in checkoverview yet.
         # Associated with each checkrun is the mastertrace and sitetrace
         # information, provided it's available.
 
-        # this is not very efficient when there are a large number of unprocessed
+        # This is not very efficient when there are a large number of unprocessed
         # checkruns per site.  But usually there will be exactly one.
         cur.execute("""
             SELECT

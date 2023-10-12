@@ -18,7 +18,7 @@
       <button class="navbar-toggler navbar-toggler-right hidden-lg-up" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <a class="navbar-brand" href="{{ baseurl }}">Debian mirror</a>
+      <a class="navbar-brand" href="{{ baseurl }}">{{ distro }} mirror</a>
 
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
@@ -45,7 +45,7 @@
     <footer class="footer">
       <div class="container">
         <p id="text-muted">
-          Debian mirrors team - mirrors@d.o
+	  {{ distro }} mirrors team - {{ contact_email }}
           &mdash;
           last test run: {{last_run.strftime('%Y-%m-%d %H:%M:%S') }}
           &mdash;
